@@ -1,0 +1,5 @@
+# Own pnpm workspace root. Also isolates this repo from the parent snf-workspace
+# pnpm-workspace.yaml (pnpm walks up the tree otherwise).
+packages:
+  - packages/*
+  - examples/*
