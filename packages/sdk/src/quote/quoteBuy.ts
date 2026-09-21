@@ -134,6 +134,8 @@ async function quoteBuyFungible(
     feeBps: poolBps,
     kind: 'wnft',
     side: 'buy',
+    collection: collection.address,
+    wrapper: collection.wrapper,
   }
 
   return {
@@ -251,6 +253,9 @@ export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promi
     feeBps: poolBps,
     kind: pool.baseToken.isNative ? 'native' : 'erc20',
     side: 'buy',
+    collection: collection.address,
+    wrapper: collection.wrapper,
+    tokenIds,
   }
 
   const warnings: string[] = []

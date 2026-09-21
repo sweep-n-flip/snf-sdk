@@ -39,6 +39,25 @@ export interface QuoteLeg {
    * lives at `Quote.fees` (see `snf-54-13-SUMMARY.md`, Deviations).
    */
   readonly fees?: FeeBreakdown
+  /**
+   * This leg's own NFT collection/wrapper (plan 15 addition — not in plan 04's
+   * original shape, nor plan 13's). Needed by `build/*`'s `StepPreflightRefs` (R14):
+   * `Quote.collection` is only populated for the single-collection `buy`/`sell`
+   * kinds, and NOTHING on the committed `Quote`/`QuoteLeg` shape carried a wrapper
+   * address anywhere — `nft-to-nft` in particular has no top-level `collection` at
+   * all (its two legs price DIFFERENT collections), so per-leg fields are the only
+   * place these can live generically across every quote kind a builder consumes.
+   * Omitted on the `swap`/`wnft` legs, which have no NFT collection to name.
+   */
+  readonly collection?: `0x${string}`
+  readonly wrapper?: `0x${string}`
+  /**
+   * The concrete tokenIds this leg buys/sells (plan 15 addition). Redundant with the
+   * top-level `Quote.tokenIds` on the single-collection `buy`/`sell` kinds (kept here
+   * too for uniformity), but the ONLY place these ids exist at all on `nft-to-nft`,
+   * whose `Quote` carries no top-level `tokenIds` (each leg trades a different set).
+   */
+  readonly tokenIds?: readonly string[]
 }
 
 /**
@@ -64,6 +83,16 @@ export interface Quote {
   /** nft-to-nft only: change returned to the seller — saturates to 0 when `buyCost > netProceeds` (R9). */
   readonly remainder?: Amount
   /**
+   * nft-to-nft only (plan 15 addition): which top-up mode `remainder` was priced in —
+   * `'native'` (the chain's own base currency) or `'wnft'` (the buy collection's
+   * wrapper units, a real sequential follow-up trade against the buy pool's POST-buy
+   * reserves — see `quoteNftToNft.ts`). `buildNftToNft` needs this literal flag to
+   * decide whether to emit the third `swap-buy-wnft` step; `Quote.remainder.symbol`
+   * alone is not a safe discriminant (a collection's own symbol could coincide with
+   * the chain's native symbol).
+   */
+  readonly remainderMode?: 'native' | 'wnft'
+  /**
    * swap only (plan 13 addition — not in plan 04's original shape, DATASHEET §4
    * `/v1/quote/swap`: "Returns `amountIn`, `amountOut`, `path[]`, `priceImpact`").
    * The exact input spent.
@@ -71,6 +100,14 @@ export interface Quote {
   readonly amountIn?: Amount
   /** swap only: the exact output received. */
   readonly amountOut?: Amount
+  /**
+   * swap only (plan 15 addition): which side the caller pinned exactly — `'in'` when
+   * `amountIn` was given (`amountOutMin` is the protective floor bound), `'out'` when
+   * `amountOut` was given (`amountInMax` is the protective ceiling bound).
+   * `buildSwap` needs this to pick the matching Router entry point and to know which
+   * of `amountIn`/`amountOut` is the FIXED figure vs. which is the fresh bound.
+   */
+  readonly amountSpecified?: 'in' | 'out'
   readonly priceImpact: number
   readonly deliverable: number
   readonly bestEffort: boolean

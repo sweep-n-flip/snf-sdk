@@ -128,6 +128,8 @@ async function quoteSellFungible(
     feeBps: poolBps,
     kind: 'wnft',
     side: 'sell',
+    collection: collection.address,
+    wrapper: collection.wrapper,
   }
 
   return {
@@ -221,6 +223,9 @@ export async function quoteSell(ctx: SnfClientContext, args: QuoteSellArgs): Pro
     feeBps: poolBps,
     kind: pool.baseToken.isNative ? 'native' : 'erc20',
     side: 'sell',
+    collection: collection.address,
+    wrapper: collection.wrapper,
+    tokenIds,
   }
 
   const warnings: string[] = []
