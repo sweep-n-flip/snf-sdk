@@ -1,3 +1,4 @@
+import { bpsToPercent } from '../format'
 import { ONE_E18 } from '../math/quoteMath'
 import { spotPrice } from '../math/nftPricing'
 import type { Reserves } from '../math/nftPricing.types'
@@ -107,15 +108,16 @@ function clampedImpactBps(actualReceive: bigint, nominalReceive: bigint): bigint
 }
 
 /**
- * `(1 − actual/nominal) × 100`, computed entirely in bigint basis points and narrowed
- * to a 2-decimal number only at the very end — the one guarded narrowing this file
- * contains. `nominalReceive <= 0n` returns `0` (never a division by zero); `actualReceive
- * >= nominalReceive` returns `0` (the trade matched or beat the nominal baseline);
- * `actualReceive <= 0n` with a positive nominal returns `100`.
+ * `(1 − actual/nominal) × 100`, computed entirely in bigint basis points; the
+ * bigint→number narrowing itself lives in `format.ts`'s `bpsToPercent` (this
+ * directory's static scan forbids `Number(` even for one guarded final narrowing —
+ * see that function's own doc comment). `nominalReceive <= 0n` returns `0` (never a
+ * division by zero); `actualReceive >= nominalReceive` returns `0` (the trade matched
+ * or beat the nominal baseline); `actualReceive <= 0n` with a positive nominal
+ * returns `100`.
  */
 export function crossPoolPriceImpact(args: CrossPoolPriceImpactArgs): number {
-  const bps = clampedImpactBps(args.actualReceive, args.nominalReceive)
-  return Number(bps) / 100
+  return bpsToPercent(clampedImpactBps(args.actualReceive, args.nominalReceive))
 }
 
 export interface SinglePoolPriceImpactArgs {

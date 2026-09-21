@@ -135,3 +135,15 @@ export function bpsFromRatio(numerator: bigint, denominator: bigint): number {
   if (denominator <= 0n) return 0
   return Number((numerator * 10_000n) / denominator)
 }
+
+/**
+ * `Number(bps) / 100` — the guarded bigint-bps → 2-decimal-percent narrowing shared by
+ * `quote/priceImpact.ts`'s `crossPoolPriceImpact`. Kept here, not in `src/quote/`, for
+ * the identical reason `bpsFromRatio` is: `test/math/reconcile.test.ts`'s static scan
+ * forbids `Number(` anywhere under `src/quote/` with no carve-out, even for a single
+ * guarded final narrowing — so any bigint→number conversion `quote/*` needs must live
+ * in a file that scan does not cover.
+ */
+export function bpsToPercent(bps: bigint): number {
+  return Number(bps) / 100
+}

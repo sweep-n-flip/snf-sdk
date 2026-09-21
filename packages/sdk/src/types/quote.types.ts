@@ -29,6 +29,16 @@ export interface QuoteLeg {
   readonly feeBps: number
   readonly kind: 'native' | 'erc20' | 'wnft'
   readonly side: 'buy' | 'sell'
+  /**
+   * This leg's own fee breakdown (plan 13 addition — not in plan 04's original
+   * shape). `nft-to-nft` is the first quote kind with two independently-priced legs:
+   * royalty is paid per leg in that leg's own base currency and is NEVER
+   * consolidated (docs/NFT_SWAP_RULES.md) — this field is what lets a single leg
+   * carry its own marketplace/royalty amounts while `Quote.fees` reports the sum.
+   * Omitted on the single-leg `buy`/`sell` quote kinds, whose only `FeeBreakdown`
+   * lives at `Quote.fees` (see `snf-54-13-SUMMARY.md`, Deviations).
+   */
+  readonly fees?: FeeBreakdown
 }
 
 /**
