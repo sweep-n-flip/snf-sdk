@@ -39,7 +39,11 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:fork": "echo \"fork lanes land in plan 18\" && exit 0",
+    "test:fork": "vitest run --config vitest.fork.config.ts",
+    "test:fork:base": "vitest run --config vitest.fork.config.ts test/fork/base.fork.test.ts",
+    "test:fork:arbitrum": "vitest run --config vitest.fork.config.ts test/fork/arbitrum.fork.test.ts",
+    "test:fork:robinhood": "vitest run --config vitest.fork.config.ts test/fork/robinhood.fork.test.ts",
+    "test:fork:arc": "vitest run --config vitest.fork.config.ts test/fork/arc.fork.test.ts",
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "peerDependencies": {

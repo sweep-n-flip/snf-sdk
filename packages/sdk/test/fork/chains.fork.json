@@ -1,0 +1,103 @@
+[
+  {
+    "key": "base",
+    "chainId": 8453,
+    "rpcEnvVar": "RPC_8453",
+    "fallbackRpcUrl": "https://mainnet.base.org",
+    "forkBlockNumber": 51599514,
+    "observedHeadAtCapture": 51599614,
+    "observedDate": "2026-09-21",
+    "port": 8545,
+    "nonDeterministic": false,
+    "note": "Base is the primary lane (D-09). Public RPC (no key). Margin: 100 blocks behind the observed head at capture time.",
+    "fixtures": {
+      "router02": "0x1312488a7BF5aAF2B2EeBE8393c9616A1418CF04",
+      "pair": "0xE8143126bdFBe58ED0056f88031236766C311ECf",
+      "wrapper": "0xA9f3F136380E53F8f55CaD44391bDa2B617D7C83",
+      "collection": "0x7e50af303A0422ebec6bc198034A2430bBe0195c",
+      "baseToken": "0x4200000000000000000000000000000000000006",
+      "sampleTokenIds": [
+        "246125",
+        "246171",
+        "245868",
+        "246133",
+        "245915",
+        "246004",
+        "246195",
+        "246134",
+        "245862",
+        "245987",
+        "245969",
+        "245830"
+      ],
+      "sampleTokenIdsObservedDate": "2026-09-21",
+      "sampleTokenIdsSource": "Base subgraph snf-base/1.1.0, Currency(0xa9f3...7c83).tokenIds — the pool's live inventory at capture time; re-derive if the fixture ever needs refreshing (a token could be bought out by the time this lane runs)."
+    }
+  },
+  {
+    "key": "arbitrum",
+    "chainId": 42161,
+    "rpcEnvVar": "RPC_42161",
+    "fallbackRpcUrl": "https://arb1.arbitrum.io/rpc",
+    "forkBlockNumber": 507421091,
+    "observedHeadAtCapture": 507421191,
+    "observedDate": "2026-09-21",
+    "port": 8546,
+    "nonDeterministic": false,
+    "note": "Public RPC (no key). Small live pool discovered via the snf-arbitrum subgraph (Currency.wrapping:true) — WCBERA/WETH, 8 NFTs / 0.000808 ETH reserves at capture time.",
+    "fixtures": {
+      "router02": "0xDc0088a282d225f8cb08D092950Dde6eBAa36E78",
+      "pair": "0xEbcBBa604aEaf9E2c7A5039346Eb76080Edabe87",
+      "wrapper": "0x70F5906645cb4B49118028dF52F6c3F018b17B35",
+      "collection": "0xEBA9fd1355D2Cc0883110F4C0B03c9EF57e38f12",
+      "baseToken": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+      "collectionSymbol": "CBERA",
+      "reserveWnftCountAtCapture": 8,
+      "reserveBaseAtCapture": "808122243872424"
+    }
+  },
+  {
+    "key": "robinhood",
+    "chainId": 4663,
+    "rpcEnvVar": "RPC_4663",
+    "fallbackRpcUrl": "https://rpc.mainnet.chain.robinhood.com",
+    "forkBlockNumber": 68745799,
+    "observedHeadAtCapture": 68745899,
+    "observedDate": "2026-09-21",
+    "port": 8547,
+    "nonDeterministic": false,
+    "note": "PROBED THIS SESSION (2026-09-21): the public RPC IS documented workspace-wide as not-an-archive-node (root CLAUDE.md), so a getBlockByNumber probe ~130k blocks behind head was run before pinning — it returned a full block body successfully, so a 100-block-behind-head pin (well within that range) is expected to be servable. If a future run of this lane finds the pinned block has fallen out of the node's retention window, flip nonDeterministic to true and forkBlockNumber to null per this file's own convention — do not silently retry with a different fixed block.",
+    "fixtures": {
+      "router02": "0xDc0088a282d225f8cb08D092950Dde6eBAa36E78",
+      "pair": "0x9b0e700EAc680fc57de3Fe16eA70887279D2b85B",
+      "wrapper": "0x2035114Bd3Bd67503F5D9CfFdf44163704Ef0c8C",
+      "collection": "0x88be4F196D56C0D3dF3915a02cb7C1F92A4821c8",
+      "baseToken": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+      "collectionSymbol": "ORBIO",
+      "reserveWnftCountAtCapture": 53,
+      "reserveBaseAtCapture": "1006885282613293"
+    }
+  },
+  {
+    "key": "arc",
+    "chainId": 5042,
+    "rpcEnvVar": "RPC_5042",
+    "fallbackRpcUrl": "https://rpc.mainnet.arc.io",
+    "forkBlockNumber": 21998815,
+    "observedHeadAtCapture": 21998915,
+    "observedDate": "2026-09-21",
+    "port": 8548,
+    "nonDeterministic": false,
+    "requiresUserAgent": "snf-sdk-fork-lane/1.0",
+    "note": "Arc's RPC rejects requests with no User-Agent header (memory: reference_arc_chain_facts) — startAnvil must pass one via --fork-url header support or a documented wrapper; the ARCT pool is the SPEC R11 fixture (Phase 83 artifact, snf-tests/arc/arc-test-collection.out.json).",
+    "fixtures": {
+      "router02": "0xDc0088a282d225f8cb08D092950Dde6eBAa36E78",
+      "pair": "0x4443E51120e1c05F4c116A588bcc4781E1C30c8e",
+      "wrapper": "0x47DB3Af882a2111680F6c1eFBC198DB83A3b02f0",
+      "collection": "0xC6254CcEfb81E0f0aF1092Ae8aBAe3E98901768A",
+      "baseToken": "0x3600000000000000000000000000000000000000",
+      "reserveBaseQuoteUnitsAtCapture": "2000000",
+      "reserveWnftAtCapture": "500000000000000000000"
+    }
+  }
+]
