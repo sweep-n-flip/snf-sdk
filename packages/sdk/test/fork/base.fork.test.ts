@@ -4,7 +4,6 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 import { createSnfClient } from '../../src/client'
-import { isSnfError } from '../../src/errors'
 import { ERC20_ABI } from '../../src/abis/ERC20'
 import { ERC721_ABI } from '../../src/abis/ERC721'
 import { PAIR_ABI } from '../../src/abis/UniswapV2Pair'
@@ -163,41 +162,23 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
       const plan = await snf.buildBuy({ quote, recipient: BUYER_ADDRESS })
       expect(plan.steps.length).toBeGreaterThan(0)
 
-      let preflightOutcome: 'ok' | 'tokenids_unavailable_mismatch' = 'ok'
-      let preflightError: unknown
-      try {
-        const result = await plan.preflight()
-        expect(result.ok).toBe(true)
-      } catch (err) {
-        // See this plan's SUMMARY "Findings" section: runPreflight's buy-side
-        // ownership check compares `ownerOf(tokenId)` against `StepPreflightRefs.pair`
-        // (the AMM Pair contract), but this collection's real on-chain custody model
-        // holds the underlying ERC-721 in the WRAPPER contract, not the Pair — a live
-        // `ownerOf` read on this fork returns the wrapper address. This file does NOT
-        // edit `packages/sdk/src` (plan's own repo rule) — it records the exact
-        // mismatch and continues to prove the REAL send still works end to end
-        // (the Router's own on-chain logic, not this client-side pre-check, is what
-        // actually gates a real buy).
-        if (isSnfError(err) && err.code === 'TOKENIDS_UNAVAILABLE') {
-          preflightOutcome = 'tokenids_unavailable_mismatch'
-          preflightError = err
-          const onChainOwner = await publicClient.readContract({
-            address: fixtures.collection,
-            abi: ERC721_ABI,
-            functionName: 'ownerOf',
-            args: [BigInt(tokenId)],
-          })
-          // eslint-disable-next-line no-console
-          console.warn(
-            'FINDING (preflight buy-side ownership check): expected pair/wrapper mismatch. ' +
-              `ownerOf(${tokenId}) = ${String(onChainOwner)}, wrapper = ${fixtures.wrapper}, pair = ${fixtures.pair}. ` +
-              `SnfError details: ${JSON.stringify((err as { details?: unknown }).details)}`,
-          )
-          expect((onChainOwner as string).toLowerCase()).toBe(fixtures.wrapper.toLowerCase())
-        } else {
-          throw err
-        }
-      }
+      // FIXED (Finding 1, snf-54-18-SUMMARY.md — fixed in snf-54-18F):
+      // `runPreflight`'s buy-side ownership check now compares `ownerOf(tokenId)`
+      // against `StepPreflightRefs.wrapper` (the WERC721 wrapper, which is this
+      // collection's REAL on-chain custody model) instead of `.pair`. A live buy
+      // plan's `preflight()` call on this real, deployed Base collection now
+      // RESOLVES — this used to throw `TOKENIDS_UNAVAILABLE` for a tokenId that was
+      // genuinely available.
+      const onChainOwner = await publicClient.readContract({
+        address: fixtures.collection,
+        abi: ERC721_ABI,
+        functionName: 'ownerOf',
+        args: [BigInt(tokenId)],
+      })
+      expect((onChainOwner as string).toLowerCase()).toBe(fixtures.wrapper.toLowerCase())
+
+      const preflightResult = await plan.preflight()
+      expect(preflightResult.ok).toBe(true)
 
       const buyerBalanceBefore = await publicClient.getBalance({ address: BUYER_ADDRESS })
 
@@ -240,8 +221,8 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
       console.log(
         JSON.stringify({
           purpose: 'buy-1.json fixture capture',
-          preflightOutcome,
-          preflightErrorCode: isSnfError(preflightError) ? preflightError.code : undefined,
+          preflightOutcome: 'ok',
+          preflightErrorCode: undefined,
           transactionHash: swapHash,
           blockNumber: receipt.blockNumber.toString(),
           spent: spent.toString(),
@@ -295,27 +276,29 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
     })
   })
 
-  describe('FINDING (not fixed — packages/sdk/src is out of scope for this plan): buildSwap cannot return a plan on the first call when the needed ERC-20 approval is missing', () => {
-    it('buildSwap throws (does not return a plan with an approval step) when the wallet has never approved the Router for the ERC-20 it is selling', async () => {
+  describe('FIXED (Finding 2, snf-54-18-SUMMARY.md — fixed in snf-54-18F): buildSwap now returns a plan on the first call when the needed ERC-20 approval is missing', () => {
+    it('a fresh account with no allowance gets a 2-step plan (approval, then swap) instead of a throw', async () => {
       const fixtures = BASE_LANE!.fixtures as { wrapper: `0x${string}` }
       // Anvil account #1 — funded with ETH but has never approved the Router to
-      // move its (zero) wrapper-token balance. `buildSwap`'s unconditional
-      // `estimateGasWithBuffer` call simulates the swap step against CURRENT
-      // on-chain state (no allowance yet) and — by `build/gas.ts`'s own documented
-      // design ("a genuine simulated revert is RE-THROWN, never swallowed") — throws
-      // before `assemblePlan` ever runs, so the caller never receives the plan's
-      // `approval` step at all. See this plan's SUMMARY, Findings, for the full
-      // account and the two-phase work-around this file uses elsewhere.
+      // move its (zero) wrapper-token balance. Before snf-54-18F, `buildSwap`'s
+      // unconditional `estimateGasWithBuffer` call simulated the swap step against
+      // CURRENT on-chain state (no allowance yet) and threw before `assemblePlan`
+      // ever ran — the caller never received the plan's own `approval` step. Fixed:
+      // the swap step's gas is the deterministic fallback (never live-estimated)
+      // whenever the plan already carries a pending approval this step depends on.
       const otherRecipient = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8' as const
       const sellQuote = await snf.quoteSwap({
         chainId: 8453,
         tokenIn: fixtures.wrapper,
         tokenOut: null,
-        amountIn: 1n, // smallest possible unit — the revert is allowance-shaped, not amount-shaped
+        amountIn: 1n, // smallest possible unit — the old revert was allowance-shaped, not amount-shaped
       })
-      await expect(snf.buildSwap({ quote: sellQuote, recipient: otherRecipient })).rejects.toThrow(
-        /transferFrom/i,
-      )
+      const plan = await snf.buildSwap({ quote: sellQuote, recipient: otherRecipient })
+      expect(plan.steps.map((s) => s.kind)).toEqual(['approval', 'swap-fungible'])
+      expect(plan.steps[0]?.approvals[0]?.kind).toBe('erc20-allowance')
+      const swapStep = plan.steps.find((s) => s.kind === 'swap-fungible')!
+      expect(swapStep.tx.gasSource).toBe('fallback-pending-approval')
+      expect(swapStep.tx.gas).toBeGreaterThan(0n)
     })
   })
 
@@ -345,21 +328,15 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
 
       // Leg 2: sell HALF the wrapper balance back for ETH — the fixture-capturing tx.
       //
-      // FINDING (see this plan's SUMMARY "Findings" — NOT fixed here, `packages/sdk/src`
-      // is out of scope for this plan): `buildSwap` unconditionally gas-estimates the
-      // SWAP step against CURRENT on-chain state (`build/gas.ts`'s `estimateGasWithBuffer`),
-      // and a genuine simulated revert is deliberately RE-THROWN, never swallowed. When
-      // the required ERC-20 approval does not exist yet, the swap step's simulated
-      // `transferFrom` reverts — so `buildSwap` throws BEFORE ever returning the plan,
-      // meaning the caller never even receives the `approval` step it would otherwise
-      // have included. Every unit test for this path mocks `estimateContractGas` (always
-      // succeeds), so this is invisible without a real fork. Confirmed here: even the
-      // FIRST `buildSwap` call throws, not just a second one.
-      //
-      // Work-around for this fixture capture ONLY (not a fix, not a recommendation for
-      // partners): grant the ERC-20 allowance directly via a plain `approve()` call
-      // BEFORE calling `buildSwap` at all, so gas estimation has real allowance to
-      // simulate against.
+      // HISTORICAL NOTE (Finding 2, snf-54-18-SUMMARY.md — FIXED in snf-54-18F): this
+      // fixture was originally captured by granting the ERC-20 allowance directly via
+      // a plain `approve()` call BEFORE the first `buildSwap` call, because at the
+      // time `buildSwap` unconditionally gas-estimated the swap step live and threw
+      // before ever returning the plan's own `approval` step when the allowance was
+      // missing. That workaround is kept here (this fixture capture doesn't need to
+      // change), but it is no longer REQUIRED — `test/fork/base.fork.test.ts`'s own
+      // "FIXED (Finding 2 ...)" test above proves a fresh, never-approved account now
+      // gets a 2-step `[approval, swap]` plan on the first call instead of a throw.
       const sellAmountIn = (wrapperBalance as bigint) / 2n
       const approveHash = await walletClient.writeContract({
         chain,
