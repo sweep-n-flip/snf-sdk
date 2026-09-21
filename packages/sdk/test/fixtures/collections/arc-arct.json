@@ -1,0 +1,16 @@
+{
+  "chainId": 5042,
+  "chainName": "Arc",
+  "pair": "0x4443E51120e1c05F4c116A588bcc4781E1C30c8e",
+  "quoteToken": "0x3600000000000000000000000000000000000000",
+  "quoteDecimals": 6,
+  "wrapper": "0x47DB3Af882a2111680F6c1eFBC198DB83A3b02f0",
+  "collection": "0xC6254CcEfb81E0f0aF1092Ae8aBAe3E98901768A",
+  "mintedCount": 500,
+  "reserves": {
+    "usdc6": "2000000",
+    "wnft18": "500000000000000000000"
+  },
+  "pending": false,
+  "source": "snf-54-RESEARCH.md 'Fixtures to Reuse' -> Arc pool ARCT ([VERIFIED: snf-tests/arc/arc-test-collection.out.json], Phase 83 artifact). Matches 54-SPEC.md R11's own acceptance test pair address ('fork/fixture Arc pool ARCT 0x4443…0c8e') exactly — confirmed to exist in that research pass. NOT independently re-read on-chain this session: Arc UAT is fork-only per CONTEXT D-10 (the founder's real-money UAT is Base only; Arc coverage is fork/fixture-driven), and this fixture is consumed here purely by resolveCollection.test.ts's mocked-multicall unit tests, never a live RPC call. quoteToken is the USDC ERC-20 predeploy (6 decimals) — Arc has no wUSDC; the native balance and this ERC-20 view are the same balance (chains/registry.ts, chainId 5042)."
+}

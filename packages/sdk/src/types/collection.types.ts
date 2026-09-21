@@ -26,10 +26,10 @@ export interface CollectionLabels {
  */
 export interface CollectionLabelsInput {
   readonly address: `0x${string}`
-  readonly subgraphName?: string | null
-  readonly subgraphSymbol?: string | null
-  readonly onChainName?: string | null
-  readonly onChainSymbol?: string | null
+  readonly subgraphName?: string | null | undefined
+  readonly subgraphSymbol?: string | null | undefined
+  readonly onChainName?: string | null | undefined
+  readonly onChainSymbol?: string | null | undefined
 }
 
 /**

@@ -1,0 +1,18 @@
+{
+  "chainId": 8453,
+  "chainName": "Base",
+  "pair": "0xE8143126bdFBe58ED0056f88031236766C311ECf",
+  "quoteToken": "0x4200000000000000000000000000000000000006",
+  "wrapper": "0xA9f3F136380E53F8f55CaD44391bDa2B617D7C83",
+  "collection": "0x7e50af303A0422ebec6bc198034A2430bBe0195c",
+  "wrapperName": "Wrapped Demons are Hiding in the BASEment",
+  "wrapperSymbol": "WDEMON",
+  "collectionName": "Demons are Hiding in the BASEment",
+  "collectionSymbol": "DEMON",
+  "reserves": {
+    "eth": "1297217522559477",
+    "wnft": "11883323065263036728"
+  },
+  "pending": false,
+  "source": "RESEARCH Open Question #2 CLOSED (2026-09-21, plan snf-54-10): the collection address was only an abbreviation ('0x7e50…195c') in 54-CONTEXT.md D-09 and had not been re-verified on-chain. Derived live via a read-only eth_call against the public RPC https://mainnet.base.org (no API key) at Base block 51590601: Pair(0xE8143126bdFBe58ED0056f88031236766C311ECf).token0() = 0x4200000000000000000000000000000000000006 (WETH, the chain registry's quoteToken) and .token1() = 0xA9f3F136380E53F8f55CaD44391bDa2B617D7C83 (the non-WETH side, i.e. the wrapper). WERC721(wrapper).collection() then read as 0x7e50af303A0422ebec6bc198034A2430bBe0195c, checksummed via viem's getAddress — matches the CONTEXT abbreviation's first-4/last-4 hex exactly, confirming it. wrapper.name()/symbol() and collection.name()/symbol() were also read live in the same session (rate-limited once at 429 on the free RPC tier; retried successfully ~5s later). Reserves are the historical pool-only snapshot from snf-54-RESEARCH.md 'Fixtures to Reuse' -> Base pool ETH/DEMON ([VERIFIED: snf-drops-registration/.../swapQuoteMath.ts header + swapConstants.ts:40-48]) — a live balance changes constantly and is not what this fixture exists to pin down; only the collection address derivation above was newly verified this session."
+}
