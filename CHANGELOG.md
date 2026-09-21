@@ -18,3 +18,4 @@ documented overlap of at least 6 months for any deprecated surface (REQ-SDK-52).
 ### Added
 
 - Phase 54 — SDK-0 foundation + SDK-1 swap (in progress)
+- 2026-09-20 — Toolchain installed after founder approval (T-54-SC gate): `typescript@5.9.3`, `prettier@3.9.8`, `eslint@9.39.4`, `typescript-eslint@8.70.0`, `tsup@8.5.1`, `vitest@5.0.1`, `@vitest/coverage-v8@5.0.1`, `size-limit@14.0.0`, `@size-limit/preset-small-lib@14.0.0`, `fast-check@4.10.2`, `@changesets/cli@3.0.3` (root); `viem@2.47.0` (`@sweepnflip/sdk`); `viem@2.47.0`, `wagmi@2.19.5`, `@tanstack/react-query@5.90.21`, `react@19.2.5`, `react-dom@19.2.5`, `@types/react@19.3.0`, `@testing-library/react@16.3.3`, `@testing-library/dom@10.4.2`, `jsdom@30.1.0` (`@sweepnflip/sdk-react`). `tsx` skipped (founder decision). Bare `changesets` package never installed — only the scoped `@changesets/cli`.
