@@ -63,6 +63,14 @@ export interface Quote {
   readonly buyCost?: Amount
   /** nft-to-nft only: change returned to the seller — saturates to 0 when `buyCost > netProceeds` (R9). */
   readonly remainder?: Amount
+  /**
+   * swap only (plan 13 addition — not in plan 04's original shape, DATASHEET §4
+   * `/v1/quote/swap`: "Returns `amountIn`, `amountOut`, `path[]`, `priceImpact`").
+   * The exact input spent.
+   */
+  readonly amountIn?: Amount
+  /** swap only: the exact output received. */
+  readonly amountOut?: Amount
   readonly priceImpact: number
   readonly deliverable: number
   readonly bestEffort: boolean
