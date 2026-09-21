@@ -290,6 +290,7 @@ export async function quoteSwap(ctx: SnfClientContext, args: QuoteSwapArgs): Pro
     fees,
     amountIn,
     amountOut,
+    amountSpecified: args.amountIn !== undefined ? 'in' : 'out',
     priceImpact,
     deliverable: 1,
     bestEffort: false,
