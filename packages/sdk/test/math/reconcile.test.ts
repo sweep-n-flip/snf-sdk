@@ -102,7 +102,13 @@ describe('static scan: no tolerance vocabulary in reconcile.ts or src/quote', ()
   // small integer, bounded by realistic pool sizes) into the `n: number` the public
   // ladder API takes — that is not the float-tolerance class of bug this scan exists
   // to catch, and scanning the whole directory would false-flag it.
-  const FORBIDDEN = /Math\.abs|epsilon|tolerance|Number\(|parseFloat/i
+  // Negative lookbehind on `Number\(` excludes a legitimate identifier that merely
+  // ENDS in "Number(" (e.g. viem's own `publicClient.getBlockNumber()`, required by
+  // plan 12's `loadQuoteContext` to pin every read to one block) — the scan's own
+  // intent (this file's header comment above) is float-coercion vocabulary, not
+  // every substring match of the six letters "Number(". A bare `Number(` (preceded
+  // by whitespace, `=`, `(`, or start-of-line — never a letter) still matches.
+  const FORBIDDEN = /Math\.abs|epsilon|tolerance|(?<![A-Za-z])Number\(|parseFloat/i
 
   function stripComments(source: string): string {
     return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(?<!:)\/\/.*$/gm, '')
