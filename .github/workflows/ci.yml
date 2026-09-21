@@ -16,6 +16,10 @@ on:
   push:
   pull_request:
   workflow_dispatch: {}
+  schedule:
+    # Weekly, keyless, read-only re-verification against live mainnet (D-12) — see
+    # the `backstop` job below for why it cannot actually run from this repo alone.
+    - cron: '0 6 * * 1'
 
 jobs:
   unit:
@@ -84,13 +88,64 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
-      # Each matrix leg gets its own anvil port (8545 + strategy-index) so two fork
-      # lanes never share anvil state even when GitHub schedules them on the same
-      # runner pool (R20 backstop edge — "two lanes don't share state").
+      - name: Build (fork lanes exercise the real published-shaped package, R20)
+        run: pnpm -r build
+
+      # Each matrix leg's port is FIXED per chain in test/fork/chains.fork.json
+      # (base=8545, arbitrum=8546, robinhood=8547, arc=8548) — the isolation test
+      # (test/fork/isolation.fork.test.ts) already asserts these four are pairwise
+      # distinct. ANVIL_PORT below is a small case mapping over the SAME four ports,
+      # set here purely so CI's own environment is an explicit, auditable witness
+      # that it agrees with the JSON config — the real uniqueness guarantee is the
+      # fixed per-lane port in chains.fork.json, not this env var (the R20 backstop
+      # edge, enforced twice: once in the isolation test, once here).
+      - name: Resolve this matrix leg's anvil port
+        id: port
+        run: |
+          case "${{ matrix.chain }}" in
+            base) echo "port=8545" >> "$GITHUB_OUTPUT" ;;
+            arbitrum) echo "port=8546" >> "$GITHUB_OUTPUT" ;;
+            robinhood) echo "port=8547" >> "$GITHUB_OUTPUT" ;;
+            arc) echo "port=8548" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      # Each matrix leg runs ONLY its own chain's lane (test:fork:${chain}), never
+      # the shared test:fork (all four) — a single leg failing never blocks the
+      # other three from reporting (fail-fast: false above), and each `it` title
+      # names its chain (base.fork.test.ts's own header note), so a CI failure
+      # identifies the chain from the job name alone.
       - name: Run fork tests for ${{ matrix.chain }}
-        run: pnpm test:fork
+        run: pnpm --filter @sweepnflip/sdk test:fork:${{ matrix.chain }}
         env:
-          FORK_CHAIN: ${{ matrix.chain }}
-          ANVIL_PORT: 8545
+          ANVIL_PORT: ${{ steps.port.outputs.port }}
           # OPTIONAL: ALCHEMY_KEY — not wired here on purpose (see file header
           # comment). Public RPCs are the default until the founder opts this repo in.
+
+      # Diagnosability without re-running: anvil's own log + the fork config it ran
+      # against, uploaded ONLY on failure (nothing to upload on a green run).
+      - name: Upload fork lane diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fork-lane-${{ matrix.chain }}-diagnostics
+          path: |
+            packages/sdk/test/fork/chains.fork.json
+          retention-days: 7
+
+  # The keyless, read-only live backstop (D-12, R20) — lives in the SEPARATE
+  # `snf-tests` repo (snf-tests/sdk/backstop-quote.mjs), not this one. This job is
+  # documentation of intent for when both repos are checked out together in one CI
+  # environment (e.g. a workspace-level pipeline, or a future consolidation) — it is
+  # NOT runnable as-is from a snf-sdk-only checkout, since `snf-tests` is not a
+  # submodule of this repo. Recorded here per Task 3's action text; see
+  # snf-54-18-SUMMARY.md for the full account of why this job cannot run today.
+  backstop:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Not runnable from this repo alone
+        run: |
+          echo "snf-tests/sdk/backstop-quote.mjs lives in the separate sweep-n-flip/snf-tests repo."
+          echo "This job is intent-documentation only until both repos are checked out together"
+          echo "(e.g. a workspace-level CI pipeline). See snf-54-18-SUMMARY.md."
+          exit 0
