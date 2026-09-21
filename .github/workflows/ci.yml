@@ -61,6 +61,9 @@ jobs:
       - name: Grep gate (R19 — no SnF endpoints/keys/process.env/snf-client import)
         run: pnpm grep:gate
 
+      - name: Release gate (R21, REQ-SDK-52 — stubs, ABI inventory, secrets, bundle, version)
+        run: pnpm release:gate
+
   fork:
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest

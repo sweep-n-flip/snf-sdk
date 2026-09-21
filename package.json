@@ -22,6 +22,7 @@
     "lint:fix": "eslint . --fix",
     "size": "size-limit",
     "grep:gate": "node scripts/grep-gate.mjs",
+    "release:gate": "node scripts/release-gate.mjs",
     "test:fork": "pnpm --filter @sweepnflip/sdk test:fork",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
