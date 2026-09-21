@@ -2,6 +2,7 @@ import type { PublicClient, TransactionReceipt } from 'viem'
 
 import type { SnfError } from '../errors'
 import type { SnfChainConfig, SnfChainId } from '../chains/chains.types'
+import type { SubgraphTransport } from '../transport/subgraph.types'
 import type { SwapReceipt } from './checkout.types'
 import type { CollectionInfo } from './collection.types'
 import type { PoolInventory } from './inventory.types'
@@ -15,6 +16,13 @@ import type {
   QuoteSellArgs,
   QuoteSwapArgs,
 } from './quote.types'
+
+// Re-exported (not just imported) so `types/index.ts`'s `export type * from
+// './client.types'` still forwards `SubgraphTransport` from the package root — the
+// interface's canonical home is now `transport/subgraph.types.ts` (plan 05), not a
+// local declaration here. See this plan's SUMMARY, Deviations, for why plan 04's local
+// `query<T>()`-only shape was replaced rather than kept alongside the real one.
+export type { SubgraphTransport }
 
 /**
  * `createSnfClient` config and the client object shapes (D-01–D-04; 54-SPEC.md R3).
@@ -43,16 +51,6 @@ export interface SnfClientConfig {
     readonly slippageBps?: number
     readonly deadlineSeconds?: number
   }
-}
-
-/**
- * The instance-scoped subgraph transport `createSubgraphTransport` returns — a TTL
- * cache, a `_meta.block` freshness gate and a circuit breaker, all closed over inside
- * one client instance (R3, R4) — never module-scope state (SPEC R3: "nenhum `let`/`Map`
- * mutável no escopo de módulo").
- */
-export interface SubgraphTransport {
-  query<T>(query: string, variables?: Record<string, unknown>): Promise<T>
 }
 
 /**
