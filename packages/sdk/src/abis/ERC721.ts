@@ -4,6 +4,15 @@
  * only the exported const renamed. Includes ERC721Enumerable's `tokenOfOwnerByIndex`
  * for NFT ownership fallback and ERC165's `supportsInterface` for pool-type detection.
  *
+ * `tokenURI` added by plan 09 (Deviations, snf-54-09-SUMMARY.md — Rule 2, missing
+ * critical functionality): `snf-client`'s own copy doesn't need it (the app reads
+ * `tokenURI` through a separate ad-hoc minimal ABI in
+ * `src/lib/aggregator/onChainTokenURI.ts`), but `providers/onChainImages.ts`'s keyless
+ * default images provider (ERC721Metadata `tokenURI`, R19) is the reason this ABI
+ * exists in this package at all, and its own plan text ("`publicClient.multicall({
+ * ... abi: ERC721_ABI, functionName: 'tokenURI' ...})`") names this exact ABI as the
+ * one to call it through — a stub with no `tokenURI` function cannot satisfy that.
+ *
  * ERC-721 interface ID: 0x80ac58cd
  */
 export const ERC721_ABI = [
@@ -11,6 +20,13 @@ export const ERC721_ABI = [
     inputs: [{ name: 'owner', type: 'address' }],
     name: 'balanceOf',
     outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'tokenId', type: 'uint256' }],
+    name: 'tokenURI',
+    outputs: [{ name: '', type: 'string' }],
     stateMutability: 'view',
     type: 'function',
   },
