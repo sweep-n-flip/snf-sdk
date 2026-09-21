@@ -9,7 +9,7 @@ import { buildWnftRoutePath } from '../routing/nftRoutePaths'
 import { quoteNftToNft } from '../quote/quoteNftToNft'
 import { buildApprovalStep, missingApprovals } from './approvals'
 import { deriveBounds } from './bounds'
-import { estimateGasWithBuffer } from './gas'
+import { resolveGasForStep } from './gas'
 import { assemblePlan } from './plan'
 import { validateBuildArgs } from './validate'
 import type { SnfClientContext } from '../types/client.types'
@@ -108,6 +108,19 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
 
   const routerAbi = ctx.chain.routerVariant === 'native-erc20' ? ROUTER_NATIVE_ERC20_ABI : ROUTER02_COLLECTION_ABI
 
+  // ── Approvals — the sell collection's setApprovalForAll ONLY (the buy leg receives
+  // NFTs, it needs no approval of its own). Computed BEFORE any gas estimation
+  // (Finding 2, snf-54-18F): the sell step's own swap simulation is guaranteed to
+  // revert against current state while this approval is still missing — estimating
+  // it live in that case would throw before the caller ever receives the very
+  // approval step (below) that fixes it.
+  const approvals: readonly Approval[] = await missingApprovals(ctx, {
+    owner: validated.recipient,
+    spender: ctx.chain.router02,
+    erc721: { token: sellLeg.collection as `0x${string}` },
+  })
+  const sellHasPendingApproval = approvals.length > 0
+
   // ── Leg 1 — sell: swapExactTokensForETHCollection / …ForTokensCollection.
   const sellBounds = deriveBounds({
     side: 'sell',
@@ -120,7 +133,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
   const sellTokenIdsBig = sellTokenIds.map((id) => BigInt(id))
   const sellCallArgs = [sellTokenIdsBig, sellAmountOutMin, sellLeg.path, false, validated.recipient, sellBounds.deadline] as const
   const sellData = encodeDynamic(routerAbi, sellFunctionName, sellCallArgs)
-  const sellGas = await estimateGasWithBuffer({
+  const { gas: sellGas, gasSource: sellGasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
     address: ctx.chain.router02,
     abi: routerAbi,
@@ -129,11 +142,19 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
     account: validated.recipient,
     value: 0n,
     tokenCount: sellTokenIdsBig.length,
+    hasPendingApproval: sellHasPendingApproval,
   })
   const sellStep: Step = {
     kind: 'swap-sell',
     label: '',
-    tx: { to: ctx.chain.router02, data: sellData, value: 0n, chainId: ctx.chain.chainId, gas: sellGas },
+    tx: {
+      to: ctx.chain.router02,
+      data: sellData,
+      value: 0n,
+      chainId: ctx.chain.chainId,
+      gas: sellGas,
+      ...(sellGasSource ? { gasSource: sellGasSource } : {}),
+    },
     approvals: [],
     bounds: sellBounds,
     quote: reQuote,
@@ -161,7 +182,9 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
     : ([buyTokenIdsBig, buyAmountInMax, buyLeg.path, false, validated.recipient, buyBounds.deadline] as const)
   const buyData = encodeDynamic(routerAbi, buyFunctionName, buyCallArgs)
   const buyValue = isNativeBase ? toNativeValue(ctx.chain.chainId, buyAmountInMax) : 0n
-  const buyGas = await estimateGasWithBuffer({
+  // The buy leg needs no approval of its own (it receives NFTs) — always a live
+  // estimate, unaffected by Finding 2.
+  const { gas: buyGas } = await resolveGasForStep({
     publicClient: ctx.publicClient,
     address: ctx.chain.router02,
     abi: routerAbi,
@@ -170,6 +193,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
     account: validated.recipient,
     value: buyValue,
     tokenCount: buyTokenIdsBig.length,
+    hasPendingApproval: false,
   })
   const buyStep: Step = {
     kind: 'swap-buy',
@@ -218,7 +242,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
       : ([remainderBaseValue, wnftAmountOutMin, wnftPath, validated.recipient, wnftBounds.deadline] as const)
     const wnftData = encodeDynamic(routerAbi, wnftFunctionName, wnftCallArgs)
     const wnftValue = isNativeBase ? toNativeValue(ctx.chain.chainId, remainderBaseValue) : 0n
-    const wnftGas = await estimateGasWithBuffer({
+    const { gas: wnftGas } = await resolveGasForStep({
       publicClient: ctx.publicClient,
       address: ctx.chain.router02,
       abi: routerAbi,
@@ -227,6 +251,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
       account: validated.recipient,
       value: wnftValue,
       tokenCount: 0,
+      hasPendingApproval: false,
     })
     steps.push({
       kind: 'swap-buy-wnft',
@@ -245,13 +270,8 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
     })
   }
 
-  // ── Approvals — the sell collection's setApprovalForAll ONLY (the buy leg receives
-  // NFTs, it needs no approval of its own).
-  const approvals: readonly Approval[] = await missingApprovals(ctx, {
-    owner: validated.recipient,
-    spender: ctx.chain.router02,
-    erc721: { token: sellLeg.collection as `0x${string}` },
-  })
+  // `approvals` was already computed above (before any gas estimation) — reused here
+  // only to wrap it into full plan steps.
   const approvalSteps = approvals.map((a) => buildApprovalStep(a, { quote: reQuote, bounds: sellBounds }))
 
   return assemblePlan(ctx, [...approvalSteps, ...steps], reQuote.expiresAt)

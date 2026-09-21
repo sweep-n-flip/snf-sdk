@@ -1,4 +1,4 @@
-import { decodeFunctionData } from 'viem'
+import { decodeFunctionData, BaseError, ContractFunctionRevertedError } from 'viem'
 import type { PublicClient } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -87,10 +87,11 @@ type ReadResult = { readonly status: 'success' | 'failure'; readonly result?: un
 function buildCtx(opts: {
   readonly chainId?: number
   readonly multicallImpl?: (params: { readonly contracts: readonly unknown[] }) => Promise<readonly ReadResult[]>
+  readonly estimateContractGasImpl?: () => Promise<bigint>
 }): SnfClientContext {
   const chain = getChain(opts.chainId ?? 8453)
   const multicall = vi.fn(opts.multicallImpl ?? (async () => [{ status: 'success', result: true }]))
-  const estimateContractGas = vi.fn(async () => 1_000_000n)
+  const estimateContractGas = vi.fn(opts.estimateContractGasImpl ?? (async () => 1_000_000n))
   const publicClient = { multicall, estimateContractGas } as unknown as PublicClient
   return {
     config: { chainId: chain.chainId, publicClient },
@@ -183,6 +184,45 @@ describe('buildSell — approvals (setApprovalForAll always checked, native or E
     await buildSell(ctx, buildArgs(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN })))
     expect(calls).toHaveLength(1)
     expect(calls[0]).toHaveLength(1) // only the erc721 isApprovedForAll read
+  })
+
+  // Finding 2, snf-54-18-SUMMARY.md (fixed in snf-54-18F): a missing setApprovalForAll
+  // used to make buildSell THROW (the swap step's live gas estimate reverted before
+  // assemblePlan ever ran). `estimateContractGasImpl` is wired to throw a GENUINE
+  // simulated revert if it is EVER called, proving the fix works because the live
+  // estimate is skipped entirely while the approval is pending, not because it
+  // happens to succeed.
+  it('a missing setApprovalForAll returns the plan (approval, then swap) instead of throwing — the live estimate is never attempted', async () => {
+    mockedQuoteSell.mockResolvedValue(fixtureQuote({}))
+    const revertError = new BaseError('execution reverted', {
+      cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swapExactTokensForETHCollection' }),
+    })
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: false }], // not approved
+      estimateContractGasImpl: async () => {
+        throw revertError
+      },
+    })
+    const plan = await buildSell(ctx, buildArgs(fixtureQuote({})))
+    expect(plan.steps).toHaveLength(2)
+    expect(plan.steps[0]?.kind).toBe('approval')
+    expect(plan.steps[1]?.kind).toBe('swap-sell')
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled()
+    expect(plan.steps[1]?.tx.gas).toBe(2n * 300_000n + 1_500_000n) // fallbackGasForNFTBatch(2)
+    expect(plan.steps[1]?.tx.gasSource).toBe('fallback-pending-approval')
+  })
+
+  it('setApprovalForAll already granted still takes the live-estimate path (gasSource undefined)', async () => {
+    mockedQuoteSell.mockResolvedValue(fixtureQuote({}))
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: true }],
+      estimateContractGasImpl: async () => 700_000n,
+    })
+    const plan = await buildSell(ctx, buildArgs(fixtureQuote({})))
+    expect(plan.steps).toHaveLength(1)
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(1)
+    expect(plan.steps[0]?.tx.gas).toBe((700_000n * 125n) / 100n)
+    expect(plan.steps[0]?.tx.gasSource).toBeUndefined()
   })
 })
 

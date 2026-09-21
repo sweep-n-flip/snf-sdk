@@ -1,4 +1,4 @@
-import { decodeFunctionData } from 'viem'
+import { decodeFunctionData, BaseError, ContractFunctionRevertedError } from 'viem'
 import type { PublicClient } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -177,6 +177,49 @@ describe('buildBuy — approvals (empty | R13)', () => {
     const plan = await buildBuy(ctx, buildArgs(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN, totalCost: 1_000_000n })))
     expect(plan.steps).toHaveLength(1)
     expect(plan.steps[0]?.kind).toBe('swap-buy')
+  })
+
+  // Finding 2, snf-54-18-SUMMARY.md (fixed in snf-54-18F): a missing ERC-20 allowance
+  // used to make buildBuy THROW (the swap step's live gas estimate reverted before
+  // assemblePlan ever ran), so the caller never received the approval step that would
+  // have fixed it. `estimateContractGasImpl` below is wired to throw a GENUINE
+  // simulated revert if it is ever called — proving the fix works not because the
+  // live estimate happens to succeed, but because it is never attempted at all while
+  // the approval is pending.
+  it('a missing ERC-20 allowance returns the plan (approval, then swap) instead of throwing — the live estimate is never attempted', async () => {
+    mockedQuoteBuy.mockResolvedValue(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN, tokenIds: ['1', '2'], totalCost: 1_000_000n }))
+    const revertError = new BaseError('execution reverted', {
+      cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swapTokensForExactTokensCollection' }),
+    })
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: 0n }],
+      estimateContractGasImpl: async () => {
+        throw revertError
+      },
+    })
+    const plan = await buildBuy(
+      ctx,
+      buildArgs(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN, tokenIds: ['1', '2'], totalCost: 1_000_000n })),
+    )
+    expect(plan.steps).toHaveLength(2)
+    expect(plan.steps[0]?.kind).toBe('approval')
+    expect(plan.steps[1]?.kind).toBe('swap-buy')
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled()
+    expect(plan.steps[1]?.tx.gas).toBe(2n * 300_000n + 1_500_000n) // fallbackGasForNFTBatch(2)
+    expect(plan.steps[1]?.tx.gasSource).toBe('fallback-pending-approval')
+  })
+
+  it('a SUFFICIENT ERC-20 allowance still takes the live-estimate path (gasSource undefined)', async () => {
+    mockedQuoteBuy.mockResolvedValue(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN, totalCost: 1_000_000n }))
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: 10_000_000n }],
+      estimateContractGasImpl: async () => 900_000n,
+    })
+    const plan = await buildBuy(ctx, buildArgs(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN, totalCost: 1_000_000n })))
+    expect(plan.steps).toHaveLength(1)
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(1)
+    expect(plan.steps[0]?.tx.gas).toBe((900_000n * 125n) / 100n)
+    expect(plan.steps[0]?.tx.gasSource).toBeUndefined()
   })
 })
 

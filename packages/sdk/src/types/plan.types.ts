@@ -15,6 +15,11 @@ export interface UnsignedTx {
   readonly value: bigint
   readonly chainId: SnfChainId
   readonly gas?: bigint
+  /** Present only when `gas` is the deterministic NFT-batch fallback because this
+   * step's OWN swap simulation could not be attempted against live state — the plan
+   * contains a still-pending approval this step depends on (snf-54-18F, Finding 2).
+   * Additive; absent for every other step. */
+  readonly gasSource?: 'fallback-pending-approval'
 }
 
 /** An allowance/operator-approval step, only emitted when it is actually missing

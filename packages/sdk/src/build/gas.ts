@@ -74,3 +74,41 @@ export async function estimateGasWithBuffer(args: EstimateGasWithBufferArgs): Pr
     return fallbackGasForNFTBatch(args.tokenCount)
   }
 }
+
+export interface ResolvedStepGas {
+  readonly gas: bigint
+  /** Present ONLY when `gas` is the deterministic NFT-batch fallback because this
+   * step's own live simulation was never attempted (see `resolveGasForStep` below) —
+   * additive, absent for every other step (a live estimate, or an RPC-failure
+   * fallback with no approval blocking it), so existing `Step`/`UnsignedTx` shapes
+   * are unaffected. */
+  readonly gasSource?: 'fallback-pending-approval'
+}
+
+/**
+ * `resolveGasForStep` — the missing-approval-aware wrapper every `build*` function
+ * calls instead of `estimateGasWithBuffer` directly (Finding 2, snf-54-18-SUMMARY.md;
+ * fixed in snf-54-18F). When THIS step's own plan already carries an approval it
+ * depends on (the caller has not granted it on-chain yet), the step's swap
+ * simulation is GUARANTEED to revert against CURRENT state — attempting it anyway
+ * hits `estimateGasWithBuffer`'s own by-design re-throw ("a genuine simulated revert
+ * is RE-THROWN, never swallowed") BEFORE the caller ever receives the very
+ * `ExecutionPlan` that contains the approval step that would fix it. That inverts the
+ * whole point of returning an approval step in the first place.
+ *
+ * Skip the live estimate entirely in that case — same deterministic
+ * `fallbackGasForNFTBatch` this module already uses for a genuine RPC failure,
+ * marked `gasSource: 'fallback-pending-approval'` so a caller/observability layer can
+ * tell the two fallback reasons apart. When no approval is pending, behavior is
+ * byte-for-byte unchanged: a live estimate is attempted and a genuine simulated
+ * revert (for a reason OTHER than this exact missing approval — stale tokenIds, an
+ * expired deadline, …) still propagates, exactly as before.
+ */
+export async function resolveGasForStep(
+  args: EstimateGasWithBufferArgs & { readonly hasPendingApproval: boolean },
+): Promise<ResolvedStepGas> {
+  if (args.hasPendingApproval) {
+    return { gas: fallbackGasForNFTBatch(args.tokenCount), gasSource: 'fallback-pending-approval' }
+  }
+  return { gas: await estimateGasWithBuffer(args) }
+}

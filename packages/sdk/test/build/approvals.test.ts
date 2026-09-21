@@ -3,7 +3,7 @@ import { BaseError, ContractFunctionRevertedError } from 'viem'
 import { describe, expect, it, vi } from 'vitest'
 
 import { buildApprovalStep, missingApprovals } from '../../src/build/approvals'
-import { estimateGasWithBuffer, fallbackGasForNFTBatch, isSimulationRevertError } from '../../src/build/gas'
+import { estimateGasWithBuffer, fallbackGasForNFTBatch, isSimulationRevertError, resolveGasForStep } from '../../src/build/gas'
 import { assemblePlan, orderSteps } from '../../src/build/plan'
 import { getChain } from '../../src/chains/registry'
 import type { Amount } from '../../src/types/amount.types'
@@ -290,5 +290,70 @@ describe('gas — estimateGasWithBuffer / fallbackGasForNFTBatch / isSimulationR
   it('isSimulationRevertError is false for a plain Error and for a non-revert BaseError', () => {
     expect(isSimulationRevertError(new Error('boom'))).toBe(false)
     expect(isSimulationRevertError(new BaseError('network down'))).toBe(false)
+  })
+})
+
+describe('gas — resolveGasForStep (Finding 2, snf-54-18F: gas estimation must not be attempted live while an approval is still pending)', () => {
+  it('hasPendingApproval: true never calls estimateContractGas at all — even one that WOULD revert live — and returns the fallback marked gasSource', async () => {
+    const revertError = new BaseError('execution reverted', {
+      cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swap' }),
+    })
+    const estimateContractGas = vi.fn(async () => {
+      throw revertError
+    })
+    const publicClient = { estimateContractGas } as unknown as PublicClient
+    const result = await resolveGasForStep({
+      publicClient,
+      address: COLLECTION,
+      abi: [],
+      functionName: 'swap',
+      args: [],
+      account: OWNER,
+      tokenCount: 3,
+      hasPendingApproval: true,
+    })
+    expect(estimateContractGas).not.toHaveBeenCalled()
+    expect(result.gas).toBe(fallbackGasForNFTBatch(3))
+    expect(result.gasSource).toBe('fallback-pending-approval')
+  })
+
+  it('hasPendingApproval: false behaves byte-for-byte like estimateGasWithBuffer — live estimate on success, no gasSource marker', async () => {
+    const estimateContractGas = vi.fn(async () => 1_000_000n)
+    const publicClient = { estimateContractGas } as unknown as PublicClient
+    const result = await resolveGasForStep({
+      publicClient,
+      address: COLLECTION,
+      abi: [],
+      functionName: 'swap',
+      args: [],
+      account: OWNER,
+      tokenCount: 3,
+      hasPendingApproval: false,
+    })
+    expect(estimateContractGas).toHaveBeenCalledTimes(1)
+    expect(result.gas).toBe(1_250_000n)
+    expect(result.gasSource).toBeUndefined()
+  })
+
+  it('hasPendingApproval: false still RE-THROWS a genuine simulated revert (unaffected by this fix — a revert for a DIFFERENT reason than the missing approval)', async () => {
+    const revertError = new BaseError('execution reverted', {
+      cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swap' }),
+    })
+    const estimateContractGas = vi.fn(async () => {
+      throw revertError
+    })
+    const publicClient = { estimateContractGas } as unknown as PublicClient
+    await expect(
+      resolveGasForStep({
+        publicClient,
+        address: COLLECTION,
+        abi: [],
+        functionName: 'swap',
+        args: [],
+        account: OWNER,
+        tokenCount: 3,
+        hasPendingApproval: false,
+      }),
+    ).rejects.toThrow()
   })
 })

@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
-import { decodeFunctionData } from 'viem'
+import { decodeFunctionData, BaseError, ContractFunctionRevertedError } from 'viem'
 import type { PublicClient } from 'viem'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -67,10 +67,11 @@ type ReadResult = { readonly status: 'success' | 'failure'; readonly result?: un
 function buildCtx(opts: {
   readonly chainId?: SnfChainId
   readonly multicallImpl?: (params: { readonly contracts: readonly unknown[] }) => Promise<readonly ReadResult[]>
+  readonly estimateContractGasImpl?: () => Promise<bigint>
 }): SnfClientContext {
   const chain = getChain(opts.chainId ?? 8453)
   const multicall = vi.fn(opts.multicallImpl ?? (async () => [{ status: 'success', result: true }]))
-  const estimateContractGas = vi.fn(async () => 1_000_000n)
+  const estimateContractGas = vi.fn(opts.estimateContractGasImpl ?? (async () => 1_000_000n))
   const publicClient = { multicall, estimateContractGas } as unknown as PublicClient
   return {
     config: { chainId: chain.chainId, publicClient },
@@ -168,6 +169,48 @@ describe('buildSwap — fresh re-quote, entry-point selection, bounds (R10, R13)
     const decoded = decodeFunctionData({ abi: ROUTER02_COLLECTION_ABI, data: swapStep.tx.data })
     expect(decoded.functionName).toBe('swapExactTokensForETH')
     expect(swapStep.tx.value).toBe(0n)
+  })
+
+  // Finding 2, snf-54-18-SUMMARY.md — the finding's own primary example (first traced
+  // on this exact function): a missing ERC-20 allowance used to make buildSwap THROW
+  // (the swap step's live gas estimate reverted, by design, before assemblePlan ever
+  // ran) — so the caller never received the very approval step that would fix it.
+  // Fixed in snf-54-18F. `estimateContractGasImpl` is wired to throw a GENUINE
+  // simulated revert if it is EVER called, proving the fix works because the live
+  // estimate is skipped entirely while the approval is pending, not because it
+  // happens to succeed.
+  it('a missing ERC-20 allowance returns the plan (approval, then swap) instead of throwing — the live estimate is never attempted (Finding 2, snf-54-18F)', async () => {
+    mockedQuoteSwap.mockResolvedValue(fixtureSwapQuote({ isNativeIn: false, isNativeOut: true, amountIn: 1_000_000n, amountOut: 900_000n }))
+    const revertError = new BaseError('execution reverted', {
+      cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swapExactTokensForETH' }),
+    })
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: 0n }], // allowance 0 — missing
+      estimateContractGasImpl: async () => {
+        throw revertError
+      },
+    })
+    const plan = await buildSwap(ctx, swapArgs(fixtureSwapQuote({ isNativeIn: false, isNativeOut: true })))
+    expect(plan.steps).toHaveLength(2)
+    expect(plan.steps[0]?.kind).toBe('approval')
+    const swapStep = plan.steps.find((s) => s.kind === 'swap-fungible')!
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).not.toHaveBeenCalled()
+    expect(swapStep.tx.gas).toBe(0n * 300_000n + 1_500_000n) // fallbackGasForNFTBatch(0)
+    expect(swapStep.tx.gasSource).toBe('fallback-pending-approval')
+  })
+
+  it('a SUFFICIENT ERC-20 allowance still takes the live-estimate path (gasSource undefined)', async () => {
+    mockedQuoteSwap.mockResolvedValue(fixtureSwapQuote({ isNativeIn: false, isNativeOut: true, amountIn: 1_000_000n, amountOut: 900_000n }))
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: 10_000_000n }],
+      estimateContractGasImpl: async () => 800_000n,
+    })
+    const plan = await buildSwap(ctx, swapArgs(fixtureSwapQuote({ isNativeIn: false, isNativeOut: true })))
+    expect(plan.steps).toHaveLength(1)
+    const swapStep = plan.steps[0]!
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(1)
+    expect(swapStep.tx.gas).toBe((800_000n * 125n) / 100n)
+    expect(swapStep.tx.gasSource).toBeUndefined()
   })
 
   it('a token-to-token swap encodes swapExactTokensForTokens', async () => {

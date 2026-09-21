@@ -113,10 +113,11 @@ type ReadResult = { readonly status: 'success' | 'failure'; readonly result?: un
 function buildCtx(opts: {
   readonly chainId?: number
   readonly multicallImpl?: (params: { readonly contracts: readonly unknown[] }) => Promise<readonly ReadResult[]>
+  readonly estimateContractGasImpl?: () => Promise<bigint>
 }): SnfClientContext {
   const chain = getChain(opts.chainId ?? 8453)
   const multicall = vi.fn(opts.multicallImpl ?? (async () => [{ status: 'success', result: true }]))
-  const estimateContractGas = vi.fn(async () => 1_000_000n)
+  const estimateContractGas = vi.fn(opts.estimateContractGasImpl ?? (async () => 1_000_000n))
   const publicClient = { multicall, estimateContractGas } as unknown as PublicClient
   return {
     config: { chainId: chain.chainId, publicClient },
@@ -166,6 +167,35 @@ describe('buildNftToNft — step ordering (R13 ordering, R15 2-vs-3 next())', ()
     const ctx = buildCtx({ multicallImpl: async () => [{ status: 'success', result: false }] })
     const plan = await buildNftToNft(ctx, buildArgs(fixtureQuote({ remainderMode: 'wnft' })))
     expect(plan.steps.map((s) => s.kind)).toEqual(['approval', 'swap-sell', 'swap-buy', 'swap-buy-wnft'])
+  })
+
+  // Finding 2, snf-54-18-SUMMARY.md (fixed in snf-54-18F): a missing sell-collection
+  // `setApprovalForAll` used to make buildNftToNft THROW (the sell step's live gas
+  // estimate reverted before assemblePlan ever ran). Proven here from the call-count
+  // side: `estimateContractGas` is invoked exactly ONCE (for the buy leg, which needs
+  // no approval of its own and always keeps the live path) — the sell leg's own
+  // estimate is never attempted while its approval is pending, and gets the
+  // deterministic fallback instead, marked `gasSource`. (`resolveGasForStep`'s own
+  // unit test in `test/build/approvals.test.ts` separately proves the skip holds
+  // even when the live estimate WOULD revert.)
+  it('a missing sell-collection approval returns the plan (approval, sell, buy) with fallback gas on ONLY the sell step', async () => {
+    mockedQuoteNftToNft.mockResolvedValue(fixtureQuote({ remainderMode: 'native' }))
+    const ctx = buildCtx({
+      multicallImpl: async () => [{ status: 'success', result: false }], // approval missing
+      estimateContractGasImpl: async () => 1_000_000n, // the buy step's own live estimate
+    })
+    const plan = await buildNftToNft(ctx, buildArgs(fixtureQuote({ remainderMode: 'native' })))
+    expect(plan.steps.map((s) => s.kind)).toEqual(['approval', 'swap-sell', 'swap-buy'])
+
+    const sellStep = plan.steps.find((s) => s.kind === 'swap-sell')
+    const buyStep = plan.steps.find((s) => s.kind === 'swap-buy')
+    expect(sellStep?.tx.gasSource).toBe('fallback-pending-approval')
+    expect(sellStep?.tx.gas).toBe(1n * 300_000n + 1_500_000n) // fallbackGasForNFTBatch(1 sell id)
+    expect(buyStep?.tx.gasSource).toBeUndefined()
+    expect(buyStep?.tx.gas).toBe((1_000_000n * 125n) / 100n) // buy leg took the live path
+    // The live estimate was attempted exactly ONCE — for the buy leg only, never for
+    // the sell leg whose approval is still missing.
+    expect((ctx.publicClient.estimateContractGas as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(1)
   })
 })
 

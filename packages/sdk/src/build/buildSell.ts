@@ -7,7 +7,7 @@ import { assertParam, SnfError } from '../errors'
 import { quoteSell } from '../quote/quoteSell'
 import { buildApprovalStep, missingApprovals } from './approvals'
 import { deriveBounds } from './bounds'
-import { estimateGasWithBuffer } from './gas'
+import { resolveGasForStep } from './gas'
 import { assemblePlan } from './plan'
 import { validateBuildArgs } from './validate'
 import type { SnfClientContext } from '../types/client.types'
@@ -99,7 +99,11 @@ export async function buildSell(ctx: SnfClientContext, args: BuildArgs): Promise
     erc721: { token: reQuote.collection as `0x${string}` },
   })
 
-  const gas = await estimateGasWithBuffer({
+  // `hasPendingApproval`: this step's own swap simulation is guaranteed to revert
+  // against current state while the `setApprovalForAll` above is still missing —
+  // skip the live estimate entirely rather than throwing before the caller ever
+  // receives this very approval step (Finding 2, snf-54-18F).
+  const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
     address: ctx.chain.router02,
     abi: routerAbi,
@@ -108,12 +112,13 @@ export async function buildSell(ctx: SnfClientContext, args: BuildArgs): Promise
     account: validated.recipient,
     value: 0n,
     tokenCount: tokenIdsBig.length,
+    hasPendingApproval: approvals.length > 0,
   })
 
   const swapStep: Step = {
     kind: 'swap-sell',
     label: '',
-    tx: { to: ctx.chain.router02, data, value: 0n, chainId: ctx.chain.chainId, gas },
+    tx: { to: ctx.chain.router02, data, value: 0n, chainId: ctx.chain.chainId, gas, ...(gasSource ? { gasSource } : {}) },
     approvals: [],
     bounds,
     quote: reQuote,

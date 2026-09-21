@@ -8,7 +8,7 @@ import { assertParam, SnfError } from '../errors'
 import { quoteSwap } from '../quote/quoteSwap'
 import { buildApprovalStep, missingApprovals } from './approvals'
 import { deriveBounds } from './bounds'
-import { estimateGasWithBuffer } from './gas'
+import { resolveGasForStep } from './gas'
 import { assemblePlan } from './plan'
 import { validateBuildArgs } from './validate'
 import type { SnfClientContext } from '../types/client.types'
@@ -134,7 +134,12 @@ export async function buildSwap(ctx: SnfClientContext, args: BuildArgs): Promise
     ...(erc20SpendAmount === undefined ? {} : { erc20: { token: inAddr, amount: erc20SpendAmount } }),
   })
 
-  const gas = await estimateGasWithBuffer({
+  // `hasPendingApproval`: this step's own swap simulation is guaranteed to revert
+  // against current state while the ERC-20 allowance above is still missing — skip
+  // the live estimate entirely rather than throwing before the caller ever receives
+  // this very approval step (Finding 2, snf-54-18F — the finding's own primary
+  // example, first traced on this function).
+  const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
     address: ctx.chain.router02,
     abi: routerAbi,
@@ -143,6 +148,7 @@ export async function buildSwap(ctx: SnfClientContext, args: BuildArgs): Promise
     account: validated.recipient,
     value,
     tokenCount: 0,
+    hasPendingApproval: approvals.length > 0,
   })
 
   // No `preflightRefs` — a fungible swap has no NFT collection/wrapper/pair to
@@ -154,7 +160,7 @@ export async function buildSwap(ctx: SnfClientContext, args: BuildArgs): Promise
   const swapStep: Step = {
     kind: 'swap-fungible',
     label: '',
-    tx: { to: ctx.chain.router02, data, value, chainId: ctx.chain.chainId, gas },
+    tx: { to: ctx.chain.router02, data, value, chainId: ctx.chain.chainId, gas, ...(gasSource ? { gasSource } : {}) },
     approvals: [],
     bounds,
     quote: reQuote,
