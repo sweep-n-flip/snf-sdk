@@ -138,7 +138,7 @@ describe('runPreflight — one Multicall3, one block (concurrency | R14)', () =>
   it('issues exactly ONE multicall with batchSize: 0 and an explicit numeric blockNumber', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       calls,
     })
     const plan = buildPlan([buildStep({ refs: buyRefs() })])
@@ -162,10 +162,15 @@ describe('runPreflight — ownership (sell/buy)', () => {
     expect(result.ok).toBe(true)
   })
 
-  it('a buy step checks ownerOf(id) === pair', async () => {
+  // Finding 1, snf-54-18-SUMMARY.md (fixed in snf-54-18F): buy-side custody is the
+  // WERC721 WRAPPER, never the AMM Pair — `WERC721.mint` pulls the ERC-721 into the
+  // wrapper contract on deposit, the Pair only ever holds the fungible wrapper-token
+  // balance. `ownershipChecks` must compare `ownerOf(id)` against `StepPreflightRefs
+  // .wrapper`, not `.pair`.
+  it('a buy step checks ownerOf(id) === wrapper (Finding 1, snf-54-18F): wrapper-owned passes', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       calls,
     })
     const plan = buildPlan([buildStep({ refs: buyRefs() })])
@@ -173,12 +178,30 @@ describe('runPreflight — ownership (sell/buy)', () => {
     expect(result.ok).toBe(true)
   })
 
-  it('an id moved out of the pool yields TOKENIDS_UNAVAILABLE with the offending ids, ALL collected', async () => {
+  it('a buy step where the id is still owned by the PAIR (the old, wrong expectation) yields TOKENIDS_UNAVAILABLE', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: buyRefs() })])
+    let threw: unknown
+    try {
+      await runPreflight(ctx, plan)
+    } catch (e) {
+      threw = e
+    }
+    expect(isSnfError(threw)).toBe(true)
+    expect((threw as SnfError).code).toBe('TOKENIDS_UNAVAILABLE')
+    expect((threw as SnfError).details?.tokenIds).toEqual(['1', '2'])
+  })
+
+  it('a buy step where the id is owned by an unrelated third party yields TOKENIDS_UNAVAILABLE', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
       answers: {
         wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION },
-        owners: { '1': '0x000000000000000000000000000000000000beef', '2': PAIR },
+        owners: { '1': '0x000000000000000000000000000000000000beef', '2': WRAPPER },
       },
       calls,
     })
@@ -193,13 +216,37 @@ describe('runPreflight — ownership (sell/buy)', () => {
     expect((threw as SnfError).code).toBe('TOKENIDS_UNAVAILABLE')
     expect((threw as SnfError).details?.tokenIds).toEqual(['1'])
   })
+
+  it('two ids both moved out of the pool (neither wrapper-owned) yields TOKENIDS_UNAVAILABLE with BOTH offending ids collected', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: {
+        wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION },
+        owners: {
+          '1': '0x000000000000000000000000000000000000beef',
+          '2': '0x000000000000000000000000000000000000dead',
+        },
+      },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: buyRefs() })])
+    let threw: unknown
+    try {
+      await runPreflight(ctx, plan)
+    } catch (e) {
+      threw = e
+    }
+    expect(isSnfError(threw)).toBe(true)
+    expect((threw as SnfError).code).toBe('TOKENIDS_UNAVAILABLE')
+    expect([...((threw as SnfError).details?.tokenIds as string[])].sort()).toEqual(['1', '2'])
+  })
 })
 
 describe('runPreflight — wrapper identity', () => {
   it('WERC721.collection() === collection passes silently', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       calls,
     })
     const result = await runPreflight(ctx, buildPlan([buildStep({ refs: buyRefs() })]))
@@ -209,7 +256,7 @@ describe('runPreflight — wrapper identity', () => {
   it('a wrapper whose collection() disagrees yields WRAPPER_UNVERIFIED', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: '0x000000000000000000000000000000000000bad0' }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: '0x000000000000000000000000000000000000bad0' }, owners: { '1': WRAPPER, '2': WRAPPER } },
       calls,
     })
     let threw: unknown
@@ -227,7 +274,7 @@ describe('runPreflight — balance', () => {
   it('checks the payer native balance >= the plan\'s total tx.value', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       nativeBalance: 100n,
       calls,
     })
@@ -239,7 +286,7 @@ describe('runPreflight — balance', () => {
   it('insufficient native balance yields INVALID_PARAMS with details.required/available', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       nativeBalance: 10n,
       calls,
     })
@@ -259,7 +306,7 @@ describe('runPreflight — balance', () => {
   it('an ERC-20-base plan checks ERC20.balanceOf(payer) >= amountInMax', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR }, erc20Balance: 1_000n },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER }, erc20Balance: 1_000n },
       calls,
     })
     const plan = buildPlan([buildStep({ refs: buyRefs({ erc20Base: ERC20_BASE }), amountInMax: 1_000n })])
@@ -270,7 +317,7 @@ describe('runPreflight — balance', () => {
   it('an insufficient ERC-20 balance yields INVALID_PARAMS', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR }, erc20Balance: 500n },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER }, erc20Balance: 500n },
       calls,
     })
     const plan = buildPlan([buildStep({ refs: buyRefs({ erc20Base: ERC20_BASE }), amountInMax: 1_000n })])
@@ -369,7 +416,7 @@ describe('runPreflight — idempotency (idempotency | R14)', () => {
   it('two consecutive calls return deeply-equal results, two independent multicalls, and the plan is never mutated', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       calls,
     })
     const plan = buildPlan([buildStep({ refs: buyRefs() })])
@@ -388,7 +435,7 @@ describe('runPreflight — never emits a step, never signs', () => {
   it('the resolved PreflightResult never contains a tx/step-shaped field', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
-      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': PAIR, '2': PAIR } },
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
       calls,
     })
     const result = await runPreflight(ctx, buildPlan([buildStep({ refs: buyRefs() })]))

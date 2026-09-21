@@ -52,7 +52,13 @@ function ownershipChecks(refs: readonly StepPreflightRefs[]): readonly Ownership
   const checks: OwnershipCheck[] = []
   for (const r of refs) {
     for (const id of r.sellTokenIds ?? []) checks.push({ tokenId: id, collection: r.collection, expectedOwner: r.payer })
-    for (const id of r.buyTokenIds ?? []) checks.push({ tokenId: id, collection: r.collection, expectedOwner: r.pair })
+    // Buy-side custody: the AMM Pair never itself holds the underlying ERC-721 — the
+    // WERC721 WRAPPER does (`WERC721.mint` pulls the NFT into the wrapper contract on
+    // deposit; the Pair only ever holds the fungible wrapper-token balance). Comparing
+    // against `r.pair` here made every genuinely-available buy tokenId look
+    // unavailable (Finding 1, snf-54-18-SUMMARY.md; fixed in snf-54-18F) — confirmed
+    // live against both the Base and Arc pools in plan 18's fork lanes.
+    for (const id of r.buyTokenIds ?? []) checks.push({ tokenId: id, collection: r.collection, expectedOwner: r.wrapper })
   }
   return checks
 }
