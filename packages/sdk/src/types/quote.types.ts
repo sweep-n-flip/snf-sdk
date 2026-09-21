@@ -1,0 +1,120 @@
+import type { SnfChainId } from '../chains/chains.types'
+import type { Amount } from './amount.types'
+
+/**
+ * Quote shapes (R8–R12; 54-SPEC.md; DATASHEET §4 "NFT AMM — quotes" + this phase's
+ * `reconciled` addendum). Every quote is on-chain authoritative.
+ */
+
+/** Fee breakdown for a quote (DATASHEET §0.5). `pool` is the AMM curve fee — already
+ * inside the quoted amounts, so it carries no separate `Amount`, only `bps` + a `note`
+ * (matching the DATASHEET's `{ bps, note: "included in curve" }` shape). `marketplace`
+ * and `royalty` are each a full `Amount` plus their own `bps`; `royalty.capApplied` is
+ * true when the Router's on-chain cap actually reduced the royalty below its nominal
+ * EIP-2981 rate. */
+export interface FeeBreakdown {
+  readonly pool: { readonly bps: number; readonly note: string }
+  readonly marketplace: Amount & { readonly bps: number }
+  readonly royalty: Amount & { readonly bps: number; readonly capApplied: boolean }
+}
+
+/** One leg of a `Quote.legs[]` — one pool hop, whether it's the only hop today or one
+ * of several in a future multipool split (DATASHEET §4: "same `legs[]` shape whether
+ * it's one pool or a future multipool split"). */
+export interface QuoteLeg {
+  readonly pair: `0x${string}`
+  readonly count: number
+  readonly amount: Amount
+  readonly path: readonly `0x${string}`[]
+  readonly feeBps: number
+  readonly kind: 'native' | 'erc20' | 'wnft'
+  readonly side: 'buy' | 'sell'
+}
+
+/**
+ * The result of any `quote*` call. `reconciled` is typed as the literal `true` — a
+ * `Quote` that did not reconcile to the wei against the Router's own on-chain read is
+ * never constructed; the alternative is always `SnfError('QUOTE_RECONCILIATION_FAILED')`,
+ * never a `Quote` with `reconciled: false` (T-54-18 in the threat register).
+ */
+export interface Quote {
+  readonly side: 'buy' | 'sell' | 'swap' | 'nft-to-nft'
+  readonly chainId: SnfChainId
+  readonly collection?: `0x${string}`
+  readonly count?: number
+  readonly tokenIds?: readonly string[]
+  readonly legs: readonly QuoteLeg[]
+  readonly fees: FeeBreakdown
+  readonly totalCost?: Amount
+  readonly totalProceeds?: Amount
+  /** nft-to-nft only: sell-leg proceeds after its own fees, before the buy-leg top-up. */
+  readonly netProceeds?: Amount
+  /** nft-to-nft only: buy-leg cost including its own fees. */
+  readonly buyCost?: Amount
+  /** nft-to-nft only: change returned to the seller — saturates to 0 when `buyCost > netProceeds` (R9). */
+  readonly remainder?: Amount
+  readonly priceImpact: number
+  readonly deliverable: number
+  readonly bestEffort: boolean
+  readonly expiresAt: string
+  readonly reconciled: true
+  readonly stale?: boolean
+}
+
+/** Args for `quoteBuy` (R8). Exactly one of `count`/`tokenIds` is required at runtime — `INVALID_PARAMS` otherwise. */
+export interface QuoteBuyArgs {
+  readonly chainId: SnfChainId
+  readonly collection: `0x${string}`
+  readonly count?: number
+  readonly tokenIds?: readonly string[]
+  /** `null`/omitted = native. An ERC-20 address routes through a multi-hop path. */
+  readonly payToken?: `0x${string}` | null
+}
+
+/** Args for `quoteSell` (R8). Exactly one of `tokenIds`/`count` is required at runtime. */
+export interface QuoteSellArgs {
+  readonly chainId: SnfChainId
+  readonly collection: `0x${string}`
+  readonly tokenIds?: readonly string[]
+  readonly count?: number
+  /** `null`/omitted = native. */
+  readonly receiveToken?: `0x${string}` | null
+}
+
+/** Args for `quoteNftToNft` (R9): sell collection A's tokenIds, buy N of collection B. */
+export interface QuoteNftToNftArgs {
+  readonly chainId: SnfChainId
+  readonly sell: { readonly collection: `0x${string}`; readonly tokenIds: readonly string[] }
+  readonly buy: { readonly collection: `0x${string}`; readonly count: number }
+  readonly remainder: 'native' | 'wnft'
+}
+
+/** Args for `quoteSwap` (R10, fungible↔fungible, delegate-aware). Exactly one of
+ * `amountIn`/`amountOut` is required at runtime. */
+export interface QuoteSwapArgs {
+  readonly chainId: SnfChainId
+  readonly tokenIn: `0x${string}` | null
+  readonly tokenOut: `0x${string}` | null
+  readonly amountIn?: bigint
+  readonly amountOut?: bigint
+  readonly directOnly?: boolean
+}
+
+/** One unit point of an `estimateLadder` result. */
+export interface LadderPoint {
+  readonly unit: number
+  readonly price: number
+}
+
+/**
+ * Output of the offline `estimateLadder(reserves, n)` (R12) — `kind: 'estimate'` marks
+ * it as a float/offline approximation, deliberately NOT a `Quote`: it is never
+ * on-chain-authoritative and must NEVER feed a `Bounds` field (a static test in
+ * `build/` asserts no builder imports `estimateLadder`).
+ */
+export interface LadderResult {
+  readonly kind: 'estimate'
+  readonly points: readonly LadderPoint[]
+  /** True when `n` exceeded the pool's available count and the ladder was cut short. */
+  readonly truncated: boolean
+}
