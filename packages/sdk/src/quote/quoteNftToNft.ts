@@ -258,6 +258,9 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
     kind: sellPool.baseToken.isNative ? 'native' : 'erc20',
     side: 'sell',
     fees: legFees(chainId, poolBps, sellMarketplace, sellRoyalty, sellCtx.poolLeg),
+    collection: sellCollection.address,
+    wrapper: sellCollection.wrapper,
+    tokenIds: sellTokenIds,
   }
   const buyLeg: QuoteLeg = {
     pair: buyPool.pair,
@@ -268,6 +271,9 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
     kind: buyPool.baseToken.isNative ? 'native' : 'erc20',
     side: 'buy',
     fees: legFees(chainId, poolBps, buyMarketplace, buyRoyalty, buyCtx.poolLeg),
+    collection: buyCollection.address,
+    wrapper: buyCollection.wrapper,
+    tokenIds: buyTokenIds,
   }
 
   const totalMarketplace = sellMarketplace + buyMarketplace
@@ -306,6 +312,7 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
     netProceeds: toQuoteAmount(chainId, netProceedsValue),
     buyCost: toQuoteAmount(chainId, buyCostValue),
     remainder: remainderAmount,
+    remainderMode: args.remainder,
     priceImpact,
     deliverable,
     bestEffort,

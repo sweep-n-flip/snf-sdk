@@ -10,6 +10,7 @@ import { ROUTER_NATIVE_ERC20_ABI } from '../../src/abis/UniswapV2Router01Collect
 import { getChain } from '../../src/chains/registry'
 import { quoteSell } from '../../src/quote/quoteSell'
 import { isSnfError, SnfError } from '../../src/errors'
+import type { SnfChainId } from '../../src/chains/chains.types'
 import type { SnfClientContext } from '../../src/types/client.types'
 import type { Amount } from '../../src/types/amount.types'
 import type { BuildArgs } from '../../src/types/plan.types'
@@ -51,7 +52,7 @@ function fixtureLeg(opts: { readonly isNative: boolean; readonly baseToken: `0x$
 }
 
 function fixtureQuote(opts: {
-  readonly chainId?: number
+  readonly chainId?: SnfChainId
   readonly isNative?: boolean
   readonly baseToken?: `0x${string}`
   readonly tokenIds?: readonly string[]
@@ -172,7 +173,7 @@ describe('buildSell — approvals (setApprovalForAll always checked, native or E
 
   it('an ERC-20-base sell still only checks the ERC-721 approval, never an ERC-20 allowance', async () => {
     mockedQuoteSell.mockResolvedValue(fixtureQuote({ isNative: false, baseToken: BASE_TOKEN }))
-    const calls: readonly unknown[][] = []
+    const calls: unknown[][] = []
     const ctx = buildCtx({
       multicallImpl: async (params) => {
         calls.push(params.contracts as unknown[])

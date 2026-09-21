@@ -10,6 +10,7 @@ import { ROUTER_NATIVE_ERC20_ABI } from '../../src/abis/UniswapV2Router01Collect
 import { getChain } from '../../src/chains/registry'
 import { quoteBuy } from '../../src/quote/quoteBuy'
 import { isSnfError, SnfError } from '../../src/errors'
+import type { SnfChainId } from '../../src/chains/chains.types'
 import type { SnfClientContext } from '../../src/types/client.types'
 import type { Amount } from '../../src/types/amount.types'
 import type { BuildArgs } from '../../src/types/plan.types'
@@ -51,7 +52,7 @@ function fixtureLeg(opts: { readonly isNative: boolean; readonly baseToken: `0x$
 }
 
 function fixtureQuote(opts: {
-  readonly chainId?: number
+  readonly chainId?: SnfChainId
   readonly isNative?: boolean
   readonly baseToken?: `0x${string}`
   readonly tokenIds?: readonly string[]
