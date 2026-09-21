@@ -1,12 +1,37 @@
 /**
- * @sweepnflip/sdk-react — public entrypoint.
+ * `@sweepnflip/sdk-react` — public entrypoint.
  *
- * The full public surface (useSnfCollection, useSnfPoolInventory, useSnfQuoteBuy,
- * useSnfQuoteSell, useSnfQuoteNftToNft, useSnfCheckout) is assembled across plans
- * 04, 09 and 20 of this phase. This wave only needs the barrel to exist and export
- * something real so the dual ESM+CJS build (Task 1) has content to bundle.
- *
- * `SDK_REACT_VERSION` must stay in sync with `package.json#version` — plan 20 adds
- * the test asserting that.
+ * Exactly `SnfProvider` plus the seven `useSnf*` hooks (D-02) — `useSnfClient`,
+ * `useSnfCollection`, `useSnfPoolInventory`, `useSnfQuoteBuy`, `useSnfQuoteSell`,
+ * `useSnfQuoteNftToNft`, `useSnfCheckout`. `useSnfCheckout` is added by this plan's
+ * Task 2 commit. Nothing from `@sweepnflip/sdk` is re-exported here — a partner
+ * imports `@sweepnflip/sdk` for types/`createSnfClient` and `@sweepnflip/sdk-react`
+ * for hooks; re-exporting the core's surface from this barrel would create two paths
+ * to the same symbol and a dual-instance hazard (this plan's own action text).
  */
-export const SDK_REACT_VERSION = '0.1.0'
+export { SnfProvider } from './context'
+export type { SnfProviderProps, SnfContextValue } from './context'
+
+export {
+  useSnfClient,
+  useSnfCollection,
+  useSnfPoolInventory,
+  useSnfQuoteBuy,
+  useSnfQuoteSell,
+  useSnfQuoteNftToNft,
+} from './hooks'
+export type {
+  UseSnfCollectionOptions,
+  UseSnfCollectionResult,
+  UseSnfPoolInventoryOptions,
+  UseSnfPoolInventoryResult,
+  UseSnfQuoteBuyArgs,
+  UseSnfQuoteBuyOptions,
+  UseSnfQuoteBuyResult,
+  UseSnfQuoteSellArgs,
+  UseSnfQuoteSellOptions,
+  UseSnfQuoteSellResult,
+  UseSnfQuoteNftToNftArgs,
+  UseSnfQuoteNftToNftOptions,
+  UseSnfQuoteNftToNftResult,
+} from './hooks'
