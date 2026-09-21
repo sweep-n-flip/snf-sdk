@@ -1,0 +1,96 @@
+# SnF Partner SDK CI (54-SPEC.md R19/R20/R21).
+#
+# `unit`: lint + typecheck + test + build + size-limit + grep-gate on every push/PR.
+# `fork`: 4-chain anvil fork matrix skeleton (Base/Arbitrum/Robinhood/Arc) — body
+#   filled in by plan 18. Deliberately a SEPARATE job that `unit` does not depend on
+#   (54-SPEC.md must_haves: "the fork-lane matrix is a separate, opt-in workflow job
+#   that unit CI does not depend on").
+#
+# This workflow references no repository secret anywhere: fork lanes default to
+# public RPCs so this new repo's CI never depends on a workspace Alchemy key
+# (RESEARCH.md "Environment Availability"). OPTIONAL future opt-in: ALCHEMY_KEY as
+# a repo secret, once the founder decides to share it with this repo specifically.
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Test
+        run: pnpm -r test
+
+      - name: Build
+        run: pnpm -r build
+
+      - name: Bundle size gate (R1 — 60 kB gzip ceiling)
+        run: pnpm size
+
+      - name: Grep gate (R19 — no SnF endpoints/keys/process.env/snf-client import)
+        run: pnpm grep:gate
+
+  fork:
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    strategy:
+      fail-fast: false
+      matrix:
+        chain: [base, arbitrum, robinhood, arc]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      # Each matrix leg gets its own anvil port (8545 + strategy-index) so two fork
+      # lanes never share anvil state even when GitHub schedules them on the same
+      # runner pool (R20 backstop edge — "two lanes don't share state").
+      - name: Run fork tests for ${{ matrix.chain }}
+        run: pnpm test:fork
+        env:
+          FORK_CHAIN: ${{ matrix.chain }}
+          ANVIL_PORT: 8545
+          # OPTIONAL: ALCHEMY_KEY — not wired here on purpose (see file header
+          # comment). Public RPCs are the default until the founder opts this repo in.

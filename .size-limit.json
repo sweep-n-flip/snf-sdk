@@ -1,0 +1,8 @@
+[
+  {
+    "name": "@sweepnflip/sdk core entry",
+    "path": "packages/sdk/dist/index.js",
+    "limit": "60 kB",
+    "gzip": true
+  }
+]
