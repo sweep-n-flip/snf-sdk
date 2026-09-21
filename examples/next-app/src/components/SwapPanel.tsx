@@ -111,8 +111,9 @@ function CollectionSection({
 
 function InventorySection({ pair }: { readonly pair: `0x${string}` | undefined }) {
   // Candidate data only — "the index proposes, the chain decides" (poolInventory's
-  // own doc comment). `plan.preflight()`, run inside `client.buildBuy` below, is
-  // what actually decides which tokenIds are still there at signing time.
+  // own doc comment). `plan.preflight()`, run in `CheckoutSection.handleBuildPlan`
+  // right after `client.buildBuy` below, is what actually decides which tokenIds
+  // are still there at signing time.
   const inventory = useSnfPoolInventory(pair)
 
   if (!pair) return null
@@ -228,12 +229,22 @@ function CheckoutSection({
   const [buildError, setBuildError] = useState<SnfError | null>(null)
   const [building, setBuilding] = useState(false)
 
+  // `plan.preflight()` runs HERE, once, right after `buildBuy` — both are read-only
+  // (no wallet popup, snf-54-20's README Quickstart demonstrates the identical
+  // sequence in examples/vanilla). Gating `setPlan` on a successful pre-flight means
+  // `<CheckoutFlow>` (and therefore `useSnfCheckout`'s one dispatch site) is never
+  // even constructed for a plan whose ownership/inventory/wrapper-identity/balance/
+  // chain checks already failed — e.g. Case E of snf-54-UAT.md (wrong chain) rejects
+  // right here, before the checkout section renders a single button, let alone
+  // before any wallet popup.
   const handleBuildPlan = useCallback(async () => {
     if (!address || !quote) return
     setBuilding(true)
     setBuildError(null)
     try {
-      setPlan(await client.buildBuy({ quote, recipient: address }))
+      const builtPlan = await client.buildBuy({ quote, recipient: address })
+      await builtPlan.preflight()
+      setPlan(builtPlan)
     } catch (e) {
       setBuildError(client.describeError(e))
     } finally {
