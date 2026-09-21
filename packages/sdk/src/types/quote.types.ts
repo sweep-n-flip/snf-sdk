@@ -59,24 +59,45 @@ export interface Quote {
   readonly expiresAt: string
   readonly reconciled: true
   readonly stale?: boolean
+  /**
+   * Non-fatal notes (plan 12 addition — not in plan 04's original shape): a locked
+   * redemption on a sell, an Arc unpayable-royalty adjustment on either side. Never
+   * a reason to fail the call — see `snf-54-12-SUMMARY.md`, Deviations, for why
+   * this field was required to implement the plan's own literal `<behavior>` text
+   * ("adds a `warnings` entry to the quote and does not throw").
+   */
+  readonly warnings?: readonly string[]
 }
 
-/** Args for `quoteBuy` (R8). Exactly one of `count`/`tokenIds` is required at runtime — `INVALID_PARAMS` otherwise. */
+/** Args for `quoteBuy` (R8). Exactly one of `count`/`tokenIds`/`amount` is required
+ * at runtime — `INVALID_PARAMS` otherwise. */
 export interface QuoteBuyArgs {
   readonly chainId: SnfChainId
   readonly collection: `0x${string}`
   readonly count?: number
   readonly tokenIds?: readonly string[]
+  /**
+   * A fractional wNFT amount, in wrapper units (`1 NFT = 1e18`) — plan 12 addition
+   * (not in plan 04's original shape; see `snf-54-12-SUMMARY.md`, Deviations).
+   * Routes through the fungible leg (`getAmountsIn` on the wrapper token itself),
+   * never the `*Collection` path — a fractional amount has no tokenId to carry an
+   * EIP-2981 royalty.
+   */
+  readonly amount?: bigint
   /** `null`/omitted = native. An ERC-20 address routes through a multi-hop path. */
   readonly payToken?: `0x${string}` | null
 }
 
-/** Args for `quoteSell` (R8). Exactly one of `tokenIds`/`count` is required at runtime. */
+/** Args for `quoteSell` (R8). Exactly one of `tokenIds`/`count`/`amount` is
+ * required at runtime. */
 export interface QuoteSellArgs {
   readonly chainId: SnfChainId
   readonly collection: `0x${string}`
   readonly tokenIds?: readonly string[]
   readonly count?: number
+  /** A fractional wNFT amount, in wrapper units — see `QuoteBuyArgs.amount`'s doc
+   * comment; the sell-side mirror (plan 12 addition). */
+  readonly amount?: bigint
   /** `null`/omitted = native. */
   readonly receiveToken?: `0x${string}` | null
 }

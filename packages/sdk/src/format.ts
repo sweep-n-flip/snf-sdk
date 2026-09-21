@@ -120,3 +120,18 @@ export function toNativeAmount(chainId: number, weiValue: bigint): Amount {
   const chain = getChain(chainId)
   return toAmount(weiValue, 18, chain.nativeSymbol)
 }
+
+/**
+ * `floor(numerator * 10000 / denominator)` as a plain `number`, for DISPLAY-ONLY
+ * basis-point fields (`FeeBreakdown.bps`, `Quote.priceImpact`) that the public type
+ * contract declares as `number` — money itself always stays `bigint` end to end;
+ * only this label conversion needs a JS number. Deliberately kept here rather than
+ * in `src/quote/` (plan 12): `test/math/reconcile.test.ts`'s static scan forbids
+ * `Number(` anywhere under `src/quote/`, so any bigint->number narrowing quote/*
+ * needs for a display label must live in a file that scan does not cover.
+ * `denominator <= 0n` returns `0` rather than dividing by zero.
+ */
+export function bpsFromRatio(numerator: bigint, denominator: bigint): number {
+  if (denominator <= 0n) return 0
+  return Number((numerator * 10_000n) / denominator)
+}
