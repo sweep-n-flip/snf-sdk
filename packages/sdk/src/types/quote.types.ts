@@ -100,21 +100,10 @@ export interface QuoteSwapArgs {
   readonly directOnly?: boolean
 }
 
-/** One unit point of an `estimateLadder` result. */
-export interface LadderPoint {
-  readonly unit: number
-  readonly price: number
-}
-
-/**
- * Output of the offline `estimateLadder(reserves, n)` (R12) — `kind: 'estimate'` marks
- * it as a float/offline approximation, deliberately NOT a `Quote`: it is never
- * on-chain-authoritative and must NEVER feed a `Bounds` field (a static test in
- * `build/` asserts no builder imports `estimateLadder`).
- */
-export interface LadderResult {
-  readonly kind: 'estimate'
-  readonly points: readonly LadderPoint[]
-  /** True when `n` exceeded the pool's available count and the ladder was cut short. */
-  readonly truncated: boolean
-}
+// `LadderPoint`/`LadderResult` used to be declared here as a float-shaped placeholder
+// (plan 04). Plan 09 (Deviations, snf-54-09-SUMMARY.md) reconciled `SnfClient.
+// estimateLadder`'s return type to the real, bigint-exact shape `math/nftPricing.ts`'s
+// `estimateLadder` actually produces (`math/nftPricing.types.ts`'s `LadderResult`) —
+// see `client.types.ts`'s import. This file no longer declares a second, unused
+// `LadderResult`/`LadderPoint` pair; grep found no consumer of the old shape outside
+// `client.types.ts` itself before this plan.
