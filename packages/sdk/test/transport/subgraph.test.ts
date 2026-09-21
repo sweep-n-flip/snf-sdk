@@ -84,7 +84,7 @@ afterEach(() => {
 describe('createSubgraphTransport — R4 acceptance matrix', () => {
   // ── 1. Dedupe ──────────────────────────────────────────────────────────────────────
   it('50 concurrent inventory() calls to the same key produce exactly 1 fetch; all 50 resolve to the same data', async () => {
-    const fetchMock = vi.fn(() => Promise.resolve(currencyEnvelope(0)))
+    const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0)))
     vi.stubGlobal('fetch', fetchMock)
     const transport = createSubgraphTransport(config())
 
@@ -100,7 +100,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 2. TTL hit ─────────────────────────────────────────────────────────────────────
   it('two sequential calls inside the TTL (30s inventory default) produce 1 fetch', async () => {
-    const fetchMock = vi.fn(() => Promise.resolve(currencyEnvelope(0)))
+    const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0)))
     vi.stubGlobal('fetch', fetchMock)
     const transport = createSubgraphTransport(config())
 
@@ -156,7 +156,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 5-8. Lag boundaries ───────────────────────────────────────────────────────────
   it('lag 300s ⇒ stale:false, lagSeconds:300 (fresh boundary, inclusive)', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(currencyEnvelope(300))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(300))))
     const transport = createSubgraphTransport(config())
 
     const result = await transport.inventory(WRAPPER)
@@ -165,7 +165,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
   })
 
   it('lag 301s ⇒ stale:true', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(currencyEnvelope(301))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(301))))
     const transport = createSubgraphTransport(config())
 
     const result = await transport.inventory(WRAPPER)
@@ -174,7 +174,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
   })
 
   it('lag 900s ⇒ stale:true (degraded boundary is inclusive on the stale side, not yet an error)', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(currencyEnvelope(900))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(900))))
     const transport = createSubgraphTransport(config())
 
     const result = await transport.inventory(WRAPPER)
@@ -183,7 +183,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
   })
 
   it('lag 901s ⇒ rejects SnfError(UPSTREAM_DEGRADED) with details.lagSeconds === 901', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(currencyEnvelope(901))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(901))))
     const transport = createSubgraphTransport(config())
 
     try {
@@ -200,7 +200,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 9. hasIndexingErrors forces stale ─────────────────────────────────────────────
   it('hasIndexingErrors:true at lag 0 resolves with stale:true — never a clean stale:false', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(currencyEnvelope(0, { hasIndexingErrors: true }))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0, { hasIndexingErrors: true }))))
     const transport = createSubgraphTransport(config())
 
     const result = await transport.inventory(WRAPPER)
@@ -302,7 +302,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 14. HTTP 200 with errors ───────────────────────────────────────────────────────
   it('HTTP 200 with a GraphQL errors array and no data rejects UPSTREAM_DEGRADED, never resolves to undefined', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(errorsEnvelope('Type `Currency` has no field `notAField`'))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(errorsEnvelope('Type `Currency` has no field `notAField`'))))
     const transport = createSubgraphTransport(config())
 
     let resolved: unknown = 'unset'
@@ -321,7 +321,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 15. Lowercase ids ──────────────────────────────────────────────────────────────
   it('a checksummed/mixed-case wrapper address is fully lowercased in the request body', async () => {
-    const fetchMock = vi.fn(() => Promise.resolve(currencyEnvelope(0)))
+    const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0)))
     vi.stubGlobal('fetch', fetchMock)
     const transport = createSubgraphTransport(config())
 
@@ -336,7 +336,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 16. Instance isolation (R3) ────────────────────────────────────────────────────
   it('two transports on two different chains share nothing and hit different URLs', async () => {
-    const fetchMock = vi.fn(() => Promise.resolve(currencyEnvelope(0)))
+    const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0)))
     vi.stubGlobal('fetch', fetchMock)
 
     const base = createSubgraphTransport(config({ chainId: BASE_CHAIN_ID }))
@@ -357,7 +357,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
 
   // ── 17. Config override ────────────────────────────────────────────────────────────
   it('an overridden staleLagSeconds is honored — 11s is stale when the threshold is set to 10', async () => {
-    vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(currencyEnvelope(11))))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(11))))
     const transport = createSubgraphTransport(config({ subgraph: { staleLagSeconds: 10 } }))
 
     const result = await transport.inventory(WRAPPER)
