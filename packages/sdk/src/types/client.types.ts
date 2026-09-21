@@ -1,9 +1,9 @@
-import type { PublicClient, TransactionReceipt } from 'viem'
+import type { PublicClient } from 'viem'
 
 import type { SnfError } from '../errors'
 import type { SnfChainConfig, SnfChainId } from '../chains/chains.types'
+import type { ReceiptLike, SwapReceipt } from '../receipt/receipt.types'
 import type { SubgraphTransport } from '../transport/subgraph.types'
-import type { SwapReceipt } from './checkout.types'
 import type { CollectionInfo } from './collection.types'
 import type { PoolInventory } from './inventory.types'
 import type { BuildArgs, ExecutionPlan } from './plan.types'
@@ -87,8 +87,10 @@ export interface SnfClient {
   buildSell(args: BuildArgs): Promise<ExecutionPlan>
   buildNftToNft(args: BuildArgs): Promise<ExecutionPlan>
   buildSwap(args: BuildArgs): Promise<ExecutionPlan>
-  /** Synchronous by design — the logs are already on the `TransactionReceipt`; no
-   * further RPC read is needed to attribute items/fees (R16). */
-  parseReceipt(receipt: TransactionReceipt): SwapReceipt
+  /** Synchronous by design — the logs are already on the receipt; no further RPC read
+   * is needed to attribute items/fees (R16). Takes `ReceiptLike` (a structural subset
+   * of viem's `TransactionReceipt`, `receipt/receipt.types.ts`) rather than the full
+   * type, so any receipt-shaped object from any source works. */
+  parseReceipt(receipt: ReceiptLike): SwapReceipt
   describeError(e: unknown): SnfError
 }

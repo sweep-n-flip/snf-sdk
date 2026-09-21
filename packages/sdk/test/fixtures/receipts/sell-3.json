@@ -1,0 +1,163 @@
+{
+  "source": "Live eth_getTransactionReceipt against Base mainnet (chain 8453) RPC https://mainnet.base.org for tx 0x7ef051775def0171ab4a85d544caf7db386af27f7c36edca00af0466141d28f1, fetched read-only 2026-09-21 during this plan's execution. Block 46518113 (0x2c5cf61), status success. Cross-checked against snf-drops-registration/src/features/mint-details/genesis/swap/sellReceipt.fixture.ts (SELL_RECEIPT_FIXTURE_ADDRESSES/SELL_RECEIPT_FIXTURE_EXPECTED), which independently records the same transaction hash and the same gross/fee/royalty/net figures from a 2026-09-09 `cast receipt` capture. All 11 logs of the REAL mined receipt are included here (the Drops fixture keeps only 6 of these 11, by design, for its own narrower test).",
+  "note": "Filename says 'sell-3' (3 items) per this plan's PLAN.md files_modified list, but no real 3-item sell receipt could be sourced. 54-RESEARCH.md's own 3-item sell figures are flagged Assumption A3 ('not independently re-traced to a specific file/line this session') and this plan's own instruction is to never hardcode an unsourced number into a fixture. This is the one real, fully-verified sell receipt available in the workspace: 2 DEMON NFTs (tokenIds 245825 and 245830), fetched live and unmodified. See snf-54-08-SUMMARY.md, Deviations, for the full account.",
+  "pending": false,
+  "chainId": 8453,
+  "seller": "0xbf80b22f54ae926f1bc1006563019c6e85598c2e",
+  "router": "0x1312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+  "quoteToken": "0x4200000000000000000000000000000000000006",
+  "collection": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+  "wrapper": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+  "pair": "0xe8143126bdfbe58ed0056f88031236766c311ecf",
+  "marketplaceWallet": "0xc00d62ce5c1543d939eebb9d6db213ef873300e3",
+  "receipt": {
+    "status": "success",
+    "transactionHash": "0x7ef051775def0171ab4a85d544caf7db386af27f7c36edca00af0466141d28f1",
+    "blockNumber": "46518113",
+    "logs": [
+      {
+        "address": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+        "data": "0x",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000bf80b22f54ae926f1bc1006563019c6e85598c2e",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000000000000000000000000000000000000003c041"
+        ],
+        "logIndex": 274,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+        "data": "0x",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000bf80b22f54ae926f1bc1006563019c6e85598c2e",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000000000000000000000000000000000000003c046"
+        ],
+        "logIndex": 275,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+        "data": "0x0000000000000000000000000000000000000000000000001bc16d674ec80000",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "0x000000000000000000000000e8143126bdfbe58ed0056f88031236766c311ecf"
+        ],
+        "logIndex": 276,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+        "data": "0x",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000a9f3f136380e53f8f55cad44391bda2b617d7c83",
+          "0x000000000000000000000000000000000000000000000000000000000003c041"
+        ],
+        "logIndex": 277,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+        "data": "0x",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000a9f3f136380e53f8f55cad44391bda2b617d7c83",
+          "0x000000000000000000000000000000000000000000000000000000000003c046"
+        ],
+        "logIndex": 278,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+        "data": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000003c041000000000000000000000000000000000000000000000000000000000003c046",
+        "topics": [
+          "0xfd9359b77bedf90cc62dc5e65e71caac46edc3f206e575d895e753ae8f6e88ea",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000e8143126bdfbe58ed0056f88031236766c311ecf"
+        ],
+        "logIndex": 279,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0x4200000000000000000000000000000000000006",
+        "data": "0x0000000000000000000000000000000000000000000000000000c3ac32c2a73a",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000e8143126bdfbe58ed0056f88031236766c311ecf",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 280,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0xe8143126bdfbe58ed0056f88031236766c311ecf",
+        "data": "0x00000000000000000000000000000000000000000000000000043e83be4bf83b000000000000000000000000000000000000000000000000b2cac211af999938",
+        "topics": [
+          "0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1"
+        ],
+        "logIndex": 281,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0xe8143126bdfbe58ed0056f88031236766c311ecf",
+        "data": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001bc16d674ec800000000000000000000000000000000000000000000000000000000c3ac32c2a73a0000000000000000000000000000000000000000000000000000000000000000",
+        "topics": [
+          "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 282,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0x4200000000000000000000000000000000000006",
+        "data": "0x0000000000000000000000000000000000000000000000000000c3ac32c2a73a",
+        "topics": [
+          "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 283,
+        "transactionIndex": 94,
+        "removed": false
+      },
+      {
+        "address": "0xc00d62ce5c1543d939eebb9d6db213ef873300e3",
+        "data": "0x000000000000000000000000000000000000000000000000000004e44e11aa94",
+        "topics": [
+          "0x3d0ce9bfc3ed7d6862dbb28b2dea94561fe714a1b4d019aa8af39730d1ad7c3d",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 284,
+        "transactionIndex": 94,
+        "removed": false
+      }
+    ]
+  },
+  "expected": {
+    "itemsIn": [
+      "245825",
+      "245830"
+    ],
+    "itemsOut": [],
+    "grossWei": "215144353408826",
+    "marketplaceFeeWei": "5378608835220",
+    "receivedWei": "209765744573606",
+    "note": "receivedWei = grossWei - marketplaceFeeWei ONLY. Independently, snf-drops-registration's sellReceipt.fixture.ts records this same sale's TRUE net (after also deducting the 5% EIP-2981 royalty, royaltyWei=10757217670440) as 199008526903166 — but that royalty deduction is paid via a raw native transfer with no log, and parseReceipt(ctx, receipt) has no frozen quote-time rate to re-derive it from (unlike Drops' parseSellReceipt, which takes marketplaceFeeE18/royaltyE18 as explicit frozen inputs). parseReceipt's 'received' therefore reports the fee-only net and discloses the gap via `warnings` — see snf-54-08-SUMMARY.md, Deviations, for the full reasoning."
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "source": "NONE — no real mined wNFT-sell receipt (logs) could be sourced from the Phase 74/83 planning artifacts. snf-drops-registration's `sellReceipt.ts` supports a `mode: 'wnft'` path (no marketplace fee, no royalty — the gross Withdrawal IS the net), but its own checked-in fixture (`sellReceipt.fixture.ts`) captures only the whole-NFT ('nfts' mode) sale; no equivalent wNFT-mode fixture exists anywhere in the workspace, and no transaction hash for a real wNFT sale was found in .planning/phases/snf-74-genesis-swap-card-buy-and-sell/ or .planning/phases/snf-83-arc-pricing-dynamics/.",
+  "note": "Per this plan's own instruction ('If a receipt cannot be sourced, do not invent one'), this fixture is left pending rather than fabricated. The corresponding test case is `it.todo`. Hand-off: plan 18 (fork-lane tests) should capture a real wNFT-sell transaction's receipt (a `swapExactTokensForETH`-style leg with no royalty/fee split, on a WERC721 wrapper token rather than the underlying collection) and replace this file. See snf-54-08-SUMMARY.md, Deviations, for the full account.",
+  "pending": true
+}
