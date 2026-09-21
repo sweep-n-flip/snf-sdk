@@ -1,81 +1,70 @@
-import { notImplemented } from '../internal/stub'
-import type { TokenRef } from '../types/amount.types'
+import { buildConfirmLabel } from '../checkout/labels'
+import { NEXT_READY_BY_KIND } from '../checkout/reducer'
+import { runPreflight } from './preflight'
 import type { SnfClientContext } from '../types/client.types'
-import type { Approval, Bounds, BuildArgs, ExecutionPlan, Step } from '../types/plan.types'
-import type { Quote } from '../types/quote.types'
+import type { ExecutionPlan, Step } from '../types/plan.types'
 
 /**
- * Shared internal helpers every `build*` function composes (R13). Note the correctly
- * camelCased export name below — an all-lowercase misspelling was flagged during
- * planning and must never be reintroduced.
+ * `assemblePlan` — the shared final step of every `build*` function (R13, R14;
+ * 54-SPEC.md). Takes the raw, not-yet-ordered `steps[]` a builder assembled (from
+ * `build/approvals.ts`'s `buildApprovalStep` plus its own swap step(s)) and returns
+ * the frozen `ExecutionPlan` a partner actually consumes: canonically ordered,
+ * chain-stamped, labeled from the one shared vocabulary `checkout/labels.ts` also
+ * uses, and carrying a bound `preflight()` closure so a caller never has to thread
+ * `ctx` back in to call it.
  */
 
 /**
- * Wraps `steps` into the `ExecutionPlan` object a `build*` function returns, binding
- * its `preflight()` method to a single Multicall3 call over the same block (R14).
+ * Canonical step ordering: every `'approval'` step precedes every non-approval step,
+ * each group's OWN relative order preserved (a stable partition, not a re-sort) — a
+ * builder that already emits `[approval(sell)?, swap-sell, swap-buy,
+ * swap-buy-wnft?]` gets that exact order back; nothing here re-derives NFT×NFT's
+ * leg ordering, it only guarantees approvals never trail behind the swap(s) they
+ * unblock. Exported as its own pure function so plan 15's four `build*` functions
+ * share ONE ordering rule instead of four independently-written ones.
+ */
+export function orderSteps(rawSteps: readonly Step[]): readonly Step[] {
+  const approvals = rawSteps.filter((step) => step.kind === 'approval')
+  const rest = rawSteps.filter((step) => step.kind !== 'approval')
+  return [...approvals, ...rest]
+}
+
+/**
+ * Assembles the final `ExecutionPlan`. `chainId` is stamped into EVERY step's `tx`
+ * from `ctx.chain.chainId` — never inherited implicitly from whatever the caller's
+ * `step.tx.chainId` already said (SPEC Constraint: "chainId explícito em toda tx").
+ * `label` is likewise always overwritten via `buildConfirmLabel`, keyed by
+ * `NEXT_READY_BY_KIND[step.kind]` — the exact same lookup `checkout/reducer.ts` uses
+ * to pick the next `ready-*` state, so a partner's button copy and the checkout
+ * machine's own state labels can never drift apart from each other.
  *
- * @gsd-stub — implemented by plan 14. Source analog:
- * snf-client/src/components/checkout/hooks/buildCheckoutDerived.ts.
+ * `steps` is never empty by construction: a `build*` function that found nothing
+ * missing simply calls this with a one-element array (the swap alone) — this
+ * function does not itself guard against an empty input because doing so here would
+ * hide a genuine builder bug (an operation that resolved to literally nothing to
+ * sign) behind a silent no-op plan.
  */
 export function assemblePlan(
   ctx: SnfClientContext,
   steps: readonly Step[],
   expiresAt: string,
 ): ExecutionPlan {
-  void ctx
-  void steps
-  void expiresAt
-  return notImplemented('assemblePlan', '14')
-}
+  const ordered = orderSteps(steps).map((step) =>
+    Object.freeze({
+      ...step,
+      tx: Object.freeze({ ...step.tx, chainId: ctx.chain.chainId }),
+      label: buildConfirmLabel(NEXT_READY_BY_KIND[step.kind], step),
+    }),
+  )
+  const frozenSteps = Object.freeze(ordered)
 
-/**
- * Derives `Bounds` from a FRESH on-chain re-quote — never from `quote`'s own numeric
- * fields (SPEC prohibition: never trust caller-supplied prices for `bounds`). Default
- * `slippageBps` 100; default `deadline` now+20min, capped at now+1h.
- *
- * @gsd-stub — implemented by plan 14. Source analog:
- * snf-drops-registration/.../genesis/swap/swapConstants.ts (branch feature/registration).
- */
-export function deriveBounds(
-  ctx: SnfClientContext,
-  quote: Quote,
-  opts: { readonly slippageBps: number; readonly deadline: bigint },
-): Bounds {
-  void ctx
-  void quote
-  void opts
-  return notImplemented('deriveBounds', '14')
-}
-
-/**
- * Validates `BuildArgs` before any on-chain work: `deadline` beyond now+1h or a
- * `tokenIds` array beyond 50 entries both throw `INVALID_PARAMS` (R13 boundary edges).
- *
- * @gsd-stub — implemented by plan 14. Source analog:
- * snf-client/src/lib/preflight.ts + Drops swapGuards.ts (branch feature/registration).
- */
-export function validateBuildArgs(args: BuildArgs): void {
-  void args
-  return notImplemented('validateBuildArgs', '14')
-}
-
-/**
- * Reads on-chain allowances/operator-approval state and returns ONLY the `Approval`
- * steps that are actually still missing (R13 Edge `empty | R13`: none missing ⇒
- * `steps` contains only the swap).
- *
- * @gsd-stub — implemented by plan 14. Source analog:
- * snf-client/src/hooks/contracts/nftBatchGas.ts (approval pre-check pattern).
- */
-export function missingApprovals(
-  ctx: SnfClientContext,
-  owner: `0x${string}`,
-  spender: `0x${string}`,
-  tokens: readonly TokenRef[],
-): Promise<readonly Approval[]> {
-  void ctx
-  void owner
-  void spender
-  void tokens
-  return notImplemented('missingApprovals', '14')
+  const plan: ExecutionPlan = Object.freeze({
+    chainId: ctx.chain.chainId,
+    steps: frozenSteps,
+    expiresAt,
+    // Closes over `ctx` and `plan` itself — a caller holding only the returned
+    // `ExecutionPlan` can call `.preflight()` without ever threading `ctx` back in.
+    preflight: () => runPreflight(ctx, plan),
+  })
+  return plan
 }
