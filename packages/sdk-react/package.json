@@ -1,0 +1,39 @@
+{
+  "name": "@sweepnflip/sdk-react",
+  "version": "0.1.0",
+  "private": false,
+  "description": "React hooks adapter for @sweepnflip/sdk — quote, build and checkout Sweep n' Flip NFT AMM swaps via wagmi + react-query.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "files": ["dist"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sweep-n-flip/snf-sdk.git",
+    "directory": "packages/sdk-react"
+  },
+  "homepage": "https://github.com/sweep-n-flip/snf-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/sweep-n-flip/snf-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@sweepnflip/sdk": "workspace:^",
+    "wagmi": "^2.19.5",
+    "@tanstack/react-query": "^5.90.21",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@sweepnflip/sdk": "workspace:*",
+    "wagmi": "^2.19.5",
+    "@tanstack/react-query": "^5.90.21",
+    "react": ">=18"
+  }
+}

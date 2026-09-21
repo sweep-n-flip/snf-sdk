@@ -1,0 +1,20 @@
+{
+  "name": "@sweepnflip/example-next-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Next.js + wagmi example — discover, quote and checkout a Sweep n' Flip NFT AMM swap on one page.",
+  "scripts": {
+    "dev": "next dev"
+  },
+  "dependencies": {
+    "@sweepnflip/sdk": "workspace:*",
+    "@sweepnflip/sdk-react": "workspace:*",
+    "@tanstack/react-query": "^5.90.21",
+    "next": "16.1.6",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "viem": "^2.47.0",
+    "wagmi": "^2.19.5"
+  }
+}

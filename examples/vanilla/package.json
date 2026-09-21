@@ -1,0 +1,14 @@
+{
+  "name": "@sweepnflip/example-vanilla",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Minimal Node.js example — quotes a swap against a Sweep n' Flip NFT AMM pool with @sweepnflip/sdk (no React).",
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "dependencies": {
+    "@sweepnflip/sdk": "workspace:*",
+    "viem": "^2.47.0"
+  }
+}

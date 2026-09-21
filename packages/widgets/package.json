@@ -1,0 +1,7 @@
+{
+  "name": "@sweepnflip/widgets",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Prebuilt UI kit for Sweep n' Flip NFT AMM swaps (Phase 56 placeholder — no source yet).",
+  "type": "module"
+}

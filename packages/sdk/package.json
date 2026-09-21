@@ -1,0 +1,33 @@
+{
+  "name": "@sweepnflip/sdk",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Headless TypeScript SDK for quoting and executing swaps against Sweep n' Flip NFT AMM pools. Client-direct, unsigned calldata only.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "files": ["dist"],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sweep-n-flip/snf-sdk.git",
+    "directory": "packages/sdk"
+  },
+  "homepage": "https://github.com/sweep-n-flip/snf-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/sweep-n-flip/snf-sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "viem": "^2.47.0"
+  },
+  "devDependencies": {
+    "viem": "^2.47.0"
+  }
+}
