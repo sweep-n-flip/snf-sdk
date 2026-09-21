@@ -63,6 +63,12 @@ export const SNF_CHAINS = [
     subgraphUrl:
       'https://api.goldsky.com/api/public/project_cmngb5qq6d79v01wba5bi7hdg/subgraphs/snf-robinhood/1.1.0/gn',
     explorerUrl: 'https://robinhoodchain.blockscout.com',
+    // VERIFY-LIVE: no delegated NFT pair exists through the SnF Factory on Robinhood
+    // Chain as of plan 18's fork session (snf-54-18-SUMMARY.md, Finding 5) — this
+    // value is carried forward from `snf-contracts/scripts/delegate-configs.ts`'s
+    // canonical netFee for the underlying DEX (Uniswap V2), NOT independently
+    // re-verified against a live delegated pair's own `getAmountOut()` on THIS chain
+    // (unlike Base/Arc, which were). Re-verify once a delegated pair is created here.
     delegateNetFee: 9970, // Uniswap V2 (Robinhood Chain mainnet)
     poolNetFee: 9800,
     defaultRpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
@@ -370,6 +376,12 @@ export const SNF_CHAINS = [
     subgraphUrl:
       'https://api.goldsky.com/api/public/project_cmngb5qq6d79v01wba5bi7hdg/subgraphs/snf-arc/1.0.0/gn',
     explorerUrl: 'https://explorer.arc.io',
+    // VERIFY-LIVE: verified empirically at 9970 via the delegate's own
+    // `getAmountOut()` in plan 03 (`snf-54-03-SUMMARY.md`) — kept here as a live
+    // pointer rather than a bare "trust me" comment, since `snf-contracts/scripts/
+    // delegate-configs.ts` (the canonical source other chains cite) has NO row for
+    // chainId 5042 at all (snf-54-18-SUMMARY.md, Finding 5). Re-verify if the
+    // delegate pair (DyorSwap V2) is ever redeployed or its fee tier changes.
     delegateNetFee: 9970, // DyorSwap V2 (Arc mainnet)
     poolNetFee: 9800,
     defaultRpcUrl: 'https://rpc.mainnet.arc.io',
