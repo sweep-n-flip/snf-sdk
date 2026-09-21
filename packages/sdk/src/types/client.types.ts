@@ -89,6 +89,8 @@ export interface SnfClient {
   buildSell(args: BuildArgs): Promise<ExecutionPlan>
   buildNftToNft(args: BuildArgs): Promise<ExecutionPlan>
   buildSwap(args: BuildArgs): Promise<ExecutionPlan>
-  parseReceipt(receipt: TransactionReceipt): Promise<SwapReceipt>
+  /** Synchronous by design — the logs are already on the `TransactionReceipt`; no
+   * further RPC read is needed to attribute items/fees (R16). */
+  parseReceipt(receipt: TransactionReceipt): SwapReceipt
   describeError(e: unknown): SnfError
 }

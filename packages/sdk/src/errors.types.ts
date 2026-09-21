@@ -35,7 +35,7 @@ export type SnfErrorCode =
   | 'INVALID_PARAMS'
   /** Phase 54 addendum (no DATASHEET row; added when R17 spelled out wallet-rejection handling as its own code) — the connected wallet rejected the signature request. */
   | 'USER_REJECTED'
-  /** Catch-all, analogous to DATASHEET §0.4 `INTERNAL` (500) — an unrecognised throwable was wrapped by `toSnfError`, or a `@gsd-stub` was called. */
+  /** Catch-all, analogous to DATASHEET §0.4 `INTERNAL` (500) — an unrecognised throwable was wrapped by `toSnfError`, or an unimplemented stub function was called. */
   | 'UNKNOWN'
 
 /**

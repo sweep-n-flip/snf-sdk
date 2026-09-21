@@ -1,13 +1,20 @@
 /**
  * @sweepnflip/sdk — public entrypoint.
  *
- * The full public surface (createSnfClient, chains registry, quote/build/checkout
- * exports) is assembled across plans 04, 09 and 20 of this phase. This wave only
- * needs the barrel to exist and export something real so the dual ESM+CJS build
- * (Task 1) has content to bundle and the size-limit gate (Task 3) has a bundle to
- * measure.
+ * This wave (plan 04) exports the error taxonomy, the full public type contract, and
+ * the chain registry — everything a partner needs to construct requests and catch
+ * typed errors. The 20 domain-module stubs under `collection/`, `quote/`, `build/`,
+ * `checkout/`, `receipt/`, `transport/`, `describeError.ts` and `links.ts` are
+ * deliberately NOT exported here: `createSnfClient` (plan 09) is the documented
+ * surface for them (D-01) — exporting half-built free functions now would create a
+ * second, undocumented API that plan 09 would then have to deprecate.
  *
- * `SDK_VERSION` must stay in sync with `package.json#version` — plan 20 adds the
- * test asserting that.
+ * `SDK_VERSION` must stay in sync with `package.json#version` — plan 20 adds the test
+ * asserting that.
  */
 export const SDK_VERSION = '0.1.0'
+
+export * from './chains'
+export * from './errors'
+export type * from './errors.types'
+export type * from './types'
