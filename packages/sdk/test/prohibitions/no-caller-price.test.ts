@@ -197,8 +197,14 @@ function nftToNftQuote(netProceeds: bigint, buyCost: bigint): Quote {
   }
 }
 
+// A fixed, in-range deadline shared by the paired builds. Without it each build()
+// defaults `deadline` to "now + 1200 s" read at call time, so a wall-clock second
+// boundary between the two calls changes the encoded deadline and makes the
+// byte-identical assertions flaky (caught by the wave-9 post-merge gate).
+const FIXED_DEADLINE = Math.floor(Date.now() / 1000) + 600
+
 function buildArgs(quote: Quote): BuildArgs {
-  return { quote, recipient: RECIPIENT }
+  return { quote, recipient: RECIPIENT, deadline: FIXED_DEADLINE }
 }
 
 beforeEach(() => {
