@@ -1,5 +1,9 @@
 node_modules/
 dist/
+# `prepack` copies the root LICENSE into each publishable package right before
+# `npm pack`/`npm publish` (npm only auto-includes a LICENSE that lives IN the
+# package directory, not one in a parent/monorepo root) — generated, never tracked.
+packages/*/LICENSE
 coverage/
 .turbo/
 *.tsbuildinfo

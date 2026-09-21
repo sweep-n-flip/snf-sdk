@@ -1,14 +1,36 @@
-# @sweepnflip/sdk
+# `@sweepnflip/sdk`
 
-Headless TypeScript SDK for quoting and executing swaps against Sweep n' Flip NFT AMM pools.
+Headless TypeScript SDK for quoting and executing swaps against Sweep n' Flip NFT AMM
+pools — client-direct, unsigned calldata only. Never signs, never relays, never
+custodies. `viem` is the only peer.
 
-Client-direct: talks to the chain (via a `viem` `PublicClient` you supply) and the public
-subgraph — no Sweep n' Flip server in the loop, no API key required. Every value that
-enters a transaction is read on-chain at build time. This package never signs, relays or
-custodies funds — it returns an `ExecutionPlan` of unsigned calldata for your own wallet
-stack to send.
+## Install
 
-**Status:** in development (Phase 54 — SDK-0 Foundation + SDK-1 Swap). No public API yet.
+```sh
+pnpm add @sweepnflip/sdk viem
+```
 
-See the workspace root `README.md` and the canonical documents it links for the full
-design (`createSnfClient`, quote/build/preflight/checkout surface, chain coverage).
+Until Phase 55's first `npm publish` (D-08), consume this package from a local
+checkout via `pnpm link` or a tarball (`pnpm pack`).
+
+## Minimal snippet
+
+```ts
+import { createSnfClient } from '@sweepnflip/sdk'
+
+const snf = createSnfClient({ chainId: 8453, publicClient })
+const col = await snf.collection('0x…')
+const q = await snf.quoteBuy({ collection: col.address, tokenIds: ['1', '2', '3'] })
+const plan = await snf.buildBuy({ quote: q, recipient, slippageBps: 100 })
+await plan.preflight()
+```
+
+See the root README's [`## Quickstart`](../../README.md#quickstart) for the full,
+runnable sequence, and [`examples/vanilla`](../../examples/vanilla) for the script it
+is lifted from.
+
+## Docs
+
+- Root README (chain table, security posture, footguns this SDK hides): [`../../README.md`](../../README.md)
+- Security policy: [`../../SECURITY.md`](../../SECURITY.md)
+- Permissionless parity checklist: [`../../PARITY.md`](../../PARITY.md)

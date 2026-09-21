@@ -44,7 +44,8 @@
     "test:fork:arbitrum": "vitest run --config vitest.fork.config.ts test/fork/arbitrum.fork.test.ts",
     "test:fork:robinhood": "vitest run --config vitest.fork.config.ts test/fork/robinhood.fork.test.ts",
     "test:fork:arc": "vitest run --config vitest.fork.config.ts test/fork/arc.fork.test.ts",
-    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "prepack": "node -e \"require('fs').copyFileSync('../../LICENSE','LICENSE')\""
   },
   "peerDependencies": {
     "viem": "^2.47.0"

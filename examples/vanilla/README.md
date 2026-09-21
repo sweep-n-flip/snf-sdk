@@ -11,9 +11,19 @@ example's install (or its `list --depth 10` check) would break — that is the w
 point of shipping it as a compile-time contract, not documentation that can drift.
 
 It walks the exact call sequence a partner integrates: `createSnfClient` → discover a
-collection → read its pool's candidate inventory → quote a buy — against the real,
-live Base ETH/DEMON pool (no mocks, no fixtures), and prints the reconciled fee
-breakdown D-03's two-field `{ value, formatted }` money convention produces.
+collection → read its pool's candidate inventory → quote a buy → build a plan →
+pre-flight it — against the real, live Base ETH/DEMON pool (no mocks, no fixtures),
+and prints the reconciled fee breakdown D-03's two-field `{ value, formatted }` money
+convention produces. This is the exact sequence the root README's `## Quickstart`
+shows — a test (`packages/sdk/test/release/surface.test.ts`) asserts the two have not
+drifted apart.
+
+`buildBuy` and `plan.preflight()` are BOTH read-only — `buildBuy` re-quotes on-chain
+and computes unsigned calldata, `preflight()` is one Multicall3 read — neither needs a
+private key or a signer, which is why this script can demonstrate the full sequence up
+to (but never including) the actual send. `RECIPIENT_ADDRESS` defaults to the
+well-known Base burn address as a stand-in "some real address"; set your own to
+pre-flight against your own balance.
 
 ## How to run it
 
@@ -23,9 +33,10 @@ pnpm -C examples/vanilla start
 node src/index.mjs
 ```
 
-No wallet, no private key, no API key and no SnF server are required — this is a
-read-only quote against a public Base RPC. Override the RPC with `BASE_RPC_URL` if
-you have your own (e.g. an Alchemy/Infura endpoint); the SDK itself never reads
+No wallet, no private key, no API key and no SnF server are required — every call this
+script makes (the quote, `buildBuy`, `plan.preflight()`) is a read against a public
+Base RPC; nothing is ever signed or sent. Override the RPC with `BASE_RPC_URL` if you
+have your own (e.g. an Alchemy/Infura endpoint); the SDK itself never reads
 `process.env` (D-04) — only this example script does, for its own transport setup.
 
 > The default RPC is `https://base-rpc.publicnode.com`, not the chain registry's
@@ -50,6 +61,9 @@ deliverable  3
 bestEffort   false
 priceImpact  36.5
 reconciled: true
+
+plan ready: 1 step(s) (swap-buy)
+send each step in plan.steps with your own wallet — one click per step (see examples/next-app)
 ```
 
 Every fee amount is printed both `formatted` (for display) and as its raw `value`
