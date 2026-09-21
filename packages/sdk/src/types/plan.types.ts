@@ -44,6 +44,35 @@ export interface Bounds {
 
 export type StepKind = 'approval' | 'swap-buy' | 'swap-sell' | 'swap-buy-wnft' | 'swap-fungible'
 
+/**
+ * Everything `runPreflight` (plan 14, R14) needs to re-verify ONE step against the
+ * chain, in the exact frame of a signature. Plan 14 addition — not in plan 04's
+ * original `Step` shape (see `snf-54-14-SUMMARY.md`, Deviations): the four checks R14
+ * requires (payer ownership on a sell, pool custody on a buy, wrapper identity, an
+ * ERC-20 base balance) need domain addresses/ids that no other field on `Step`/
+ * `Quote` carries generically across buy/sell/swap/nft-to-nft — `Quote.collection`
+ * and `Quote.tokenIds` are only populated for the single-collection buy/sell kinds,
+ * and neither carries the wrapper address or the signing payer. A `'swap-*'` step a
+ * `build*` function assembles is expected to populate this; an `'approval'` step
+ * carries none (granting an allowance changes nothing about which ids are being
+ * bought/sold).
+ */
+export interface StepPreflightRefs {
+  /** The wallet whose ownership/balance this step's checks are against — the same
+   * address `BuildArgs.recipient` named at build time. */
+  readonly payer: `0x${string}`
+  readonly collection: `0x${string}`
+  readonly wrapper: `0x${string}`
+  readonly pair: `0x${string}`
+  /** tokenIds this step SELLS — the payer must currently own every one. */
+  readonly sellTokenIds?: readonly string[]
+  /** tokenIds this step BUYS — the pair must currently hold every one. */
+  readonly buyTokenIds?: readonly string[]
+  /** The ERC-20 base token this step spends, when the base is not native — absent
+   * for a native-base leg. */
+  readonly erc20Base?: `0x${string}`
+}
+
 /** One step of an `ExecutionPlan.steps[]` — approvals are always ordered before the
  * swap they unblock (Edge `ordering | R13`). */
 export interface Step {
@@ -53,6 +82,7 @@ export interface Step {
   readonly approvals: readonly Approval[]
   readonly bounds: Bounds
   readonly quote: Quote
+  readonly preflightRefs?: StepPreflightRefs
 }
 
 /** Result of `plan.preflight()` (R14) — every check ran against the same
@@ -63,6 +93,10 @@ export interface PreflightResult {
   readonly ok: true
   readonly blockNumber: bigint
   readonly checked: readonly string[]
+  /** Present only when the ONE-call guarantee degraded to a one-block sequential
+   * fallback (multicall3 itself threw) — plan 14 addition, mirrors `Quote.warnings`
+   * (never a reason to fail the call on its own). */
+  readonly warnings?: readonly string[]
 }
 
 /** The output of every `build*` function (R13). */
