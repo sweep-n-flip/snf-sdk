@@ -1,6 +1,5 @@
 /**
- * The hooks barrel. `useSnfCheckout` is added by Task 2 of this plan — see that
- * commit for the diff. D-02: exactly `useSnf*` names, no other public hook.
+ * The hooks barrel. D-02: exactly `useSnf*` names, no other public hook.
  */
 export { useSnfClient } from './useSnfClient'
 
@@ -22,3 +21,6 @@ export type {
   UseSnfQuoteNftToNftOptions,
   UseSnfQuoteNftToNftResult,
 } from './useSnfQuoteNftToNft'
+
+export { useSnfCheckout } from './useSnfCheckout'
+export type { UseSnfCheckoutResult } from './useSnfCheckout'

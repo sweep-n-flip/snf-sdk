@@ -40,7 +40,11 @@ export interface SnfProviderProps {
    * read from `client.chainId` and `publicClient`/`providers` are ignored.
    */
   readonly client?: SnfClient
-  readonly children: ReactNode
+  /** Optional so `createElement(SnfProvider, props, children)` (the third-argument
+   * form every non-JSX call site — e.g. `test/setup.ts`'s `renderWithSnf` — uses)
+   * type-checks; every real JSX `<SnfProvider>…</SnfProvider>` usage always supplies
+   * it in practice. */
+  readonly children?: ReactNode
 }
 
 /**

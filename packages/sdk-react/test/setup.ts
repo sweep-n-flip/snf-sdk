@@ -40,7 +40,7 @@ export function makeStubPublicClient(): SnfProviderProps['publicClient'] {
 
 export interface RenderWithSnfOptions {
   readonly client: SnfClient
-  readonly chainId?: number
+  readonly chainId?: SnfProviderProps['chainId']
   readonly queryClient?: QueryClient
 }
 

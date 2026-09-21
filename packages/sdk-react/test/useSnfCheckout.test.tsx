@@ -1,4 +1,4 @@
-import { act } from 'react'
+import { act } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { describeError, SnfError, type SnfClient } from '@sweepnflip/sdk'
 import type {

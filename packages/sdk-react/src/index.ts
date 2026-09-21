@@ -19,6 +19,7 @@ export {
   useSnfQuoteBuy,
   useSnfQuoteSell,
   useSnfQuoteNftToNft,
+  useSnfCheckout,
 } from './hooks'
 export type {
   UseSnfCollectionOptions,
@@ -34,4 +35,5 @@ export type {
   UseSnfQuoteNftToNftArgs,
   UseSnfQuoteNftToNftOptions,
   UseSnfQuoteNftToNftResult,
+  UseSnfCheckoutResult,
 } from './hooks'
