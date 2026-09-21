@@ -80,9 +80,44 @@ export interface DirectOnlyResult {
   readonly viablePayTokens: readonly TokenRef[]
 }
 
+/** Args for `isDirectOnly` (`directOnlyRouting.ts`). */
+export interface IsDirectOnlyArgs {
+  readonly path: RoutePath
+  /** Every curated direct-only-base address for the active chain — resolved by the
+   * caller (the client's providers layer), never curated inside `src/routing/*`. */
+  readonly directOnlyBaseAddresses: readonly `0x${string}`[]
+}
+
+/** Args for `evaluateDirectOnly` (`directOnlyRouting.ts`). */
+export interface EvaluateDirectOnlyArgs extends IsDirectOnlyArgs {
+  readonly candidates: readonly PoolRef[]
+}
+
 /** The reason→code record `routeBlock.ts` exports, typed here so both the record
  * and its exhaustiveness test import the same shape. */
 export type RouteBlockCodeMap = Readonly<Record<RouteBlockReason, SnfErrorCode>>
+
+/** Args for `evaluateRouteBlock` (`routeBlock.ts`). */
+export interface EvaluateRouteBlockArgs {
+  /** Every candidate pool for the requested collection (possibly empty). */
+  readonly candidates: readonly PoolRef[]
+  /** The resolved router path for the requested route, when one could be built. */
+  readonly path: RoutePath | undefined
+  readonly directOnlyBaseAddresses: readonly `0x${string}`[]
+  /** Caller already determined the requested token/param is invalid. */
+  readonly unsupportedToken?: boolean
+  /** Caller already determined the sole candidate pool has no reserves. */
+  readonly noLiquidity?: boolean
+  /** NFT×NFT only — the two legs' own base tokens (R9: different bases ⇒ `NO_ROUTE`). */
+  readonly nftToNft?: { readonly sellPoolBase: TokenRef; readonly buyPoolBase: TokenRef }
+}
+
+/** Result of `evaluateRouteBlock` (`routeBlock.ts`). */
+export interface RouteBlockResult {
+  readonly blocked: boolean
+  readonly reason?: RouteBlockReason
+  readonly viablePayTokens: readonly TokenRef[]
+}
 
 /** Args for `buildNftRoutePath` (`nftRoutePaths.ts`). */
 export interface BuildNftRoutePathArgs {
