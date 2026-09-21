@@ -17,6 +17,22 @@ export interface CollectionLabels {
 }
 
 /**
+ * Input to `getCollectionLabels` (plan 10). Both a subgraph-sourced pair and an
+ * on-chain-read pair are accepted so the waterfall (subgraph → on-chain → shortened
+ * address) can be resolved in ONE call — plan 04's original stub signature (bare
+ * `symbol`/`name`) could not distinguish the two sources, which the waterfall's own
+ * priority order requires (`.specs/codebase/COLLECTION_IDENTITY.md`). See
+ * `snf-54-10-SUMMARY.md`, Deviations, for why this replaces the committed stub shape.
+ */
+export interface CollectionLabelsInput {
+  readonly address: `0x${string}`
+  readonly subgraphName?: string | null
+  readonly subgraphSymbol?: string | null
+  readonly onChainName?: string | null
+  readonly onChainSymbol?: string | null
+}
+
+/**
  * EIP-2981 royalty for a collection, reconstructed the same way the Router itself
  * computes it (`RoyaltyHelper.sol`). `capBps === 0` means the Router's on-chain
  * royalty cap is unset, which zeroes the royalty entirely if `capRoyaltyFee=true` were
@@ -33,6 +49,13 @@ export interface RoyaltyInfo {
   readonly basis: 'collection-default' | 'per-token'
   readonly unpayableReceiver: boolean
   readonly warnings: readonly string[]
+  /**
+   * True when the whole EIP-2981 probe itself could not be read (RPC/multicall
+   * failure) — distinguishes "this collection has no royalty" (`probeFailed: false`,
+   * `bps: 0`) from "we could not tell" (`probeFailed: true`, `bps: 0`). Added by plan
+   * 10 (not in plan 04's original shape) — see `snf-54-10-SUMMARY.md`, Deviations.
+   */
+  readonly probeFailed: boolean
 }
 
 /**
