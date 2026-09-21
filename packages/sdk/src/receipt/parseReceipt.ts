@@ -1,5 +1,6 @@
 import { getAddress, parseEventLogs, type Log } from 'viem'
 
+import { ERC20_ABI } from '../abis/ERC20'
 import { ERC721_ABI } from '../abis/ERC721'
 import { PAIR_ABI } from '../abis/UniswapV2Pair'
 import { WETH9_ABI } from '../abis/WETH9'
@@ -41,6 +42,23 @@ import type { ReceiptLike, SwapReceipt } from './receipt.types'
  * `test/fixtures/receipts/sell-3.json`'s `received` is the fee-only net rather than
  * the collection's true (fee+royalty) net.
  *
+ * A pure wNFT (fractional wrapper) leg has NO ERC-721 `Transfer` logs at all — the
+ * wrapper token's own `Transfer` is ERC-20-shaped (2 indexed args + a non-indexed
+ * `value`), which the ERC-721 ABI above never matches. `itemsIn`/`itemsOut` therefore
+ * stay empty for that leg BY DESIGN (this function has no notion of "the wrapper
+ * token" as a distinct concept from any other ERC-20). What used to be broken
+ * (Finding 3, `snf-54-18-SUMMARY.md`; fixed in `snf-54-18F`) is that `received`/`paid`
+ * ALSO stayed `undefined` in that case, even when the pool-side WETH `Withdrawal`/
+ * `Deposit` log proved real settlement happened — the gating condition below keyed
+ * exclusively off `itemsIn`/`itemsOut`. The fix detects a fungible leg generically
+ * from the SAME receipt's own pair `Swap` log (no wrapper address needed as input):
+ * an ERC-20 `Transfer` INTO that pair from a non-zero address is a fungible sell leg;
+ * one OUT OF that pair to a non-zero address is a fungible buy leg. The zero-address
+ * exclusion is what keeps a wrapper's internal mint/burn accounting step (address(0)
+ * <-> pair, part of every whole-NFT `*Collection` swap's own bookkeeping —
+ * `sell-3.json`'s own mint log is exactly this) from being mistaken for money
+ * actually changing hands.
+ *
  * `status: 'reverted'` throws a typed `SnfError` via `describeError` (plan 07) rather
  * than re-implementing the revert-reason mapping — `INSUFFICIENT_OUTPUT_AMOUNT` when
  * the receipt carries decodable revert data, `UNKNOWN` otherwise (a mined revert's
@@ -78,7 +96,21 @@ export function parseReceipt(ctx: SnfClientContext, receipt: ReceiptLike): SwapR
   const grossWithdrawn = sumWad(withdrawals)
   const grossDeposited = sumWad(deposits)
 
-  reconcileAgainstPoolLeg(receipt.logs, grossWithdrawn, grossDeposited, warnings)
+  const swaps = parseSwaps(receipt.logs)
+  reconcileAgainstPoolLeg(swaps, grossWithdrawn, grossDeposited, warnings)
+
+  // Fungible (wNFT/wrapper) leg detection — see this file's header for why this is
+  // generic (no wrapper address as input) and why the zero-address exclusion matters.
+  const pairAddress = swaps[0]?.address
+  const erc20Transfers = parseErc20Transfers(receipt.logs).filter(
+    (t) => !sameAddress(t.address, ctx.chain.quoteToken),
+  )
+  const hasFungibleInLeg =
+    pairAddress !== undefined &&
+    erc20Transfers.some((t) => sameAddress(t.args.to, pairAddress) && !isZeroAddress(t.args.from))
+  const hasFungibleOutLeg =
+    pairAddress !== undefined &&
+    erc20Transfers.some((t) => sameAddress(t.args.from, pairAddress) && !isZeroAddress(t.args.to))
 
   const marketplaceFeeWei = attributeMarketplaceFee(receipt.logs, router)
   if (marketplaceFeeWei === undefined) {
@@ -100,15 +132,15 @@ export function parseReceipt(ctx: SnfClientContext, receipt: ReceiptLike): SwapR
 
   let received: SwapReceipt['received']
   let paid: SwapReceipt['paid']
-  if (itemsIn.length > 0 && grossWithdrawn > 0n) {
+  if ((itemsIn.length > 0 || hasFungibleInLeg) && grossWithdrawn > 0n) {
     received = toNativeAmount(chainId, grossWithdrawn - marketplaceFee)
     warnings.push('received excludes any creator royalty deduction, which could not be attributed from logs.')
-  } else if (itemsOut.length > 0 && grossDeposited > 0n) {
+  } else if ((itemsOut.length > 0 || hasFungibleOutLeg) && grossDeposited > 0n) {
     paid = toNativeAmount(chainId, grossDeposited + marketplaceFee)
     warnings.push('paid excludes any creator royalty addition, which could not be attributed from logs.')
   }
 
-  if (transfers.length === 0 && withdrawals.length === 0 && deposits.length === 0) {
+  if (transfers.length === 0 && withdrawals.length === 0 && deposits.length === 0 && erc20Transfers.length === 0) {
     return {
       itemsIn: [],
       itemsOut: [],
@@ -147,6 +179,26 @@ function parseTransfers(logs: readonly Log[]) {
   }
 }
 
+/** ERC-20-shaped `Transfer` logs (2 indexed args + a non-indexed `value`) — the
+ * wrapper token's own transfer shape, distinct from the ERC-721 `Transfer` above
+ * (`parseTransfers`) even though both events share the same topic0 signature. viem's
+ * `parseEventLogs` discriminates by matching each log's actual topic COUNT against
+ * what each ABI's indexed-arg layout expects, so a 4-topic ERC-721 transfer never
+ * matches here and a 3-topic ERC-20 transfer never matches `parseTransfers` above. */
+function parseErc20Transfers(logs: readonly Log[]) {
+  try {
+    return parseEventLogs({ abi: ERC20_ABI, eventName: 'Transfer', logs: [...logs] })
+  } catch {
+    return []
+  }
+}
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const
+
+function isZeroAddress(address: `0x${string}`): boolean {
+  return getAddress(address) === ZERO_ADDRESS
+}
+
 function parseWithdrawals(logs: readonly Log[]) {
   try {
     return parseEventLogs({ abi: WETH9_ABI, eventName: 'Withdrawal', logs: [...logs] })
@@ -174,14 +226,15 @@ function parseSwaps(logs: readonly Log[]) {
 /** Cross-checks the WETH-derived gross against the pair's own `Swap` log — a
  * mismatch means this receipt moved more than the one hop this function models
  * (multi-hop, delegate routing) and the derived figures above should be read with
- * that in mind. Never blocks the return; only annotates `warnings`. */
+ * that in mind. Never blocks the return; only annotates `warnings`. `swaps` is
+ * parsed once by the caller (`parseReceipt`) and reused here and for fungible-leg
+ * detection — never re-parsed. */
 function reconcileAgainstPoolLeg(
-  logs: readonly Log[],
+  swaps: ReturnType<typeof parseSwaps>,
   grossWithdrawn: bigint,
   grossDeposited: bigint,
   warnings: string[],
 ): void {
-  const swaps = parseSwaps(logs)
   if (swaps.length === 0) return
   const poolOut = swaps.reduce(
     (sum, log) => sum + (log.args.amount0Out > 0n ? log.args.amount0Out : log.args.amount1Out),

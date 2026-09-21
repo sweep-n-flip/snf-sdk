@@ -186,13 +186,15 @@ describe('parseReceipt — sell-wnft.json (captured live from the Base fork, pla
     expect(result.itemsOut).toEqual([])
   })
 
-  it('FINDING (not fixed — packages/sdk/src out of scope): received/paid stay undefined for a wNFT sale, even though the WETH Withdrawal log proves real ETH was received — see this fixture\'s own "note" field and snf-54-18-SUMMARY.md, Findings', () => {
+  it('FIXED (Finding 3, snf-54-18F): received is now attributed for a pure wNFT sale, from the WETH Withdrawal log the itemsIn-only gate used to ignore', () => {
     const { ctx } = fakeCtx(fixture.chainId ?? 8453)
     const result = parseReceipt(ctx, toReceiptLike(fixture))
-    expect(result.received).toBeUndefined()
+    expect(result.received?.value).toBe(BigInt(fixture.expected?.receivedWei as string))
+    expect(result.received?.value).toBe(BigInt(fixture.expected?.grossWithdrawnWei as string))
     expect(result.paid).toBeUndefined()
     expect(result.fees.marketplace.value).toBe(0n)
     expect(result.fees.royalty.value).toBe(0n)
+    expect(result.warnings.some((w) => w.toLowerCase().includes('royalty'))).toBe(true)
   })
 
   it('never throws for this receipt', () => {
