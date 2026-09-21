@@ -84,14 +84,22 @@ export interface SwapReceipt {
 /**
  * Headless checkout instance returned by `createCheckout(plan)`. `next()` is the ONLY
  * member that may return a step to dispatch — a caller's own wallet-sending code reads
- * `next()`'s return value and sends it; `onReceipt` may only advance state (INV-17),
- * never itself dispatch a transaction. `cancel()` is only effective in `review`/`ready-*`
- * states (R15 acceptance).
+ * `next()`'s return value and sends it; `onReceipt`/`onRejected` may only advance state
+ * (INV-17), never themselves dispatch a transaction. `cancel()` is only effective in
+ * `review`/`ready-*` states (R15 acceptance).
+ *
+ * `onRejected` (plan 08 addition — see that plan's SUMMARY, Deviations): the wallet
+ * declining a signature request is a distinct settlement outcome from a mined receipt
+ * (no transaction hash exists yet to attribute a `ReceiptLike` to), and needs its own
+ * watcher-only entry point so the reducer's `'rejected'` action (already part of this
+ * plan's `CheckoutEvent` union below) is reachable through the public `Checkout`
+ * surface a partner actually calls.
  */
 export interface Checkout {
   snapshot(): CheckoutSnapshot
   next(): Step | null
   cancel(): void
   onReceipt(receipt: ReceiptLike): void
+  onRejected(error: SnfError): void
   subscribe(fn: (event: CheckoutEvent) => void): () => void
 }
