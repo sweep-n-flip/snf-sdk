@@ -7,7 +7,9 @@
   },
   "packageManager": "pnpm@10.30.3",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "scripts": {
     "build": "pnpm -r build",
@@ -24,6 +26,7 @@
   "devDependencies": {
     "@changesets/cli": "3.0.3",
     "@size-limit/preset-small-lib": "14.0.0",
+    "@types/node": "^20.19.43",
     "@vitest/coverage-v8": "5.0.1",
     "eslint": "9.39.4",
     "fast-check": "4.10.2",
