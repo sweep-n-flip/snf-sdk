@@ -1,3 +1,4 @@
+import { SnfError } from '../errors'
 import type { SnfChainConfig, SnfChainId } from './chains.types'
 
 /**
@@ -378,22 +379,16 @@ export const SNF_CHAINS = [
 /** The 14 supported chain ids, in registry order. */
 export const SNF_CHAIN_IDS: readonly SnfChainId[] = SNF_CHAINS.map((c) => c.chainId)
 
-// TODO(54-04): replace with SnfError once errors.ts lands (plan 04, wave 3).
-class ChainNotSupportedError extends Error {
-  readonly code = 'INVALID_PARAMS' as const
-
-  constructor(id: number) {
-    super(`Unsupported chainId ${id}. Supported: ${SNF_CHAIN_IDS.join(', ')}.`)
-    this.name = 'ChainNotSupportedError'
-  }
-}
-
-/** Returns the config for a supported chain, or throws `ChainNotSupportedError` (code
+/** Returns the config for a supported chain, or throws `SnfError` (code
  * `INVALID_PARAMS`) — the registry can never return `undefined`. Arity 1: no `mode`
  * parameter exists. */
 export function getChain(id: number): SnfChainConfig {
   const found = SNF_CHAINS.find((c) => c.chainId === id)
-  if (!found) throw new ChainNotSupportedError(id)
+  if (!found) {
+    throw new SnfError('INVALID_PARAMS', `Unsupported chain: ${id}`, {
+      details: { chainId: id, supported: SNF_CHAIN_IDS },
+    })
+  }
   return found
 }
 
