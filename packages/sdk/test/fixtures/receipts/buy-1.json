@@ -1,5 +1,133 @@
 {
-  "source": "NONE — no real mined buy receipt (logs) could be sourced from the Phase 74/83 planning artifacts. 54-RESEARCH.md § 'Fixtures to Reuse' records only BUY-SIDE PRICE figures traced to snf-drops-registration/src/features/mint-details/genesis/swap/swapConstants.ts (a quoted cost, not a settled receipt with logs), and explicitly flags every SELL-side figure as Assumption A3 ('not independently re-traced to a specific file/line this session'). No transaction hash for a real buy against the SnF Router was found anywhere in .planning/phases/snf-74-genesis-swap-card-buy-and-sell/ or .planning/phases/snf-83-arc-pricing-dynamics/.",
-  "note": "Per this plan's own instruction ('If a receipt cannot be sourced, do not invent one'), this fixture is left pending rather than fabricated. The corresponding test case is `it.todo`. Hand-off: plan 18 (fork-lane tests) should capture a real buy transaction's receipt from a Base (or any live chain) fork and replace this file, following the exact shape `sell-3.json` demonstrates (raw `eth_getTransactionReceipt` logs + an `expected` block naming itemsOut/paid/fees with their `source`). See snf-54-08-SUMMARY.md, Deviations, for the full account.",
-  "pending": true
+  "source": "Live receipt captured from an anvil fork of Base mainnet (chainId 8453, fork block 51599514, mainnet.base.org, 2026-09-21) during plan snf-54-18's Base fork lane (test/fork/base.fork.test.ts, 'the quickstart round trip'). Buyer is anvil's own default account #0 (well-known Foundry/Hardhat test key, D-12) — never a real wallet. Router, collection, wrapper, pair and quoteToken addresses are the SAME real deployed Base mainnet contracts the fork forked from (only the buyer/state are local-fork-only). Transaction: swapETHForExactTokensCollection([245830], [WETH, DEMON], false, buyer, deadline).",
+  "note": "This receipt is a REAL, mined, on-chain transaction (submitted to the anvil fork, not fabricated) — the one difference from a live-mainnet-sourced fixture (like sell-3.json) is that it was produced ON a fork rather than found in mined mainnet history, exactly as this plan's own action text directs ('capture a real buy transaction's receipt from a Base (or any live chain) fork'). The buy also surfaced a genuine SDK finding (runPreflight's buy-side ownership check compares against the AMM Pair address, but this collection's real custody is the WRAPPER contract) — see snf-54-18-SUMMARY.md, Findings, for the full account; the finding did not block this capture because the transaction was sent directly, independent of the (incorrectly rejecting) preflight() call.",
+  "pending": false,
+  "chainId": 8453,
+  "buyer": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+  "router": "0x1312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+  "quoteToken": "0x4200000000000000000000000000000000000006",
+  "collection": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+  "wrapper": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+  "pair": "0xe8143126bdfbe58ed0056f88031236766c311ecf",
+  "marketplaceWallet": "0xc00d62ce5c1543d939eebb9d6db213ef873300e3",
+  "receipt": {
+    "status": "success",
+    "transactionHash": "0xb33f903210d2fa8799538d54b190923fa007d34a8471577527628ff7c16270da",
+    "blockNumber": "51599515",
+    "logs": [
+      {
+        "address": "0x4200000000000000000000000000000000000006",
+        "data": "0x00000000000000000000000000000000000000000000000000006e9e2e40c46e",
+        "topics": [
+          "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 0,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0x4200000000000000000000000000000000000006",
+        "data": "0x00000000000000000000000000000000000000000000000000006e9e2e40c46e",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000e8143126bdfbe58ed0056f88031236766c311ecf"
+        ],
+        "logIndex": 1,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+        "data": "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000e8143126bdfbe58ed0056f88031236766c311ecf",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 2,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0xe8143126bdfbe58ed0056f88031236766c311ecf",
+        "data": "0x00000000000000000000000000000000000000000000000000050a6e2be1ae63000000000000000000000000000000000000000000000000970954aa60d19938",
+        "topics": [
+          "0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1"
+        ],
+        "logIndex": 3,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0xe8143126bdfbe58ed0056f88031236766c311ecf",
+        "data": "0x00000000000000000000000000000000000000000000000000006e9e2e40c46e000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000de0b6b3a7640000",
+        "topics": [
+          "0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 4,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+        "data": "0x0000000000000000000000000000000000000000000000000de0b6b3a7640000",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        ],
+        "logIndex": 5,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0x7e50af303a0422ebec6bc198034a2430bbe0195c",
+        "data": "0x",
+        "topics": [
+          "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+          "0x000000000000000000000000a9f3f136380e53f8f55cad44391bda2b617d7c83",
+          "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+          "0x000000000000000000000000000000000000000000000000000000000003c046"
+        ],
+        "logIndex": 6,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0xa9f3f136380e53f8f55cad44391bda2b617d7c83",
+        "data": "0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000003c046",
+        "topics": [
+          "0x1a9ecd79d4129de1f6144bf993d21f4a1803c25ad4040ae9571f25082792125e",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04",
+          "0x000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+        ],
+        "logIndex": 7,
+        "transactionIndex": 0,
+        "removed": false
+      },
+      {
+        "address": "0xc00d62ce5c1543d939eebb9d6db213ef873300e3",
+        "data": "0x000000000000000000000000000000000000000000000000000002c3f45b381c",
+        "topics": [
+          "0x3d0ce9bfc3ed7d6862dbb28b2dea94561fe714a1b4d019aa8af39730d1ad7c3d",
+          "0x0000000000000000000000001312488a7bf5aaf2b2eebe8393c9616a1418cf04"
+        ],
+        "logIndex": 8,
+        "transactionIndex": 0,
+        "removed": false
+      }
+    ]
+  },
+  "expected": {
+    "itemsIn": [],
+    "itemsOut": ["245830"],
+    "grossDepositedWei": "121625659884654",
+    "marketplaceFeeWei": "3040641497116",
+    "paidWei": "124666301381770",
+    "note": "paidWei = grossDepositedWei + marketplaceFeeWei ONLY (parseReceipt's documented convention — royalty is never attributable from logs, see parseReceipt.ts's own header comment). Cross-checked independently: grossDepositedWei (121625659884654) is exactly the 'pool-only cost' figure this plan's base-demon.json/RESEARCH already recorded for a 1-item buy; marketplaceFeeWei (3040641497116) is exactly 2.5% of it (the Base marketplace Safe's SafeReceived log, read byte-for-byte — the same pattern sell-3.json's fixture uses). The true gross COST including royalty (5% of grossDepositedWei, read live via royaltyInfo(245830, 121625659884654) during this session) is 130747584376002 — matching base-demon.json's 'source' field note for capRoyaltyFee=false exactly — but parseReceipt has no way to attribute that royalty from logs alone (paid via a raw native transfer with no log), which is why paidWei stays at the fee-only figure and the SwapReceipt.warnings array discloses the gap, same as sell-3.json's 'received'."
+  }
 }

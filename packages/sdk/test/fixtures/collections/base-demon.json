@@ -13,6 +13,35 @@
     "eth": "1297217522559477",
     "wnft": "11883323065263036728"
   },
+  "sellFixtures": {
+    "closes": "RESEARCH Assumption A3 — Base sell-side fixtures, derived live in plan 18 (snf-54-18) from the real Base Router, not the Base fork (the fork is pinned to the same block and reproduces the identical answer, verified in test/fork/base.fork.test.ts).",
+    "forkBlockNumber": 51599577,
+    "date": "2026-09-21",
+    "rpc": "https://mainnet.base.org",
+    "marketplaceFeeE18": "25000000000000000",
+    "royaltyE18": "50000000000000000",
+    "royaltyFeeCap": "0",
+    "capRoyaltyFee": false,
+    "sell1": {
+      "tokenIds": ["246125"],
+      "routerCall": "getAmountsOutCollection([246125], [collection, WETH], false)",
+      "poolLeg": "98829296726700",
+      "marketplace": "2470732418167",
+      "royalty": "4941464836335",
+      "net": "91417099472198",
+      "note": "royaltyInfo(246125, 98829296726700) read live == 4941464836335, byte for byte — cross-checked against the reconstruction, not just the Router's own total."
+    },
+    "sell3": {
+      "tokenIds": ["246125", "246171", "245868"],
+      "routerCall": "getAmountsOutCollection([246125,246171,245868], [collection, WETH], false)",
+      "poolLeg": "257285056767207",
+      "marketplace": "6432126419180",
+      "salePrice": "85761685589069",
+      "royaltyPerId": "4288084279453",
+      "royalty": "12864252838359",
+      "net": "237988677509668"
+    }
+  },
   "pending": false,
   "source": "RESEARCH Open Question #2 CLOSED (2026-09-21, plan snf-54-10): the collection address was only an abbreviation ('0x7e50…195c') in 54-CONTEXT.md D-09 and had not been re-verified on-chain. Derived live via a read-only eth_call against the public RPC https://mainnet.base.org (no API key) at Base block 51590601: Pair(0xE8143126bdFBe58ED0056f88031236766C311ECf).token0() = 0x4200000000000000000000000000000000000006 (WETH, the chain registry's quoteToken) and .token1() = 0xA9f3F136380E53F8f55CaD44391bDa2B617D7C83 (the non-WETH side, i.e. the wrapper). WERC721(wrapper).collection() then read as 0x7e50af303A0422ebec6bc198034A2430bBe0195c, checksummed via viem's getAddress — matches the CONTEXT abbreviation's first-4/last-4 hex exactly, confirming it. wrapper.name()/symbol() and collection.name()/symbol() were also read live in the same session (rate-limited once at 429 on the free RPC tier; retried successfully ~5s later). Reserves are the historical pool-only snapshot from snf-54-RESEARCH.md 'Fixtures to Reuse' -> Base pool ETH/DEMON ([VERIFIED: snf-drops-registration/.../swapQuoteMath.ts header + swapConstants.ts:40-48]) — a live balance changes constantly and is not what this fixture exists to pin down; only the collection address derivation above was newly verified this session."
 }

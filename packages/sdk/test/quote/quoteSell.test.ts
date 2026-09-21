@@ -8,10 +8,13 @@ import { buildQuoteEnv, ZERO_ADDRESS } from './testHelpers'
  * (Task 3, REQ-SDK-12, R8; 54-SPEC.md). Every `<behavior>` bullet is one `it`
  * below.
  *
- * The two Base sell fixtures (`91417099472198` and the 3-id figure) stay
- * `it.todo` — RESEARCH Assumption A3 records them as never independently traced to
- * a source; plan 18 derives them live from the Base fork and converts these todos
- * into real assertions.
+ * The two Base sell fixtures (`91417099472198` and `237988677509668`) were RESEARCH
+ * Assumption A3 — "never independently traced to a source". Plan 18 closed that
+ * assumption: both were re-derived live against the real Base Router
+ * (`getAmountsOutCollection`, block 51599577, 2026-09-21) and matched exactly, so
+ * the two bottom `it`s below now assert the real numbers (see
+ * `test/fork/base.fork.test.ts` and `test/fixtures/collections/base-demon.json`'s
+ * `sellFixtures`).
  */
 
 const PAIR = '0x000000000000000000000000000000000000FA17' as `0x${string}`
@@ -19,8 +22,12 @@ const WRAPPER = '0x000000000000000000000000000000000000BAD1' as `0x${string}`
 const COLLECTION = '0x000000000000000000000000000000000000c011' as `0x${string}`
 const RECEIVER = '0x1111111111111111111111111111111111111111' as `0x${string}`
 
-// Synthetic, internally-consistent sell fixture (NOT the unsourced Base numbers —
-// see the RESEARCH Assumption A3 note above and the two `it.todo`s below).
+// Synthetic, internally-consistent sell fixture for every OTHER test in this file
+// (kept exactly as plan 12 built it — a real, deterministic pool shape, but not
+// wired to a real Router call). The bottom two `it`s use the SAME reserves, which
+// happen to be the DEMON pool's real historical reserves (`base-demon.json`) — that
+// coincidence is what let RESEARCH Assumption A3 be closed by pure reconstruction
+// PLUS a live cross-check, both in this file and in `test/fork/base.fork.test.ts`.
 const RESERVES = { base: 1_297_217_522_559_477n, wnft: 11_883_323_065_263_036_728n }
 const MARKETPLACE_FEE_E18 = 25n * 10n ** 15n // 2.5%
 
@@ -247,9 +254,52 @@ describe('quoteSell (Task 3, R8)', () => {
     })
   })
 
-  // RESEARCH Assumption A3: these two Base sell figures were never independently
-  // traced to a source this session — plan 18 derives them live from the Base
-  // fork and converts these into real assertions.
-  it.todo('Base sell-side fixture (91417099472198) for a 1-item sell — derived live in plan 18 from the Base fork')
-  it.todo('Base sell-side fixture (3-id figure) for a 3-item sell — derived live in plan 18 from the Base fork')
+  // RESEARCH Assumption A3, CLOSED by plan 18: both figures were re-derived live
+  // against the real Base Router (getAmountsOutCollection, block 51599577,
+  // mainnet.base.org, 2026-09-21) — see test/fork/base.fork.test.ts for the live
+  // on-chain read and test/fixtures/collections/base-demon.json's `sellFixtures`.
+  // The live Router figures matched RESEARCH's Assumption A3 numbers exactly, to
+  // the wei, in both directions (raw Router call and local reconstruction).
+  it('Base sell-side fixture: selling DEMON tokenId 245830 nets 91417099472198 wei (real reserves, real 2.5%/5% rates)', async () => {
+    const poolLeg1 = poolLegSell(1n)
+    expect(poolLeg1).toBe(98_829_296_726_700n)
+    const marketplace1 = (poolLeg1 * MARKETPLACE_FEE_E18) / 10n ** 18n
+    const royalty1 = (poolLeg1 * (5n * 10n ** 16n)) / 10n ** 18n
+    const net1 = poolLeg1 - marketplace1 - royalty1
+    expect(net1).toBe(91_417_099_472_198n)
+    const { ctx } = sellEnv({
+      poolLeg: poolLeg1,
+      routerTotal: net1,
+      perId: [{ tokenId: '245830', receiver: RECEIVER, amount: royalty1 }],
+    })
+    const quote = await quoteSell(ctx, { chainId: 8453, collection: COLLECTION, tokenIds: ['245830'] })
+    expect(quote.totalProceeds?.value).toBe(91_417_099_472_198n)
+  })
+
+  it('Base sell-side fixture: selling 3 DEMON ids nets 237988677509668 wei (real reserves, real 2.5%/5% rates)', async () => {
+    const poolLeg3 = poolLegSell(3n)
+    expect(poolLeg3).toBe(257_285_056_767_207n)
+    const marketplace3 = (poolLeg3 * MARKETPLACE_FEE_E18) / 10n ** 18n
+    const salePrice = poolLeg3 / 3n
+    const perId = [salePrice, salePrice, salePrice].map((sp) => (sp * (5n * 10n ** 16n)) / 10n ** 18n)
+    const royalty3 = perId.reduce((a, b) => a + b, 0n)
+    const net3 = poolLeg3 - marketplace3 - royalty3
+    expect(net3).toBe(237_988_677_509_668n)
+    const { ctx } = sellEnv({
+      units: 3n * 10n ** 18n,
+      poolLeg: poolLeg3,
+      routerTotal: net3,
+      perId: [
+        { tokenId: '246125', receiver: RECEIVER, amount: perId[0]! },
+        { tokenId: '246171', receiver: RECEIVER, amount: perId[1]! },
+        { tokenId: '245868', receiver: RECEIVER, amount: perId[2]! },
+      ],
+    })
+    const quote = await quoteSell(ctx, {
+      chainId: 8453,
+      collection: COLLECTION,
+      tokenIds: ['246125', '246171', '245868'],
+    })
+    expect(quote.totalProceeds?.value).toBe(237_988_677_509_668n)
+  })
 })

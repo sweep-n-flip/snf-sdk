@@ -254,9 +254,37 @@ describe('applyMarketplaceFee', () => {
   })
 })
 
-// Sell-side fixtures (RESEARCH Assumption A3): "91417099472198" for 1 item and the
-// 3-id figure were never independently re-traced to a source this session, only
-// carried forward from additional_context. Plan 18 derives them live from the Base
-// fork and converts this into an assertion — hardcoding them here would be exactly
-// the "fabricated stub" the plan's <output> section forbids.
-it.todo('Base sell-side fixture (91417099472198) — derived live in plan 18 from the Base fork')
+// Sell-side fixtures (RESEARCH Assumption A3, CLOSED by plan 18): "91417099472198"
+// for 1 item and "237988677509668" for 3 items were re-derived live this session
+// against the real Base Router (`getAmountsOutCollection`, block 51599577,
+// mainnet.base.org, 2026-09-21) AND independently reconstructed here from
+// `getAmountOut` fed the same pool's real reserves (`base-demon.json`'s `reserves`
+// field) — the two match the live Router figure to the wei, which is what converts
+// this from an "unsourced `additional_context` number" into a verified fixture. See
+// `test/fork/base.fork.test.ts` for the live on-chain read and
+// `test/fixtures/collections/base-demon.json`'s `sellFixtures` for the full record.
+describe('Base sell-side fixture (RESEARCH Assumption A3, closed by plan 18)', () => {
+  const RESERVES = { base: 1_297_217_522_559_477n, wnft: 11_883_323_065_263_036_728n }
+  const MARKETPLACE_FEE_E18 = 25n * 10n ** 15n // 2.5%
+  const ROYALTY_E18 = 5n * 10n ** 16n // 5% (DEMON collection, confirmed live via royaltyInfo)
+
+  it('1-item sell reconstructs to 91417099472198 — matches the live Router getAmountsOutCollection answer', () => {
+    const poolLeg = getAmountOut(1n * ONE_E18, RESERVES.wnft, RESERVES.base, SNF_NFT_NET_FEE)
+    expect(poolLeg).toBe(98_829_296_726_700n)
+    const marketplace = (poolLeg! * MARKETPLACE_FEE_E18) / ONE_E18
+    const royalty = (poolLeg! * ROYALTY_E18) / ONE_E18
+    const net = poolLeg! - marketplace - royalty
+    expect(net).toBe(91_417_099_472_198n)
+  })
+
+  it('3-item sell reconstructs to 237988677509668 — matches the live Router getAmountsOutCollection answer', () => {
+    const poolLeg = getAmountOut(3n * ONE_E18, RESERVES.wnft, RESERVES.base, SNF_NFT_NET_FEE)
+    expect(poolLeg).toBe(257_285_056_767_207n)
+    const marketplace = (poolLeg! * MARKETPLACE_FEE_E18) / ONE_E18
+    const salePrice = poolLeg! / 3n
+    const royaltyPerId = (salePrice * ROYALTY_E18) / ONE_E18
+    const royalty = royaltyPerId * 3n
+    const net = poolLeg! - marketplace - royalty
+    expect(net).toBe(237_988_677_509_668n)
+  })
+})

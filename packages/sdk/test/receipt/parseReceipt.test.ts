@@ -15,12 +15,16 @@ import sellWnftFixture from '../fixtures/receipts/sell-wnft.json'
  * R16 — `parseReceipt` against sourced receipt fixtures, plus the version-
  * monotonicity backstop.
  *
- * `sell-3.json` is the ONE real, fully-verified fixture (see its own `source`/`note`
- * fields, and `snf-54-08-SUMMARY.md`'s Deviations): a live `eth_getTransactionReceipt`
- * against Base for a real mined DEMON sale, cross-checked against
- * `snf-drops-registration`'s independently-captured `sellReceipt.fixture.ts`.
- * `buy-1.json`/`sell-wnft.json` could not be sourced (no real receipt found anywhere
- * in the workspace) and are `it.todo` per this plan's "never invent" rule.
+ * `sell-3.json` is a real, fully-verified fixture from live MAINNET history (see its
+ * own `source`/`note` fields, and `snf-54-08-SUMMARY.md`'s Deviations): a live
+ * `eth_getTransactionReceipt` against Base for a real mined DEMON sale, cross-checked
+ * against `snf-drops-registration`'s independently-captured `sellReceipt.fixture.ts`.
+ * `buy-1.json`/`sell-wnft.json` could not be sourced from mainnet history at plan 08's
+ * time and were left `it.todo` pending a fork capture — plan 18 captured both live
+ * from a real, mined anvil-fork-of-Base transaction (test/fork/base.fork.test.ts) and
+ * converted the two `it.todo`s below into real assertions against the actual,
+ * verified `parseReceipt` behavior (including a genuine finding: `received`/`paid`
+ * never populate for a pure wNFT sale — see `sell-wnft.json`'s own `note` field).
  */
 
 interface FixtureLog {
@@ -133,19 +137,69 @@ describe('parseReceipt — sell-3.json (the one real, sourced fixture)', () => {
   })
 })
 
-describe.skipIf((buy1Fixture as unknown as ReceiptFixture).pending === false)(
-  'parseReceipt — buy-1.json',
-  () => {
-    it.todo('reproduces itemsOut/paid/fees for a real buy receipt (no real receipt sourced yet — plan 18)')
-  },
-)
+describe('parseReceipt — buy-1.json (captured live from the Base fork, plan 18)', () => {
+  const fixture = buy1Fixture as unknown as ReceiptFixture
 
-describe.skipIf((sellWnftFixture as unknown as ReceiptFixture).pending === false)(
-  'parseReceipt — sell-wnft.json',
-  () => {
-    it.todo('reproduces itemsIn/received for a real wNFT-sell receipt (no real receipt sourced yet — plan 18)')
-  },
-)
+  it('has a non-empty source and is no longer pending', () => {
+    expect(fixture.source.length).toBeGreaterThan(0)
+    expect(fixture.pending).toBe(false)
+  })
+
+  it('returns itemsOut with the bought tokenId, and itemsIn empty', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    const result = parseReceipt(ctx, toReceiptLike(fixture))
+    expect(result.itemsOut).toEqual(fixture.expected?.itemsOut)
+    expect(result.itemsIn).toEqual([])
+  })
+
+  it('attributes the marketplace fee from the Safe-emitted log, byte for byte', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    const result = parseReceipt(ctx, toReceiptLike(fixture))
+    expect(result.fees.marketplace.value).toBe(BigInt(fixture.expected?.marketplaceFeeWei as string))
+  })
+
+  it('paid is grossDeposited + marketplaceFee ONLY, and discloses the royalty gap via warnings', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    const result = parseReceipt(ctx, toReceiptLike(fixture))
+    expect(result.paid?.value).toBe(BigInt(fixture.expected?.paidWei as string))
+    expect(result.warnings.some((w) => w.toLowerCase().includes('royalty'))).toBe(true)
+  })
+
+  it('never throws for this receipt', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    expect(() => parseReceipt(ctx, toReceiptLike(fixture))).not.toThrow()
+  })
+})
+
+describe('parseReceipt — sell-wnft.json (captured live from the Base fork, plan 18)', () => {
+  const fixture = sellWnftFixture as unknown as ReceiptFixture
+
+  it('has a non-empty source and is no longer pending', () => {
+    expect(fixture.source.length).toBeGreaterThan(0)
+    expect(fixture.pending).toBe(false)
+  })
+
+  it('a pure wNFT (fractional wrapper) sale has NO ERC-721 Transfer logs — itemsIn/itemsOut both stay empty', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    const result = parseReceipt(ctx, toReceiptLike(fixture))
+    expect(result.itemsIn).toEqual([])
+    expect(result.itemsOut).toEqual([])
+  })
+
+  it('FINDING (not fixed — packages/sdk/src out of scope): received/paid stay undefined for a wNFT sale, even though the WETH Withdrawal log proves real ETH was received — see this fixture\'s own "note" field and snf-54-18-SUMMARY.md, Findings', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    const result = parseReceipt(ctx, toReceiptLike(fixture))
+    expect(result.received).toBeUndefined()
+    expect(result.paid).toBeUndefined()
+    expect(result.fees.marketplace.value).toBe(0n)
+    expect(result.fees.royalty.value).toBe(0n)
+  })
+
+  it('never throws for this receipt', () => {
+    const { ctx } = fakeCtx(fixture.chainId ?? 8453)
+    expect(() => parseReceipt(ctx, toReceiptLike(fixture))).not.toThrow()
+  })
+})
 
 describe('parseReceipt — reverted receipts throw typed, never return a partial result', () => {
   it('a reverted receipt with a decodable revert reason throws INSUFFICIENT_OUTPUT_AMOUNT', () => {
