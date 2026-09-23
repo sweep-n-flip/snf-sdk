@@ -59,6 +59,9 @@ importers:
       '@sweepnflip/sdk-react':
         specifier: workspace:*
         version: link:../../packages/sdk-react
+      '@sweepnflip/widgets':
+        specifier: workspace:*
+        version: link:../../packages/widgets
       '@tanstack/react-query':
         specifier: ^5.90.21
         version: 5.103.1(react@19.2.5)

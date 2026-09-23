@@ -12,6 +12,7 @@
   "dependencies": {
     "@sweepnflip/sdk": "workspace:*",
     "@sweepnflip/sdk-react": "workspace:*",
+    "@sweepnflip/widgets": "workspace:*",
     "@tanstack/react-query": "^5.90.21",
     "next": "16.1.6",
     "react": "19.2.5",
