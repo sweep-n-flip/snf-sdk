@@ -1,0 +1,154 @@
+/**
+ * @sweepnflip/widgets/theme.css — the optional SnF look (D-06, R7).
+ *
+ * Nothing in `src/index.ts` imports this file, and nothing in any component file
+ * references it either — the default entry point (`dist/index.js`/`dist/index.cjs`)
+ * ships with zero stylesheet references, proven by `test/theme.test.ts`. A partner
+ * who imports nothing gets every part fully functional and completely unstyled.
+ * Importing this file changes appearance only, never behaviour: every rule below is a
+ * pure CSS selector keyed on the `data-part`/`data-state`/`data-side`/`data-busy`/
+ * `data-disabled`/`data-stale` attributes the components already emit via
+ * `toDataAttrs` (see `src/internal/dataState.ts`) — this file adds no attribute, no
+ * className hook, and requires no change to any component file.
+ *
+ * Every visual value below is a `var(--snf-*)` reference, never a literal, so a
+ * partner can override exactly one custom property in their own stylesheet (loaded
+ * after this one) and have it apply everywhere that token is used, without forking
+ * this file.
+ */
+
+:root {
+  --snf-color-primary: #4f46e5;
+  --snf-color-primary-contrast: #ffffff;
+  --snf-color-background: #ffffff;
+  --snf-color-surface: #f8fafc;
+  --snf-color-border: #e2e8f0;
+  --snf-color-text: #0f172a;
+  --snf-color-text-muted: #64748b;
+  --snf-color-danger: #dc2626;
+  --snf-space-xs: 0.25rem;
+  --snf-space-sm: 0.5rem;
+  --snf-space-md: 1rem;
+  --snf-space-lg: 1.5rem;
+  --snf-radius: 0.5rem;
+  --snf-font-family:
+    system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --snf-font-size-sm: 0.875rem;
+  --snf-font-size-md: 1rem;
+  --snf-font-size-lg: 1.125rem;
+  --snf-border-width: 1px;
+}
+
+/* SnfTradeCard */
+
+[data-part='root'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--snf-space-sm);
+  padding: var(--snf-space-md);
+  border: var(--snf-border-width) solid var(--snf-color-border);
+  border-radius: var(--snf-radius);
+  background: var(--snf-color-background);
+  color: var(--snf-color-text);
+  font-family: var(--snf-font-family);
+}
+
+[data-part='input'] {
+  font-size: var(--snf-font-size-md);
+  color: var(--snf-color-text);
+}
+
+[data-part='input'][data-loading='true'] {
+  color: var(--snf-color-text-muted);
+}
+
+[data-part='quote'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--snf-space-xs);
+  font-size: var(--snf-font-size-sm);
+  color: var(--snf-color-text-muted);
+}
+
+[data-part='quote'][data-state='ready'] {
+  color: var(--snf-color-text);
+}
+
+[data-part='quote'][data-state='error'] {
+  color: var(--snf-color-danger);
+}
+
+[data-part='steps'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--snf-space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-part='step'] {
+  padding: var(--snf-space-xs) var(--snf-space-sm);
+  border: var(--snf-border-width) solid var(--snf-color-border);
+  border-radius: var(--snf-radius);
+  font-size: var(--snf-font-size-sm);
+  color: var(--snf-color-text-muted);
+}
+
+[data-part='action'] {
+  padding: var(--snf-space-sm) var(--snf-space-lg);
+  border: none;
+  border-radius: var(--snf-radius);
+  background: var(--snf-color-primary);
+  color: var(--snf-color-primary-contrast);
+  font-family: var(--snf-font-family);
+  font-size: var(--snf-font-size-md);
+  cursor: pointer;
+}
+
+[data-part='action'][data-state='wallet'],
+[data-part='action'][data-state='wallet-approve'],
+[data-part='action'][data-state='pending'],
+[data-part='action'][data-state='pending-approve'] {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+[data-part='action']:disabled,
+[data-part='action'][data-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* SnfPoolStats */
+
+[data-part='stats-root'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--snf-space-sm);
+  padding: var(--snf-space-md);
+  border: var(--snf-border-width) solid var(--snf-color-border);
+  border-radius: var(--snf-radius);
+  background: var(--snf-color-surface);
+  color: var(--snf-color-text);
+  font-family: var(--snf-font-family);
+}
+
+[data-part='price'] {
+  font-size: var(--snf-font-size-lg);
+  color: var(--snf-color-text);
+}
+
+[data-part='reserves'] {
+  font-size: var(--snf-font-size-sm);
+  color: var(--snf-color-text-muted);
+}
+
+[data-part='ceiling'] {
+  font-size: var(--snf-font-size-sm);
+  color: var(--snf-color-text-muted);
+}
+
+[data-part='ceiling'][data-stale='true'] {
+  color: var(--snf-color-danger);
+}

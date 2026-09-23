@@ -19,7 +19,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./theme.css": "./dist/theme.css"
   },
   "repository": {
     "type": "git",
@@ -34,7 +35,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/copyTheme.mjs",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
