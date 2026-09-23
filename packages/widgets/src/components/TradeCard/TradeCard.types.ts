@@ -59,6 +59,21 @@ export interface QuoteQueryResult {
   readonly dataUpdatedAt: number
 }
 
+/**
+ * plan 05 addition — not in plan 04's original `TradeCardRootContextValue` shape (see
+ * `snf-56-05-PLAN.md`'s own `<toolchain>` note, the same documented-incremental-
+ * addition pattern `snf-55-03-SUMMARY.md` records for its own plan 15 addition). A
+ * plain passthrough of the subset of `SnfTradeCardRootProps` `TradeCardInput` needs to
+ * display BEFORE a quote resolves — `count`/`tokenIds` are not otherwise visible to a
+ * Part, which only ever reads context, never Root's raw props.
+ */
+export interface TradeCardParams {
+  readonly count?: number
+  readonly tokenIds?: readonly string[]
+  readonly buyCollection?: string
+  readonly remainder?: 'native' | 'wnft'
+}
+
 /** Everything `TradeCardRoot` resolves before a plan exists — exposed via
  * `TradeCardRootContext` (R4, D-07). */
 export interface TradeCardRootContextValue {
@@ -75,6 +90,8 @@ export interface TradeCardRootContextValue {
     readonly isLoading: boolean
   }
   readonly messages: SnfWidgetMessages | undefined
+  /** plan 05 addition — see `TradeCardParams`'s own header comment. */
+  readonly params: TradeCardParams
 }
 
 /**
@@ -84,3 +101,51 @@ export interface TradeCardRootContextValue {
  * package).
  */
 export type TradeCardCheckoutContextValue = UseSnfCheckoutResult
+
+/**
+ * plan 05 addition (R6) — a part's `children` may be a plain node/element/`undefined`
+ * (rendered as-is, or the single substitution target `Slot` clones when `asChild` is
+ * set) OR a function receiving the relevant context slice for fully custom rendering —
+ * the second acceptance path R6 names ("or a render prop"). Shared by every Part this
+ * plan builds (`Input`/`QuoteBreakdown`/`Steps`/`Action`), parameterized by whatever
+ * slice each Part's function `children` actually receives.
+ */
+export type RenderPropChildren<T> = ReactNode | ((ctx: T) => ReactNode)
+
+/** Shared `className`/`asChild` pair every Part in this plan carries, alongside its
+ * own `RenderPropChildren<T>`-typed `children`. Not a generic interface on its own
+ * (TypeScript cannot express `extends` over a type alias's generic cleanly across four
+ * differently-shaped `T`s) — each Part below spells the same three fields with its own
+ * `T`, mirroring `PoolStatsPartProps`'s precedent of one shared shape per compound
+ * component, here split per-Part because each Part's render-prop slice differs. */
+export interface TradeCardInputProps {
+  readonly className?: string
+  readonly asChild?: boolean
+  readonly children?: RenderPropChildren<TradeCardRootContextValue>
+}
+
+export interface TradeCardQuoteBreakdownProps {
+  readonly className?: string
+  readonly asChild?: boolean
+  readonly children?: RenderPropChildren<TradeCardRootContextValue>
+}
+
+/** `TradeCardSteps`/`TradeCardAction` additionally need the live checkout snapshot (or
+ * `null` before a plan exists) — bundled alongside the root context as one object so a
+ * render-prop caller destructures a single argument either way. */
+export interface TradeCardCheckoutRenderProps {
+  readonly context: TradeCardRootContextValue
+  readonly checkout: TradeCardCheckoutContextValue | null
+}
+
+export interface TradeCardStepsProps {
+  readonly className?: string
+  readonly asChild?: boolean
+  readonly children?: RenderPropChildren<TradeCardCheckoutRenderProps>
+}
+
+export interface TradeCardActionProps {
+  readonly className?: string
+  readonly asChild?: boolean
+  readonly children?: RenderPropChildren<TradeCardCheckoutRenderProps>
+}

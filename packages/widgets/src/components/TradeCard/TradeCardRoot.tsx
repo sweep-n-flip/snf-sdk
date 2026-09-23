@@ -145,6 +145,21 @@ export function TradeCardRoot(props: SnfTradeCardRootProps): ReactNode {
     retry: false,
   })
 
+  // plan 05 addition (see TradeCard.types.ts's TradeCardParams header comment) — a
+  // plain passthrough of the subset of props a Part needs before a quote resolves.
+  // `exactOptionalPropertyTypes: true` forbids assigning an explicit `{ key:
+  // undefined }`, so each optional key is spread in only when actually defined,
+  // mirroring buyArgs/sellArgs/nftToNftArgs's own pattern above.
+  const params = useMemo(
+    () => ({
+      ...(props.count === undefined ? {} : { count: props.count }),
+      ...(props.tokenIds === undefined ? {} : { tokenIds: props.tokenIds }),
+      ...(props.buyCollection === undefined ? {} : { buyCollection: props.buyCollection }),
+      ...(props.remainder === undefined ? {} : { remainder: props.remainder }),
+    }),
+    [props.count, props.tokenIds, props.buyCollection, props.remainder],
+  )
+
   const rootContextValue = useMemo<TradeCardRootContextValue>(
     () => ({
       side,
@@ -153,8 +168,19 @@ export function TradeCardRoot(props: SnfTradeCardRootProps): ReactNode {
       quote,
       planQuery: { data: planQuery.data, error: planQuery.error, isLoading: planQuery.isLoading },
       messages: props.messages,
+      params,
     }),
-    [side, collectionInfo, inventory, quote, planQuery.data, planQuery.error, planQuery.isLoading, props.messages],
+    [
+      side,
+      collectionInfo,
+      inventory,
+      quote,
+      planQuery.data,
+      planQuery.error,
+      planQuery.isLoading,
+      props.messages,
+      params,
+    ],
   )
 
   // The root element's own data-state. Computed purely from quote/planQuery loading
