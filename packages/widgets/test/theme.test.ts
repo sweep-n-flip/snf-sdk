@@ -80,6 +80,50 @@ describe('D-06 / T-56-15 — the default entry point pulls in no stylesheet', ()
   })
 })
 
+describe('R7 amendment (2026-09-23) — no component rule applies without the [data-snf-theme] opt-in ancestor', () => {
+  it('every selector in dist/theme.css, other than :root, is prefixed with [data-snf-theme]', () => {
+    const content = readFileSync(join(DIST_DIR, 'theme.css'), 'utf8')
+    // Strip block comments first (the header doc-comment is prose, not a selector) —
+    // same technique this repo's own `scripts/grep-gate.mjs` uses before pattern
+    // matching, reused here rather than reinvented.
+    const withoutComments = content.replace(/\/\*[\s\S]*?\*\//g, '')
+
+    // Every CSS rule in this file opens with `<selector> {` on its own logical
+    // grouping — collecting every line ending in `{` and dropping its trailing brace
+    // recovers the selector list for that rule. This file has no nested rules, no
+    // `@media`/`@supports` blocks and no other `{`-bearing construct, so a plain
+    // line scan is a faithful, dependency-free parse (no CSS tooling per this
+    // phase's toolchain rule) rather than a real parser.
+    const selectorGroups = withoutComments
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.endsWith('{'))
+      .map((line) => line.slice(0, -1).trim())
+      .filter((selector) => selector !== ':root')
+
+    // Sanity: the file actually has component rules to check (a false-negative
+    // guard against this test silently checking zero selectors after a future
+    // refactor).
+    expect(selectorGroups.length).toBeGreaterThan(0)
+
+    for (const group of selectorGroups) {
+      // A comma-separated selector list (e.g. the four `action` busy-state
+      // selectors) must have EVERY branch scoped, not just the first.
+      const branches = group.split(',').map((s) => s.trim())
+      for (const branch of branches) {
+        expect(branch.startsWith('[data-snf-theme]')).toBe(true)
+      }
+    }
+  })
+
+  it('the :root custom-property block is deliberately NOT scoped — a partner can still override a token globally', () => {
+    const content = readFileSync(join(DIST_DIR, 'theme.css'), 'utf8')
+    const withoutComments = content.replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(withoutComments).toMatch(/(^|\n)\s*:root\s*\{/)
+    expect(withoutComments).not.toMatch(/\[data-snf-theme\]\s*:root/)
+  })
+})
+
 // ---------------------------------------------------------------------------------
 // R8 harness — copied field-for-field from `TradeCardProof.test.tsx` (see that
 // file's own header comment for why `@sweepnflip/sdk-react` is mocked at its own

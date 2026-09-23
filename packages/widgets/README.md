@@ -10,9 +10,30 @@ comes straight from the SDK.
 separate, still-pending founder decision — the same one already deferred from Phase 54,
 unchanged by this package becoming real.
 
-An optional SnF theme will ship as a separate CSS entry point a partner imports only if
-they want a working look on day one; not importing it leaves every part fully
-functional and completely unstyled.
+An optional SnF theme ships as a separate CSS entry point, `@sweepnflip/widgets/theme.css`
+— import it only if you want a working look on day one; not importing it leaves every
+part fully functional and completely unstyled. The theme is a single opt-in **per
+surface**, not a page-wide hijack: importing the stylesheet alone styles nothing — every
+component rule is nested under the `[data-snf-theme]` ancestor selector, so it only
+applies once you also add a `data-snf-theme` attribute on some ancestor element. One
+import, plus `data-snf-theme` on a wrapper around the surface you want themed (or on
+`<body>` to opt the whole page in):
+
+```tsx
+import '@sweepnflip/widgets/theme.css'
+
+// Themed
+<div data-snf-theme>
+  <SnfTradeCard.Root ...>...</SnfTradeCard.Root>
+</div>
+
+// Unstyled, or styled by the partner's own CSS — same import, no data-snf-theme
+<SnfTradeCard.Root ...>...</SnfTradeCard.Root>
+```
+
+This is what lets a partner render one themed instance and one independently-skinned
+instance (their own design system) on the same page, sharing the one imported
+stylesheet but not its rules.
 
 ## Status
 

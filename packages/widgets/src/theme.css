@@ -11,6 +11,25 @@
  * `toDataAttrs` (see `src/internal/dataState.ts`) — this file adds no attribute, no
  * className hook, and requires no change to any component file.
  *
+ * **Opt-in scoping (SPEC R7, amended 2026-09-23).** Importing this file alone styles
+ * NOTHING — every component rule below is nested under the single ancestor selector
+ * `[data-snf-theme]`. A partner must ALSO put a `data-snf-theme` attribute on some
+ * ancestor element for any rule to match: a wrapper `<div data-snf-theme>` around one
+ * themed surface, or `data-snf-theme` on `<body>` to opt the whole page in. This is
+ * what makes the SnF look genuinely optional per-instance, not a page-wide hijack —
+ * a partner can render one `SnfTradeCard` inside a `data-snf-theme` wrapper (SnF
+ * look) and a second, completely independent instance outside it (their own skin,
+ * or none), on the very same page, importing this one file once. Before this
+ * amendment, every rule below matched bare `[data-part="..."]` with no ancestor
+ * gate, so importing the theme anywhere styled every instance on the page — the
+ * opposite of "optional per surface."
+ *
+ * The `:root` custom-property block below is deliberately left UNSCOPED (not nested
+ * under `[data-snf-theme]`) — a partner can still redefine a token (e.g.
+ * `:root { --snf-color-primary: #16a34a; }`) globally in their own stylesheet even
+ * before opting any surface into the themed rules, and that override cascades into
+ * every `data-snf-theme`-scoped surface that later opts in.
+ *
  * Every visual value below is a `var(--snf-*)` reference, never a literal, so a
  * partner can override exactly one custom property in their own stylesheet (loaded
  * after this one) and have it apply everywhere that token is used, without forking
@@ -39,9 +58,10 @@
   --snf-border-width: 1px;
 }
 
-/* SnfTradeCard */
+/* SnfTradeCard — every component rule below requires the [data-snf-theme] opt-in
+   ancestor (see this file's own header comment). */
 
-[data-part='root'] {
+[data-snf-theme] [data-part='root'] {
   display: flex;
   flex-direction: column;
   gap: var(--snf-space-sm);
@@ -53,16 +73,16 @@
   font-family: var(--snf-font-family);
 }
 
-[data-part='input'] {
+[data-snf-theme] [data-part='input'] {
   font-size: var(--snf-font-size-md);
   color: var(--snf-color-text);
 }
 
-[data-part='input'][data-loading='true'] {
+[data-snf-theme] [data-part='input'][data-loading='true'] {
   color: var(--snf-color-text-muted);
 }
 
-[data-part='quote'] {
+[data-snf-theme] [data-part='quote'] {
   display: flex;
   flex-direction: column;
   gap: var(--snf-space-xs);
@@ -70,15 +90,15 @@
   color: var(--snf-color-text-muted);
 }
 
-[data-part='quote'][data-state='ready'] {
+[data-snf-theme] [data-part='quote'][data-state='ready'] {
   color: var(--snf-color-text);
 }
 
-[data-part='quote'][data-state='error'] {
+[data-snf-theme] [data-part='quote'][data-state='error'] {
   color: var(--snf-color-danger);
 }
 
-[data-part='steps'] {
+[data-snf-theme] [data-part='steps'] {
   display: flex;
   flex-direction: column;
   gap: var(--snf-space-xs);
@@ -87,7 +107,7 @@
   list-style: none;
 }
 
-[data-part='step'] {
+[data-snf-theme] [data-part='step'] {
   padding: var(--snf-space-xs) var(--snf-space-sm);
   border: var(--snf-border-width) solid var(--snf-color-border);
   border-radius: var(--snf-radius);
@@ -95,7 +115,7 @@
   color: var(--snf-color-text-muted);
 }
 
-[data-part='action'] {
+[data-snf-theme] [data-part='action'] {
   padding: var(--snf-space-sm) var(--snf-space-lg);
   border: none;
   border-radius: var(--snf-radius);
@@ -106,23 +126,23 @@
   cursor: pointer;
 }
 
-[data-part='action'][data-state='wallet'],
-[data-part='action'][data-state='wallet-approve'],
-[data-part='action'][data-state='pending'],
-[data-part='action'][data-state='pending-approve'] {
+[data-snf-theme] [data-part='action'][data-state='wallet'],
+[data-snf-theme] [data-part='action'][data-state='wallet-approve'],
+[data-snf-theme] [data-part='action'][data-state='pending'],
+[data-snf-theme] [data-part='action'][data-state='pending-approve'] {
   opacity: 0.6;
   cursor: wait;
 }
 
-[data-part='action']:disabled,
-[data-part='action'][data-disabled='true'] {
+[data-snf-theme] [data-part='action']:disabled,
+[data-snf-theme] [data-part='action'][data-disabled='true'] {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* SnfPoolStats */
+/* SnfPoolStats — same [data-snf-theme] opt-in ancestor requirement. */
 
-[data-part='stats-root'] {
+[data-snf-theme] [data-part='stats-root'] {
   display: flex;
   flex-direction: column;
   gap: var(--snf-space-sm);
@@ -134,21 +154,21 @@
   font-family: var(--snf-font-family);
 }
 
-[data-part='price'] {
+[data-snf-theme] [data-part='price'] {
   font-size: var(--snf-font-size-lg);
   color: var(--snf-color-text);
 }
 
-[data-part='reserves'] {
+[data-snf-theme] [data-part='reserves'] {
   font-size: var(--snf-font-size-sm);
   color: var(--snf-color-text-muted);
 }
 
-[data-part='ceiling'] {
+[data-snf-theme] [data-part='ceiling'] {
   font-size: var(--snf-font-size-sm);
   color: var(--snf-color-text-muted);
 }
 
-[data-part='ceiling'][data-stale='true'] {
+[data-snf-theme] [data-part='ceiling'][data-stale='true'] {
   color: var(--snf-color-danger);
 }
