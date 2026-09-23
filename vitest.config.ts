@@ -14,6 +14,7 @@ export default defineConfig({
     projects: [
       'packages/sdk',
       'packages/sdk-react',
+      'packages/widgets',
       {
         test: {
           name: 'eslint-rules',
