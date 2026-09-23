@@ -4,5 +4,11 @@
     "path": "packages/sdk/dist/index.js",
     "limit": "60 kB",
     "gzip": true
+  },
+  {
+    "name": "@sweepnflip/widgets entry",
+    "path": "packages/widgets/dist/index.js",
+    "limit": "70 kB",
+    "gzip": true
   }
 ]
