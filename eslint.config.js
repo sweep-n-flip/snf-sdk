@@ -63,6 +63,27 @@ export default tseslint.config(
     },
   },
 
+  // 56-SPEC.md R3/R8/R9, D-08 — widgets only: the five mechanical guards keeping
+  // trading logic out of the kit. no-signing-imports is the repository's existing
+  // rule (SPEC prohibition #1), switched ON here rather than rewritten — neither the
+  // sdk-only ON block above nor the sdk-react OFF block reaches this package's source,
+  // so without this explicit ON the rule would simply never run against the widgets
+  // glob below at all. The other four are new, widgets-specific rules: no direct
+  // contract read/write (no-contract-calls), no arithmetic on an Amount.value
+  // (no-amount-arithmetic), no numeric reformatting (no-numeric-formatting), no
+  // next() dispatch from a useEffect (no-effect-dispatch).
+  {
+    files: ['packages/widgets/src/**/*.ts', 'packages/widgets/src/**/*.tsx'],
+    plugins: { local },
+    rules: {
+      'local/no-signing-imports': 'error',
+      'local/no-contract-calls': 'error',
+      'local/no-amount-arithmetic': 'error',
+      'local/no-numeric-formatting': 'error',
+      'local/no-effect-dispatch': 'error',
+    },
+  },
+
   // Examples, scripts, the rule files themselves and snf-tests legitimately read
   // process.env and send transactions — none of them ship in the published package.
   {
