@@ -93,6 +93,10 @@ const APPARATUS_RULES = [
   { id: 'internal tool mention (Notion)', re: /\bNotion\b/i },
   { id: 'internal role mention (vibecoder)', re: /\bvibecoder\b/i },
   { id: 'internal spec-document citation (DATASHEET)', re: /DATASHEET/i },
+  {
+    id: 'numbered SPEC prohibition citation',
+    re: /prohibition #\d+|SPEC prohibition|prohibitions #\d+|amended \d{4}-\d{2}-\d{2} list|\(amended \d{4}/,
+  },
   { id: 'snf-server path', re: /\bsnf-server\b/i },
   { id: 'snf-demo path', re: /\bsnf-demo\b/i },
   { id: 'snf-landpage path', re: /\bsnf-landpage\b/i },
