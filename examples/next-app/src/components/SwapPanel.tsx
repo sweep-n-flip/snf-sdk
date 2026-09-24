@@ -19,7 +19,7 @@ import type { ExecutionPlan, Quote, SnfClient, SnfError } from '@sweepnflip/sdk'
  * One client component, four sections, discovery -> inventory -> quote -> checkout
  *. Every read goes through a `useSnf*` hook; the ONLY wallet dispatch in this
  * whole file happens inside `useSnfCheckout` itself, from the explicit click on
- * `CheckoutFlow`'s single button — never from a `useEffect` here (INV-17). This file
+ * `CheckoutFlow`'s single button — never from a `useEffect` here. This file
  * has zero `useEffect` calls; react-query's own hooks already refetch declaratively,
  * and building a plan is a deliberate button click, not a side effect of rendering.
  */
@@ -202,7 +202,7 @@ function CheckoutFlow({ plan }: { readonly plan: ExecutionPlan }) {
           onClick — never from a useEffect/watcher in this file or inside
           useSnfCheckout itself. The button is disabled whenever `canProceed` is
           false, so a partner copying this exact pattern cannot wire an accidental
-          auto-advance (INV-17; memory feedback_wagmi_reset_race). */}
+          auto-advance. */}
       <button disabled={!checkout.canProceed} onClick={() => void checkout.next()}>
         {checkout.label}
       </button>
@@ -230,11 +230,11 @@ function CheckoutSection({
   const [building, setBuilding] = useState(false)
 
   // `plan.preflight()` runs HERE, once, right after `buildBuy` — both are read-only
-  // (no wallet popup, snf-54-20's README Quickstart demonstrates the identical
+  // (no wallet popup; this package's own README Quickstart demonstrates the identical
   // sequence in examples/vanilla). Gating `setPlan` on a successful pre-flight means
   // `<CheckoutFlow>` (and therefore `useSnfCheckout`'s one dispatch site) is never
   // even constructed for a plan whose ownership/inventory/wrapper-identity/balance/
-  // chain checks already failed — e.g. Case E of snf-54-UAT.md (wrong chain) rejects
+  // chain checks already failed — e.g. a wallet connected to the wrong chain rejects
   // right here, before the checkout section renders a single button, let alone
   // before any wallet popup.
   const handleBuildPlan = useCallback(async () => {

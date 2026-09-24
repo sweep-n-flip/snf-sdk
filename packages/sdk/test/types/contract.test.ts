@@ -21,7 +21,7 @@ const fakePublicClient = undefined as unknown as PublicClient
  * `vitest run` here is a secondary, human-readable proof that the fixtures exist.
  */
 
-// ── A DATASHEET §4-shaped literal assigns to `Quote` ────────────────────────────────
+// ── A REST-API-shaped literal assigns to `Quote` ─────────────────────────────────────
 
 const feeAmount = (value: bigint, symbol: string, decimals: number): Amount => ({
   value,
@@ -63,7 +63,7 @@ const buyQuoteFixture: Quote = {
 }
 
 describe('Quote type contract', () => {
-  it('a DATASHEET §4-shaped literal assigns to Quote', () => {
+  it('a REST-API-shaped literal assigns to Quote', () => {
     expect(buyQuoteFixture.reconciled).toBe(true)
     expect(buyQuoteFixture.legs).toHaveLength(1)
   })
@@ -148,7 +148,7 @@ describe('closed union cardinality (satisfies-checked mirrors — cannot drift s
 describe('Amount type contract', () => {
   it('a literal with `formatted` but no `value` fails to assign', () => {
     // @ts-expect-error — `value: bigint` is required; `formatted` alone is display-only
-    // and must never stand in for the exact on-chain amount (DATASHEET §0.3).
+    // and must never stand in for the exact on-chain amount.
     const missingValue: Amount = { formatted: '1.25', symbol: 'ETH', decimals: 18 }
     expect(missingValue).toBeDefined()
   })

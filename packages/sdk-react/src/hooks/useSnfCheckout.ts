@@ -5,7 +5,7 @@ import { createCheckout } from '@sweepnflip/sdk/checkout'
 import { useSnfContext } from '../context'
 
 /**
- * The ONE dispatch site in either package (INV-17). `createCheckout`
+ * The ONE dispatch site in either package. `createCheckout`
  * (`@sweepnflip/sdk/checkout` — see `packages/sdk/tsup.config.ts` for why this is a
  * subpath rather than the main barrel: `createCheckout` was deliberately left off
  * `SnfClient`'s 13-method surface, not off the SDK entirely) returns a pure state
@@ -29,8 +29,8 @@ export interface UseSnfCheckoutResult {
 
 /** `'wallet'`/`'wallet-approve'` are the core's own busy states, held from `next()`'s
  * dispatch until a receipt/rejection arrives — the reducer never enters a distinct
- * "signed, awaiting confirmation" state (: "left available for
- * the React adapter to project as its own richer, wagmi-hook-derived UI state").
+ * "signed, awaiting confirmation" state, deliberately left available for
+ * the React adapter to project as its own richer, wagmi-hook-derived UI state.
  * Once wagmi hands back a hash, THIS hook projects the busy state one step further —
  * the only display richness this file adds; the core snapshot itself never changes
  * because of it. */
@@ -46,7 +46,7 @@ export function useSnfCheckout(plan: ExecutionPlan): UseSnfCheckoutResult {
   const { sendTransactionAsync, reset } = useSendTransaction()
 
   // One `Checkout` session per `plan` IDENTITY — a re-render with the SAME plan
-  // reference never restarts the machine (this plan's own instruction). `store`
+  // reference never restarts the machine, by design. `store`
   // pairs the session with its OWN cached snapshot atomically, so a new `plan` (a
   // brand-new session) never sees a stale snapshot left over from the previous one.
   const store = useMemo(() => {
@@ -87,10 +87,10 @@ export function useSnfCheckout(plan: ExecutionPlan): UseSnfCheckoutResult {
     if (step === null) return
     // `reset()` is async via React state — if the next wagmi dispatch fired from a
     // LATER effect, wagmi could still see the previous mutation's `success`/`error`
-    // and silently drop it (no popup, no error; memory `feedback_wagmi_reset_race`,
-    // INV-17). `reset()` and the dispatch call below are both invoked synchronously,
-    // in this same callback frame, before control ever returns to React — no
-    // `useEffect` in this file ever initiates a wagmi mutation.
+    // and silently drop it (no popup, no error). `reset()` and the dispatch call
+    // below are both invoked synchronously, in this same callback frame, before
+    // control ever returns to React — no `useEffect` in this file ever initiates a
+    // wagmi mutation.
     reset()
     try {
       const tx = step.tx

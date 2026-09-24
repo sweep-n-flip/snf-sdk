@@ -57,7 +57,7 @@ describe('needsNameFallback', () => {
 })
 
 describe('shortenAddress', () => {
-  it('matches the snf-client formatters.ts convention: first6...last4', () => {
+  it('matches the reference production client\'s formatters.ts convention: first6...last4', () => {
     expect(shortenAddress(ADDRESS)).toBe('0x7c47...0ebc')
   })
 

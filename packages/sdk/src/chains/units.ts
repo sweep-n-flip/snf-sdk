@@ -8,14 +8,14 @@ import { getChain } from './registry'
  * `amountInMax`) is always expressed in `quoteDecimals` — 18 on 13 chains, 6 on Arc.
  * The EVM side (`tx.value`, `eth_getBalance`, gas) is always 18. Confusing the two on
  * Arc is a 1,000,000x pricing error, not a rounding error — this is exactly the
- * regression class `snf-client`'s Phase-83 (Arc Pricing Dynamics) fixed across five
- * real call sites (nftToNftMath.ts, confirmSwapHandlers.ts, usePoolList.ts, useSwap.ts,
- * useSwapExecute.ts — see `docs/ARC_PRICING_DYNAMICS.md`). A future multi-hop or
- * cross-pool SDK builder must route every conversion through this module, never
- * through a bare `1e18`/`parseEther`/`parseUnits(x, 18)` literal.
+ * regression class the reference production client has independently had to fix
+ * across multiple call sites (quote math, swap confirmation, pool listing, and swap
+ * execution). A future multi-hop or cross-pool SDK builder must route every
+ * conversion through this module, never through a bare
+ * `1e18`/`parseEther`/`parseUnits(x, 18)` literal.
  */
 
-// TODO(54-04): replace with SnfError once errors.ts lands.
+// TODO: replace with SnfError once every caller of this module is migrated.
 class UnitsError extends Error {
   readonly code = 'INVALID_PARAMS' as const
   readonly details: Record<string, unknown>

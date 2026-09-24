@@ -1,6 +1,7 @@
 /**
- * The public type contract barrel — DATASHEET §0/§4/§5 mirrored.
- * Re-exports every `.types.ts` file under this directory; nothing else lives here.
+ * The public type contract barrel — mirrors this SDK's REST API counterpart's own
+ * type contract. Re-exports every `.types.ts` file under this directory; nothing
+ * else lives here.
  */
 export type * from './amount.types'
 export type * from './checkout.types'

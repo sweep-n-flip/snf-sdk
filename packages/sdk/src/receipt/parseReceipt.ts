@@ -45,10 +45,10 @@ import type { ReceiptLike, SwapReceipt } from './receipt.types'
  * A pure wNFT (fractional wrapper) leg has NO ERC-721 `Transfer` logs at all — the
  * wrapper token's own `Transfer` is ERC-20-shaped (2 indexed args + a non-indexed
  * `value`), which the ERC-721 ABI above never matches. `itemsIn`/`itemsOut` therefore
- * stay empty for that leg BY DESIGN (this function has no notion of "the wrapper
- * token" as a distinct concept from any other ERC-20). What used to be broken
- * (Finding 3, fixed in) is that `received`/`paid`
- * ALSO stayed `undefined` in that case, even when the pool-side WETH `Withdrawal`/
+ * stay empty for that leg BY DESIGN (this function does not treat "the wrapper
+ * token" as a distinct concept from any other ERC-20). What used to be broken is
+ * that `received`/`paid` ALSO stayed `undefined` in that case, even when the
+ * pool-side WETH `Withdrawal`/
  * `Deposit` log proved real settlement happened — the gating condition below keyed
  * exclusively off `itemsIn`/`itemsOut`. The fix detects a fungible leg generically
  * from the SAME receipt's own pair `Swap` log (no wrapper address needed as input):

@@ -8,8 +8,7 @@ import type { SnfPublicClient } from '../types/client.types'
  * behaviour, verbatim, from the production AMM client's own gas-estimation hook — gas for
  * an NFT batch must be ESTIMATED, not a per-chain constant: Arbitrum One measures
  * ~300k/NFT (L1 calldata billing) against Apechain's ~140k/NFT, so a single literal
- * is wrong on at least one side of that gap in both directions (workspace memory
- * `feedback_nft_gas_dynamic`).
+ * is wrong on at least one side of that gap in both directions.
  */
 
 /**

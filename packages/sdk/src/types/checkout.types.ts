@@ -3,18 +3,18 @@ import type { Amount } from './amount.types'
 import type { Step } from './plan.types'
 
 /**
- * Headless, user-driven checkout state machine (INV-17
- * doctrine). The production AMM client's own 18-state `CheckoutStep`/`CheckoutOperation`
- * union is this SDK's reference — the SDK's shape is a reduction: 11
- * states cover every SDK-native swap flow (fungible/buy/sell/nft-to-nft), since the
- * SDK has no liquidity/staking/aggregator operations to represent.
+ * Headless, user-driven checkout state machine. The production AMM client's own
+ * 18-state `CheckoutStep`/`CheckoutOperation` union is this SDK's reference — the
+ * SDK's shape is a reduction: 11 states cover every SDK-native swap flow
+ * (fungible/buy/sell/nft-to-nft), since the SDK has no liquidity/staking/aggregator
+ * operations to represent.
  */
 
 /**
  * Exactly 11 states. Each on-chain tx is only ever dispatched by an explicit
- * `next()` call — a watcher (`onReceipt`) may only ADVANCE state, never dispatch one
- * (INV-17: auto-advancing from a watcher/effect caused four fix-cycles in production
- * before this doctrine hardened). `ready-buy` and
+ * `next()` call — a watcher (`onReceipt`) may only ADVANCE state, never dispatch one.
+ * Auto-advancing from a watcher/effect caused repeated production fix-cycles before
+ * this design hardened into an absolute rule. `ready-buy` and
  * `ready-buy-wnft` are the NFT×NFT checkpoints where the user must click again before
  * the next leg fires.
  */
@@ -84,16 +84,15 @@ export interface SwapReceipt {
 /**
  * Headless checkout instance returned by `createCheckout(plan)`. `next()` is the ONLY
  * member that may return a step to dispatch — a caller's own wallet-sending code reads
- * `next()`'s return value and sends it; `onReceipt`/`onRejected` may only advance state
- * (INV-17), never themselves dispatch a transaction. `cancel()` is only effective in
- * `review`/`ready-*` states (Acceptance).
+ * `next()`'s return value and sends it; `onReceipt`/`onRejected` may only advance
+ * state, never themselves dispatch a transaction. `cancel()` is only effective in
+ * `review`/`ready-*` states.
  *
- * `onRejected` (Addition — see that plan's SUMMARY, Deviations): the wallet
- * declining a signature request is a distinct settlement outcome from a mined receipt
- * (no transaction hash exists yet to attribute a `ReceiptLike` to), and needs its own
- * watcher-only entry point so the reducer's `'rejected'` action (already part of this
- * plan's `CheckoutEvent` union below) is reachable through the public `Checkout`
- * surface a partner actually calls.
+ * `onRejected`: the wallet declining a signature request is a distinct settlement
+ * outcome from a mined receipt (no transaction hash exists yet to attribute a
+ * `ReceiptLike` to), and needs its own watcher-only entry point so the reducer's
+ * `'rejected'` action (already part of the `CheckoutEvent` union below) is reachable
+ * through the public `Checkout` surface a partner actually calls.
  */
 export interface Checkout {
   snapshot(): CheckoutSnapshot

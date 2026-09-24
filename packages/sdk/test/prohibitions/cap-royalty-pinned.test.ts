@@ -270,7 +270,7 @@ describe('cap-royalty-pinned — no public argument type exposes a capRoyaltyFee
   })
 })
 
-describe('cap-royalty-pinned — GSD_PROHIB_SUBJECT causation control (fixtures/prohib/cap-royalty-{clean,violation}.ts)', () => {
+describe('cap-royalty-pinned — SNF_SDK_PROHIB_SUBJECT causation control (fixtures/prohib/cap-royalty-{clean,violation}.ts)', () => {
   interface CapRoyaltySubjectModule {
     readonly resolveCapRoyaltyFee: (options?: { readonly capRoyaltyFee?: boolean }) => boolean
   }

@@ -15,10 +15,11 @@
 export type RouterVariant = 'standard' | 'native-erc20'
 
 /**
- * The 14 chainIds the SDK supports, latest-only — same membership `snf-client`'s
- * `supportedChains` ships. A future 15th chain (or a Legacy re-entry) is a SPEC
- * amendment, never a runtime toggle: no function in `chains/` accepts a `mode`
- * parameter, and `getChain` on anything outside this union is `INVALID_PARAMS`.
+ * The 14 chainIds the SDK supports, latest-only — same membership the reference
+ * production client ships. A future 15th chain (or a Legacy re-entry) is a
+ * deliberate, versioned amendment, never a runtime toggle: no function in `chains/`
+ * accepts a `mode` parameter, and `getChain` on anything outside this union is
+ * `INVALID_PARAMS`.
  */
 export type SnfChainId =
   | 4663 // Robinhood Chain

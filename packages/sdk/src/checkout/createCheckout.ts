@@ -5,7 +5,7 @@ import type { ExecutionPlan, Step } from '../types/plan.types'
 import { SnfError } from '../errors'
 
 /**
- * Headless, user-driven checkout state machine over an `ExecutionPlan` (INV-17).
+ * Headless, user-driven checkout state machine over an `ExecutionPlan`.
  * Takes no `ctx` — it operates purely on the plan's own `steps[]`; this is why it is
  * NOT one of `SnfClient`'s 13 methods and is instead a standalone export.
  *

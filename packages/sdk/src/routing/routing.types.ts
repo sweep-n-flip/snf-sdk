@@ -44,7 +44,7 @@ export interface PoolRef {
   readonly baseToken: TokenRef
   /**
    * True when this pool's base token is curated `routing: 'direct-only'` for its
-   * chain (Gate 69.5 — e.g. a Robinhood Chain stock token, whose delegate holds
+   * chain — e.g. a Robinhood Chain stock token, whose delegate holds
    * ~1e-9 of supply so any `[WETH, <stock>, collection]` hop reverts or returns a
    * garbage quote). The caller (the client's providers layer, which owns the
    * chain-curated token list) resolves this flag; `src/routing/*` only consumes

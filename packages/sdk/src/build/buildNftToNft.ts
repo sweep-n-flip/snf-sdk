@@ -18,20 +18,22 @@ import type { QuoteLeg } from '../types/quote.types'
 
 /**
  * `buildNftToNft` — the two-or-three-step, USER-DRIVEN `ExecutionPlan` for an NFT×NFT
- * swap (INV-17). This is TWO OR THREE SEPARATE TRANSACTIONS the user
+ * swap. This is TWO OR THREE SEPARATE TRANSACTIONS the user
  * initiates, never one flow the SDK drives: `[approval(sell)?, swap-sell, swap-buy,
  * swap-buy-wnft?]`. Each on-chain transaction maps to a discrete `ready-*` checkpoint
  * in `createCheckout` (`checkout/reducer.ts`'s `NEXT_READY_BY_KIND`) and requires its
  * own `Checkout.next()` — there is no helper anywhere in this package that dispatches
  * more than one step.
  *
- * The reason is four failed fix cycles on `snf-client` against an unfixable triangle
- * of races — wagmi's async `reset()`, React prop staleness and the wallet popup queue
- * (workspace memory `feedback_wagmi_reset_race`; root CLAUDE.md, "Multi-phase wallet
- * flows must be USER-DRIVEN"). The UX cost is one or two extra clicks; the
- * reliability gain is total. When the SnF Advanced Router ships, `steps[]` collapses
- * to one entry and nothing about this function's own signature changes — that is why
- * the shape is a list, not a fixed 2-or-3-tuple.
+ * The reason is architectural, not stylistic: a design that auto-advances between
+ * transactions from a watcher or effect runs into an unfixable triangle of races —
+ * a wallet library's own async state-reset, UI prop staleness, and the wallet popup
+ * queue — that no amount of patching fully closes; the only reliable fix is to never
+ * auto-advance at all, and require an explicit user action for every single on-chain
+ * step. The UX cost is one or two extra clicks; the
+ * reliability gain is total. When a future atomic-execution contract ships, `steps[]`
+ * collapses to one entry and nothing about this function's own signature changes —
+ * that is why the shape is a list, not a fixed 2-or-3-tuple.
  *
  * Royalty is settled PER LEG, in that leg's own base currency, never consolidated
  * (`docs/NFT_SWAP_RULES.md`): the sell leg pays the sell collection's royalty in the

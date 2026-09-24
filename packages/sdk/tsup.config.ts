@@ -14,7 +14,7 @@ import { defineConfig } from 'tsup'
 // — no file under `src/` is touched or created by this addition, only this
 // build config and `package.json`'s `exports` map. `createCheckout(plan)` is
 // `@sweepnflip/sdk-react`'s ONE dispatch-site dependency: the reducer
-// that structurally cannot produce a dispatch effect from a watcher path (INV-17)
+// that structurally cannot produce a dispatch effect from a watcher path
 // lives in the core on purpose, and the adapter needs to actually import it rather
 // than re-implement the state machine. `createCheckout` was deliberately left off the
 // main barrel (`src/index.ts`) because it isn't one of `SnfClient`'s 13 documented

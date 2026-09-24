@@ -28,7 +28,7 @@ export interface ReceiptLike {
  * (`warnings` names exactly what could not be measured, per-field).
  *
  * `itemsIn`/`itemsOut` are decimal tokenId strings, discovered from ERC-721 `Transfer`
- * logs — this SDK has no notion of "your collection" ahead of time, so both arrays are
+ * logs — this SDK does not know "your collection" ahead of time, so both arrays are
  * populated purely from what the receipt's own logs say moved. `paid`/`received` are
  * each present only on the side the receipt is actually settling (a sell reports
  * `received`, a buy reports `paid`; neither on a receipt with no recognisable

@@ -74,7 +74,7 @@ describe('normalizeTokenIds — bigint ordering, never lexicographic', () => {
     expect(() => normalizeTokenIds([''])).toThrow()
   })
 
-  it('a uint256-max id sorts correctly and round-trips unchanged — the case a Number()-based sort silently corrupts', () => {
+  it('a uint256-max id sorts correctly and round-trips unchanged — a situation where a Number()-based sort silently corrupts', () => {
     const uint256Max = '115792089237316195423570985008687907853269984665640564039457584007913129639935'
     const result = normalizeTokenIds([uint256Max, '1', '0'])
     expect(result).toEqual(['0', '1', uint256Max])

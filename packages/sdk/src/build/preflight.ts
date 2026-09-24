@@ -13,8 +13,8 @@ import type { ExecutionPlan, PreflightResult, StepPreflightRefs } from '../types
  * `blockNumber`, immediately before a caller would sign anything. `batchSize: 0`
  * disables viem's own calldata chunking so every read genuinely lands in that one
  * call — chunking would let two reads answer from different blocks under a reorg,
- * which is exactly the drift this function exists to close (Drops `swapGuards.ts`'s
- * header makes the same argument for its own two narrower guards).
+ * which is exactly the drift this function exists to close (the same argument other
+ * SnF checkout surfaces make for their own narrower pre-flight guards).
  *
  * Non-goals, deliberately: this function does NOT re-quote (that already happened
  * inside `build()`), does NOT mutate `plan`, and does NOT sign or send anything. It

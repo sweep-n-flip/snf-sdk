@@ -34,8 +34,7 @@ import type { FeeBreakdown, Quote, QuoteLeg, QuoteNftToNftArgs } from '../types/
  *
  * `remainder` SATURATES AT 0n — `netProceeds` (leg 1) and `buyCost` (leg 2) are both
  * exposed so a caller can always derive the top-up as `buyCost − netProceeds` when the
- * buy costs more than the sell nets. There is no separate `shortfall` field, by design
- * (DATASHEET §4 "Remainder field").
+ * buy costs more than the sell nets. There is no separate `shortfall` field, by design.
  */
 
 const MAX_IDS = 50
@@ -161,7 +160,7 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
   }
 
   // Cross-base NFT×NFT is not expressible on-chain — the atomic Router path is
-  // single-hop + same-base only (DATASHEET §4). A partner can still execute this as
+  // single-hop + same-base only. A partner can still execute this as
   // two separate user-driven swaps; this SDK never attempts to compose it.
   const routeCheck = evaluateRouteBlock({
     candidates: [toRoutingPoolRef(sellPool, sellCollection.wrapper), toRoutingPoolRef(buyPool, buyCollection.wrapper)],

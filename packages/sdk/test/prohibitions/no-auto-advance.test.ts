@@ -14,10 +14,11 @@ import type { Bounds, ExecutionPlan, Step, StepKind, UnsignedTx } from '../../sr
 import type { Quote } from '../../src/types/quote.types'
 
 /**
- * SPEC prohibition #4 (INV-17): the SDK MUST NOT auto-advance between
+ * A documented, standing prohibition: the SDK MUST NOT auto-advance between
  * transactions (dispatch the next tx from a watcher/effect) — every tx requires an
  * explicit `next()`. `src/checkout/reducer.ts`'s own header explains WHY this is
- * structural, not defensive: `snf-client` spent four fix cycles on an unfixable race
+ * structural, not defensive: the reference production client independently spent
+ * four fix cycles on an unfixable race
  * before making it impossible for a watcher to dispatch at all.
  *
  * `check_target`: packages/sdk/test/prohibitions/no-auto-advance.test.ts
@@ -156,7 +157,7 @@ describe('no-auto-advance — static scan of src/checkout/', () => {
   })
 })
 
-describe('no-auto-advance — GSD_PROHIB_SUBJECT causation control (fixtures/prohib/auto-advance-{clean,violation}.ts)', () => {
+describe('no-auto-advance — SNF_SDK_PROHIB_SUBJECT causation control (fixtures/prohib/auto-advance-{clean,violation}.ts)', () => {
   interface AutoAdvanceSubjectModule {
     readonly checkoutReducer: (
       state: { readonly state: CheckoutState; readonly stepIndex: number; readonly sessionId: number; readonly plan: ExecutionPlan },

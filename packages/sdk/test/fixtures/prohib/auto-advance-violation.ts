@@ -1,12 +1,11 @@
 /**
- * `auto-advance-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #4
- * forbids, kept ONLY as a test subject for `test/prohibitions/no-auto-advance.test.ts`
- * (`GSD_PROHIB_SUBJECT`). MUST NEVER be imported by `src/` (see
- * `caller-price-violation.ts`'s identical header note).
+ * `auto-advance-violation.ts` — the DELIBERATE anti-pattern this package's own
+ * documented prohibitions forbid, kept ONLY as a test subject for
+ * `test/prohibitions/no-auto-advance.test.ts` (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER
+ * be imported by `src/` (see `caller-price-violation.ts`'s identical header note).
  *
- * This is INV-17's exact failure mode (workspace memory `feedback_wagmi_reset_race`;
- * root CLAUDE.md "Multi-phase wallet flows must be USER-DRIVEN"): a reducer-LIKE
- * function that ALSO produces a dispatch effect from the `'receipt'` action when
+ * This is the exact failure mode multi-phase wallet flows must never fall into: a
+ * reducer-LIKE function that ALSO produces a dispatch effect from the `'receipt'` action when
  * `status === 'success'` — i.e. a watcher observing a mined transaction fires the
  * NEXT transaction itself, instead of waiting for an explicit user-driven `next()`.
  * Same exported name (`checkoutReducer`) and the same `(state, action)` calling

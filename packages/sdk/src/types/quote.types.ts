@@ -2,13 +2,14 @@ import type { SnfChainId } from '../chains/chains.types'
 import type { Amount } from './amount.types'
 
 /**
- * Quote shapes (DATASHEET §4 "NFT AMM — quotes" plus the `reconciled` addendum).
+ * Quote shapes for the SDK's NFT AMM quotes, plus the `reconciled` addendum.
  * Every quote is on-chain authoritative.
  */
 
-/** Fee breakdown for a quote (DATASHEET §0.5). `pool` is the AMM curve fee — already
+/** Fee breakdown for a quote. `pool` is the AMM curve fee — already
  * inside the quoted amounts, so it carries no separate `Amount`, only `bps` + a `note`
- * (matching the DATASHEET's `{ bps, note: "included in curve" }` shape). `marketplace`
+ * (matching the same `{ bps, note: "included in curve" }` shape this SDK's REST API
+ * counterpart uses). `marketplace`
  * and `royalty` are each a full `Amount` plus their own `bps`; `royalty.capApplied` is
  * true when the Router's on-chain cap actually reduced the royalty below its nominal
  * EIP-2981 rate. */
@@ -19,8 +20,8 @@ export interface FeeBreakdown {
 }
 
 /** One leg of a `Quote.legs[]` — one pool hop, whether it's the only hop today or one
- * of several in a future multipool split (DATASHEET §4: "same `legs[]` shape whether
- * it's one pool or a future multipool split"). */
+ * of several in a future multipool split (the same `legs[]` shape applies whether
+ * it's one pool or a future multipool split). */
 export interface QuoteLeg {
   readonly pair: `0x${string}`
   readonly count: number
@@ -93,8 +94,8 @@ export interface Quote {
    */
   readonly remainderMode?: 'native' | 'wnft'
   /**
-   * swap only (a later addition — DATASHEET §4 `/v1/quote/swap`: "Returns
-   * `amountIn`, `amountOut`, `path[]`, `priceImpact`").
+   * swap only (a later addition, matching this SDK's REST API counterpart's own
+   * `/v1/quote/swap` response shape: `amountIn`, `amountOut`, `path[]`, `priceImpact`).
    * The exact input spent.
    */
   readonly amountIn?: Amount

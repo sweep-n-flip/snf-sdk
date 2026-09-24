@@ -21,8 +21,7 @@ import { computeNftToNftQuote } from '../parity/computeNftToNftQuote.reference'
  * on-chain read, sums RAW per-id royalty amounts (never an average —
  * this file's rounding-hazard deviation), and ALWAYS fulfils the
  * requested `buy.count` up to pool depth, exposing `remainder`/`netProceeds`/
- * `buyCost` so a caller derives a top-up instead — the v1 API contract
- * (DATASHEET §4 "Remainder field").
+ * `buyCost` so a caller derives a top-up instead — the v1 API contract.
  *
  * Parity is therefore measured on rows where the reference's own cap NEVER engages
  * (`maxBuyCount >= buyCount` asserted per row) — in that regime the two models
@@ -165,7 +164,7 @@ function closeRelative(actual: number, expected: number, tol = 0.02): void {
   expect(diff, `${actual} vs ${expected} (relative diff ${diff})`).toBeLessThan(tol)
 }
 
-describe('nftToNft parity: SDK quoteNftToNft vs snf-client computeNftToNftQuote', () => {
+describe('nftToNft parity: SDK quoteNftToNft vs the reference production client\'s computeNftToNftQuote', () => {
   for (const row of ROWS) {
     it(row.name, async () => {
       const cfg = deriveConfig(row)

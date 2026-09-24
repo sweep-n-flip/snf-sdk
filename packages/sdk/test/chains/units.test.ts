@@ -67,10 +67,10 @@ describe('units', () => {
 
 // ── Static gate: no 1e18/parseEther/formatEther/parseUnits(x, 18) outside units.ts ──
 //
-// Port of snf-client's src/lib/__tests__/arcUnitAxesGate.test.ts Rule 2 for this
-// package. A pool-side amount must NEVER be scaled by a bare 18-decimal literal
-// anywhere except this module — that literal is exactly the Phase-83 regression class
-// (INSUFFICIENT_OUTPUT_AMOUNT on every Arc NFT trade). Any future `build/` module that
+// Port of an equivalent static gate from the reference production client's own test
+// suite. A pool-side amount must NEVER be scaled by a bare 18-decimal literal
+// anywhere except this module — that literal is exactly the regression class that
+// produces INSUFFICIENT_OUTPUT_AMOUNT on every Arc NFT trade. Any future `build/` module that
 // legitimately needs an 18-decimal EVM-side literal (e.g. deriving `tx.value` bounds)
 // must be added to ALLOWED with a one-line justification, not silently pass the gate.
 const ALLOWED = [

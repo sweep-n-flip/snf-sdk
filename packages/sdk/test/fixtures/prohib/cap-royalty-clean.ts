@@ -11,7 +11,7 @@
  * design: there is nothing to parameterise because there is no parameter. This file
  * IS therefore the canonical reference implementation of the rule (`resolveCap`
  * always returns the literal `false`, ignoring anything the caller passes) — it is
- * what `test/prohibitions/cap-royalty-pinned.test.ts`'s `GSD_PROHIB_SUBJECT` block
+ * what `test/prohibitions/cap-royalty-pinned.test.ts`'s `SNF_SDK_PROHIB_SUBJECT` block
  * defaults to. The test file's OTHER, non-subject assertions decode REAL calldata
  * from `buildBuy`/`buildSell`/`buildNftToNft` directly, which is the authoritative
  * proof this prohibition holds against production code today.

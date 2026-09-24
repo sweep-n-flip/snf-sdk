@@ -10,11 +10,12 @@
  */
 import { fileURLToPath } from 'node:url'
 
-// snf-sdk's own pnpm-lock.yaml (this repo's workspace root) sits two directories up
-// from here. The parent snf-workspace checkout has ANOTHER lockfile further up the
-// tree, which Turbopack's auto-detection picks by default, then warns about the
-// ambiguity — pinning `root` explicitly names the correct one (this repo, not the
-// unrelated workspace it happens to be checked out inside of).
+// This repo's own pnpm-lock.yaml (its workspace root) sits two directories up
+// from here. If this repo is checked out nested inside a larger directory tree that
+// also has a lockfile further up, Turbopack's auto-detection can pick that outer one
+// by default and then warn about the ambiguity — pinning `root` explicitly names the
+// correct one (this repo, not whatever unrelated tree it happens to be checked out
+// inside of).
 const workspaceRoot = fileURLToPath(new URL('../..', import.meta.url))
 
 const nextConfig = {

@@ -8,8 +8,10 @@ subgraph, and hands back unsigned calldata. It never signs a transaction, never 
 one through an SnF-operated server, and never custodies a user's funds or NFTs — see
 [`SECURITY.md`](./SECURITY.md) for the full posture.
 
-**Status:** private during development — goes public and ships to npm at `1.0.0`,
-once the founder's UAT on this package passes.
+**Status:** `0.x` — the public API may still change between minor versions; pin an
+exact version if you need stability. `1.0.0` ships to npm once a real, small-value
+purchase has been verified end-to-end against this package (see `CHANGELOG.md`'s
+"Versioning policy").
 
 ## Install
 
@@ -58,7 +60,7 @@ same frame as the signature. Neither one signs or sends anything — only the fi
 const { data: quote } = useSnfQuoteBuy({ collection, count })
 const plan = quote && (await client.buildBuy({ quote, recipient }))
 const checkout = useSnfCheckout(plan)
-// state: 'review' -> 'ready-approve'? -> ... -> 'ready-buy' -> 'success' (one click per step, INV-17)
+// state: 'review' -> 'ready-approve'? -> ... -> 'ready-buy' -> 'success' (one click per step)
 <button onClick={() => void checkout.next()} disabled={!checkout.canProceed}>
   {checkout.label}
 </button>
@@ -152,7 +154,7 @@ pnpm -r build
 pnpm -r test
 pnpm test:fork      # 4-chain anvil fork lanes — Base, Arbitrum, Robinhood, Arc
 pnpm lint
-pnpm grep:gate      # no SnF-server endpoints, keys, process.env, or private-client imports
+pnpm grep:gate      # no hardcoded third-party API hosts, process.env reads, or private-repo imports
 pnpm size            # bundle budget: <= 60 kB gzip
 pnpm release:gate    # stubs, ABI inventory, secrets, bundle, version — one command, five checks
 ```

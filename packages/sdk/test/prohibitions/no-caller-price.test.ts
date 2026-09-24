@@ -30,7 +30,7 @@ import type { FeeBreakdown, Quote, QuoteLeg } from '../../src/types/quote.types'
  * itself. This is the STANDING gate: it survives independently of any one builder's
  * own test file (this module's `test/build/{buildBuy,buildSell,buildNftToNft}.test.ts`
  * each proved this per-builder already; this file generalises the same invariant into
- * one place with a provable failure mode — a causation-controlled `GSD_PROHIB_SUBJECT`
+ * one place with a provable failure mode — a causation-controlled `SNF_SDK_PROHIB_SUBJECT`
  * run against a deliberately-tampering implementation, not just an assertion that
  * happens to currently pass).
  *
@@ -280,7 +280,7 @@ describe('no-caller-price — deriveBounds is structurally incapable of acceptin
   })
 })
 
-describe('no-caller-price — GSD_PROHIB_SUBJECT causation control (fixtures/prohib/caller-price-{clean,violation}.ts)', () => {
+describe('no-caller-price — SNF_SDK_PROHIB_SUBJECT causation control (fixtures/prohib/caller-price-{clean,violation}.ts)', () => {
   interface CallerPriceSubjectModule {
     readonly deriveBounds: (args: {
       readonly side: 'buy' | 'sell'

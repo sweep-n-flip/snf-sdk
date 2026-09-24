@@ -3,17 +3,16 @@ import type { CheckoutState, ReceiptLike } from '../types/checkout.types'
 import type { ExecutionPlan, Step, StepKind } from '../types/plan.types'
 
 /**
- * The pure checkout reducer (INV-17). This is the ONLY place a
+ * The pure checkout reducer. This is the ONLY place a
  * dispatch effect is produced anywhere in this package, and it is produced in exactly
  * ONE `case` of the `switch` below — the `'next'` case. Every other case (`'receipt'`,
  * `'rejected'`, `'cancel'`) returns `{ kind: 'none' }`, unconditionally.
  *
- * This is INV-17's shape: `snf-client` spent FOUR fix cycles (memory
- * `feedback_wagmi_reset_race`; workspace root CLAUDE.md, "Multi-phase wallet flows
- * must be USER-DRIVEN") discovering that a watcher-initiated `write()` races wagmi's
- * own non-synchronous `reset()` (it resolves via a later React state update) and
- * silently drops the dispatch — no wallet popup, no error, the modal just hangs. The
- * fix that finally held was structural, not
+ * This shape exists because the reference production client independently spent
+ * four fix cycles discovering that a watcher-initiated `write()` races a wallet
+ * library's own non-synchronous `reset()` (it resolves via a later React state
+ * update) and silently drops the dispatch — no wallet popup, no error, the modal
+ * just hangs. The fix that finally held was structural, not
  * defensive: make it impossible for a watcher to dispatch at all. `onReceipt` and
  * `onRejected` (createCheckout.ts) call this reducer ONLY with `'receipt'`/`'rejected'`
  * actions, and those two cases are hard-coded to `{ kind: 'none' }` — there is no

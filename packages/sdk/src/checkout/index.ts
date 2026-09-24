@@ -1,6 +1,6 @@
 /**
- * The checkout surface (INV-17). Re-exported (not just internally used) so a
- * later plan/barrel can do `export * from './checkout'` without reaching into each
+ * The checkout surface. Re-exported (not just internally used) so a
+ * future consumer can do `export * from './checkout'` without reaching into each
  * file individually.
  */
 export { checkoutReducer, initialCheckoutState, canDispatch, CHECKOUT_STATES, NEXT_READY_BY_KIND } from './reducer'

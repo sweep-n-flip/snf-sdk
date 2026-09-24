@@ -6,8 +6,8 @@ contains no trading logic of its own — no arithmetic on an amount, no numeric
 formatting, no contract read or write. Every number shown and every transaction sent
 comes straight from the SDK.
 
-`private: true`, consumed from a local checkout inside this monorepo. Publishing is a
-separate, still-pending founder decision, unchanged by this package becoming real.
+`private: true`, consumed from a local checkout inside this monorepo. Publishing this
+package to npm is a separate decision, made independently of when it becomes feature-complete.
 
 An optional SnF theme ships as a separate CSS entry point, `@sweepnflip/widgets/theme.css`
 — import it only if you want a working look on day one; not importing it leaves every

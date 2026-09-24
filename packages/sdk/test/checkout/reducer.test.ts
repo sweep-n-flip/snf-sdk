@@ -16,8 +16,8 @@ import type { Bounds, ExecutionPlan, Step, StepKind, UnsignedTx } from '../../sr
 import type { Quote } from '../../src/types/quote.types'
 
 /**
- * INV-17 — the pure checkout reducer. See `src/checkout/reducer.ts`'s header for
- * the doctrine this proves structurally: a dispatch effect is reachable ONLY from the
+ * The pure checkout reducer. See `src/checkout/reducer.ts`'s header for
+ * the design this proves structurally: a dispatch effect is reachable ONLY from the
  * `'next'` action, and only from `review`/`ready-*` states.
  */
 

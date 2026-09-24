@@ -7,23 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Versioning policy
 
-Both `@sweepnflip/sdk` and `@sweepnflip/sdk-react` stay on `0.x` until the founder's UAT
-(a real, small-value purchase against the Base ETH/DEMON pool). `1.0.0` — and
-the first `npm publish` — happen together, when the repo also goes public.
-From `1.0.0` onward, breaking changes only ship in a major version, with a
-documented overlap of at least 6 months for any deprecated surface.
+Both `@sweepnflip/sdk` and `@sweepnflip/sdk-react` stay on `0.x` until a real,
+small-value purchase has been verified end-to-end against the Base ETH/DEMON pool.
+While on `0.x`, the public API may still change between minor versions — pin an exact
+version if you need stability. `1.0.0` marks the first `npm publish`. From `1.0.0`
+onward, breaking changes only ship in a major version, with a documented overlap of at
+least 6 months for any deprecated surface.
 
 ## [Unreleased]
 
-Nothing since `0.1.0` — this repository is not yet published (`1.0.0`, the first
-`npm publish`, and the repo going public all happen together, after the
-founder's UAT of this `0.1.0`).
+Nothing since `0.1.0`.
 
-## [0.1.0] — 2026-09-21 (unpublished — internal, pre-founder-UAT)
+## [0.1.0] — 2026-09-21
 
-The first complete, buildable, testable
-surface of both packages. Not yet published to npm and this repository is not yet
-public — `pnpm link`/`pnpm pack` only, until the repo goes public.
+The first complete, buildable, testable surface of both packages.
 
 ### Added
 
@@ -46,7 +43,8 @@ public — `pnpm link`/`pnpm pack` only, until the repo goes public.
   wallet-balance diff), including the wNFT-remainder gap fixed here (Finding 3).
 - `createCheckout(plan)` (subpath `@sweepnflip/sdk/checkout`) — a headless, user-driven
   checkout state machine; `next()` is the only member that can ever produce a `Step` to
-  send (INV-17): a receipt/rejection watcher is structurally incapable of dispatching.
+  send — a receipt/rejection watcher is structurally incapable of dispatching, so every
+  on-chain step maps to one explicit call from the caller, never an automatic advance.
 - `SnfError` / `SNF_ERROR_CODES` — every public rejection is a typed, retryable-aware
   error; `describeError` normalises any thrown value into one.
 - `SNF_CHAINS` / `getChain` / `isSupportedChain` — the 14-chain registry (chain id,
@@ -72,9 +70,8 @@ public — `pnpm link`/`pnpm pack` only, until the repo goes public.
   `useSnfQuoteSell`, `useSnfQuoteNftToNft` — thin `useQuery` wrappers over the core.
 - `useSnfCheckout(plan)` — the ONE dispatch site in either package: calls `next()` from
   a click, sends whatever `Step` it returns via wagmi's `useSendTransaction` in the same
-  synchronous frame as `reset()` (never a `useEffect`-driven auto-advance — INV-17),
-  and feeds receipts/rejections back through the core's
-  watcher-only entry points.
+  synchronous frame as `reset()` (never a `useEffect`-driven auto-advance), and feeds
+  receipts/rejections back through the core's watcher-only entry points.
 
 **Examples** — `examples/vanilla` (no-React proof, runs on bare Node against the live
 Base ETH/DEMON pool through `plan.preflight()`) and `examples/next-app` (one page, four
@@ -86,7 +83,7 @@ packages' `dist`, the 60 kB gzip bundle budget, and `SDK_VERSION`/`package.json#
 consistency). `pnpm grep:gate`, `pnpm lint`, `pnpm -r typecheck`, `pnpm -r test`,
 `pnpm test:fork`, `pnpm size` — all green at this release.
 
-- 2026-09-20 — Toolchain installed after founder approval: `typescript@5.9.3`, `prettier@3.9.8`, `eslint@9.39.4`, `typescript-eslint@8.70.0`, `tsup@8.5.1`, `vitest@5.0.1`, `@vitest/coverage-v8@5.0.1`, `size-limit@14.0.0`, `@size-limit/preset-small-lib@14.0.0`, `fast-check@4.10.2`, `@changesets/cli@3.0.3` (root); `viem@2.47.0` (`@sweepnflip/sdk`); `viem@2.47.0`, `wagmi@2.19.5`, `@tanstack/react-query@5.90.21`, `react@19.2.5`, `react-dom@19.2.5`, `@types/react@19.3.0`, `@testing-library/react@16.3.3`, `@testing-library/dom@10.4.2`, `jsdom@30.1.0` (`@sweepnflip/sdk-react`). `tsx` skipped (founder decision). Bare `changesets` package never installed — only the scoped `@changesets/cli`.
+- 2026-09-20 — Toolchain installed: `typescript@5.9.3`, `prettier@3.9.8`, `eslint@9.39.4`, `typescript-eslint@8.70.0`, `tsup@8.5.1`, `vitest@5.0.1`, `@vitest/coverage-v8@5.0.1`, `size-limit@14.0.0`, `@size-limit/preset-small-lib@14.0.0`, `fast-check@4.10.2`, `@changesets/cli@3.0.3` (root); `viem@2.47.0` (`@sweepnflip/sdk`); `viem@2.47.0`, `wagmi@2.19.5`, `@tanstack/react-query@5.90.21`, `react@19.2.5`, `react-dom@19.2.5`, `@types/react@19.3.0`, `@testing-library/react@16.3.3`, `@testing-library/dom@10.4.2`, `jsdom@30.1.0` (`@sweepnflip/sdk-react`). `tsx` deliberately skipped in favor of the toolchain above. Bare `changesets` package never installed — only the scoped `@changesets/cli`.
 
 ### Known gaps (tracked, not blocking)
 
@@ -101,7 +98,7 @@ consistency). `pnpm grep:gate`, `pnpm lint`, `pnpm -r typecheck`, `pnpm -r test`
 
 ### Gate
 
-`1.0.0` is not next. The next version bump on either package happens together with:
-the first real `npm publish`, the `sweep-n-flip/snf-sdk` repository going public, and
-a generated docs site — all three gated on the founder's own UAT of this `0.1.0`,
-never on an agent's say-so.
+`1.0.0` is not next. The next version bump happens together with the first real
+`npm publish` and a generated docs site — both gated on a real, verified end-to-end
+purchase against this `0.1.0` (see "Versioning policy" above), not on this changelog
+alone.

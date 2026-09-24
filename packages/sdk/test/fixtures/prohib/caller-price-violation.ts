@@ -1,7 +1,7 @@
 /**
  * `caller-price-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #2
  * forbids, kept ONLY as a test subject for `test/prohibitions/no-caller-price.test.ts`
- * (`GSD_PROHIB_SUBJECT`). MUST NEVER be imported by `src/` — `test/prohibitions/
+ * (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER be imported by `src/` — `test/prohibitions/
  * no-caller-price.test.ts`'s own `grep -rn "fixtures/prohib" src` acceptance check
  * (and `pnpm grep:gate`, which does not scan `test/`) exist to make that
  * unenforceable-by-accident, not merely discouraged.

@@ -40,7 +40,7 @@ export const ROUTE_BLOCK_CODE: RouteBlockCodeMap = {
  * 3. `no-pair` — no candidate pool exists for the collection at all.
  * 4. `noLiquidity` — a candidate pool exists but is empty.
  * 5. `direct-only` — the resolved `path` composes a direct-only base into a
- * fungible leg (Gate 69.5, `directOnlyRouting.ts`).
+ * fungible leg (see `directOnlyRouting.ts`).
  * `viablePayTokens` is always populated from `candidates` (never empty when a
  * candidate exists), whether or not the route ends up blocked — a caller building a
  * `SnfError('NO_ROUTE').details.viablePayTokens` never has to re-derive it.

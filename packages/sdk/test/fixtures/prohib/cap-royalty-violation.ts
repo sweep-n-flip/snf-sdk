@@ -1,7 +1,7 @@
 /**
  * `cap-royalty-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #7
  * forbids, kept ONLY as a test subject for
- * `test/prohibitions/cap-royalty-pinned.test.ts` (`GSD_PROHIB_SUBJECT`). MUST NEVER
+ * `test/prohibitions/cap-royalty-pinned.test.ts` (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER
  * be imported by `src/` (see `caller-price-violation.ts`'s identical header note).
  *
  * The rule forbids BOTH sending `capRoyaltyFee=true` AND merely offering a switch a

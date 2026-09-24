@@ -1,7 +1,7 @@
 /**
  * `address-name-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #6
  * forbids, kept ONLY as a test subject for
- * `test/prohibitions/no-address-as-name.test.ts` (`GSD_PROHIB_SUBJECT`). MUST NEVER
+ * `test/prohibitions/no-address-as-name.test.ts` (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER
  * be imported by `src/` (see `caller-price-violation.ts`'s identical header note).
  *
  * Reproduces the historical "reject full address only" guard `src/collection/

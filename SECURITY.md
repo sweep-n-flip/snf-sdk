@@ -34,9 +34,9 @@ on every chain:
   from a private key.
 - `scripts/grep-gate.mjs` (`pnpm grep:gate`) scans `packages/*/src` and `packages/*/dist`
   for `process.env`, `NEXT_PUBLIC_`, a hardcoded `sweepnflip.io`/`alchemy.com`/
-  `opensea.io`/`coingecko.com` host, and any import of the founder's private production
-  client — none of which a
-  partner-facing package has a legitimate reason to contain.
+  `opensea.io`/`coingecko.com` host, and any import of the closed-source production
+  client this SDK's own dependency-free design deliberately does not depend on — none
+  of which a partner-facing package has a legitimate reason to contain.
 - `scripts/release-gate.mjs` (`pnpm release:gate`) adds a secrets scan (64-hex
   literals, PEM private-key headers, `sk_live`/`snf_live_` prefixes, long-path indexer
   URLs, tracked `.env` files) over the whole repository and over both packages' built
@@ -69,8 +69,8 @@ this SDK as a thin transport over it — never behind client-side obfuscation.
 
 ## Reporting a vulnerability
 
-Open a private security advisory on the `sweep-n-flip/snf-sdk` GitHub repository
-(Security tab → "Report a vulnerability") once the repository is public. Until
-then, report directly to the founder through the existing SnF channels. Please do not
-open a public issue for a vulnerability that could put live funds at risk before it has
-been triaged.
+Please use GitHub's private vulnerability reporting: on this repository's page, open
+the **Security** tab and select **"Report a vulnerability"**. This opens a private
+advisory visible only to the maintainers and you, so nothing about the issue is
+disclosed publicly before it has been triaged. Please do not open a public issue for a
+vulnerability that could put live funds at risk before it has been triaged.

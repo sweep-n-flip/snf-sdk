@@ -1,33 +1,39 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { getChain, isSupportedChain, SNF_CHAIN_IDS, SNF_CHAINS } from '../../src/chains/registry'
 
 /**
- * Registry-vs-`snf-client` diff. Reads the production config files
- * `snf-client` actually ships **from disk**, at test time — never `import`s them (that
- * would trip `local/no-snf-backend` and pull an unrelated app's dependency graph into
- * this package). If a consumer clones `snf-sdk` standalone (no sibling `snf-client`
- * checkout), every case here `it.skip`s with a loud `console.warn` instead of failing.
+ * Registry-vs-production-app diff. Reads the config files a sibling production
+ * consumer app ships **from disk**, at test time — never `import`s them (that
+ * would pull an unrelated app's dependency graph into this package). The sibling's
+ * location is opt-in only: set `SNF_SDK_PRODUCTION_CONFIG_DIR` to that app's chain
+ * config directory to run this diff locally. If the variable is unset, or the
+ * directory it names doesn't have the three files this test reads, every case here
+ * `it.skip`s with a loud `console.warn` instead of failing — this is expected in
+ * CI and for anyone who clones this package standalone.
  */
 
-const HERE = dirname(fileURLToPath(import.meta.url))
-const SNF_CLIENT_CONFIG = resolve(HERE, '../../../../../snf-client/src/config')
+const PRODUCTION_CONFIG_DIR = process.env.SNF_SDK_PRODUCTION_CONFIG_DIR
 
-const CHAINS_PATH = resolve(SNF_CLIENT_CONFIG, 'chains.ts')
-const CONTRACTS_PATH = resolve(SNF_CLIENT_CONFIG, 'contracts.ts')
-const SUBGRAPHS_PATH = resolve(SNF_CLIENT_CONFIG, 'subgraphs.ts')
+const CHAINS_PATH = PRODUCTION_CONFIG_DIR ? resolve(PRODUCTION_CONFIG_DIR, 'chains.ts') : ''
+const CONTRACTS_PATH = PRODUCTION_CONFIG_DIR ? resolve(PRODUCTION_CONFIG_DIR, 'contracts.ts') : ''
+const SUBGRAPHS_PATH = PRODUCTION_CONFIG_DIR ? resolve(PRODUCTION_CONFIG_DIR, 'subgraphs.ts') : ''
 
-const SNF_CLIENT_AVAILABLE = existsSync(CHAINS_PATH) && existsSync(CONTRACTS_PATH) && existsSync(SUBGRAPHS_PATH)
+const PRODUCTION_CONFIG_AVAILABLE =
+  Boolean(PRODUCTION_CONFIG_DIR) && existsSync(CHAINS_PATH) && existsSync(CONTRACTS_PATH) && existsSync(SUBGRAPHS_PATH)
 
-if (!SNF_CLIENT_AVAILABLE) {
+if (!PRODUCTION_CONFIG_AVAILABLE) {
   // eslint-disable-next-line no-console
   console.warn(
-    'coverage.test.ts: sibling snf-client checkout not found at ' +
-      `${SNF_CLIENT_CONFIG} — skipping the registry-vs-production diff. ` +
-      'This is expected only when snf-sdk is cloned standalone.',
+    PRODUCTION_CONFIG_DIR
+      ? 'coverage.test.ts: SNF_SDK_PRODUCTION_CONFIG_DIR is set to ' +
+          `${PRODUCTION_CONFIG_DIR} but chains.ts/contracts.ts/subgraphs.ts were not all found there — ` +
+          'skipping the registry-vs-production diff.'
+      : 'coverage.test.ts: SNF_SDK_PRODUCTION_CONFIG_DIR is not set — skipping the ' +
+          'registry-vs-production diff. Set it to a sibling app\'s chain config directory to run this ' +
+          'locally; this is expected to be unset in CI and for standalone clones.',
   )
 }
 
@@ -109,15 +115,15 @@ function parseSubgraphUrls(subgraphsSource: string): string[] {
   return urls
 }
 
-const maybeDescribe = SNF_CLIENT_AVAILABLE ? describe : describe.skip
+const maybeDescribe = PRODUCTION_CONFIG_AVAILABLE ? describe : describe.skip
 
-maybeDescribe('registry vs snf-client (production config diff)', () => {
-  const chainsSource = SNF_CLIENT_AVAILABLE ? readFileSync(CHAINS_PATH, 'utf8') : ''
-  const contractsSource = SNF_CLIENT_AVAILABLE ? readFileSync(CONTRACTS_PATH, 'utf8') : ''
-  const subgraphsSource = SNF_CLIENT_AVAILABLE ? readFileSync(SUBGRAPHS_PATH, 'utf8') : ''
+maybeDescribe('registry vs production app (config diff)', () => {
+  const chainsSource = PRODUCTION_CONFIG_AVAILABLE ? readFileSync(CHAINS_PATH, 'utf8') : ''
+  const contractsSource = PRODUCTION_CONFIG_AVAILABLE ? readFileSync(CONTRACTS_PATH, 'utf8') : ''
+  const subgraphsSource = PRODUCTION_CONFIG_AVAILABLE ? readFileSync(SUBGRAPHS_PATH, 'utf8') : ''
 
-  const idByLocalName = SNF_CLIENT_AVAILABLE ? parseIdByLocalName(chainsSource) : {}
-  const supportedOrder = SNF_CLIENT_AVAILABLE ? parseSupportedChainsOrder(chainsSource) : []
+  const idByLocalName = PRODUCTION_CONFIG_AVAILABLE ? parseIdByLocalName(chainsSource) : {}
+  const supportedOrder = PRODUCTION_CONFIG_AVAILABLE ? parseSupportedChainsOrder(chainsSource) : []
   const expectedIdOrder = supportedOrder.map((name) => {
     const id = idByLocalName[name]
     if (id === undefined) throw new Error(`no id resolved for local chain name "${name}"`)

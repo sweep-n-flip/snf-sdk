@@ -8,8 +8,8 @@ A single page — discovery → inventory → quote → checkout — wired entir
 `wagmi` for wallet connection. No RainbowKit, no design system, no CSS framework — a
 handful of inline styles, four sections, one component per concern.
 
-This is a **minimal app of our own**, not a mirror of the Drops Genesis checkout —
-the two share a domain (buying NFTs from an SnF pool) but nothing else: no shared
+This is a **minimal app of our own**, not a mirror of any other SnF product's own
+checkout UI — they share a domain (buying NFTs from an SnF pool) but nothing else: no shared
 code, no shared styling, no shared data wiring. A partner's real UI is their own;
 this page exists to prove the public hooks are enough to build one, and to give a
 partner a provider composition (`src/app/providers.tsx`) and a checkout pattern
@@ -34,7 +34,7 @@ partner a provider composition (`src/app/providers.tsx`) and a checkout pattern
    `useSnfCheckout(plan)` drives the rest: the step list, the current state, and
    **one button** wired to `next()`, disabled whenever `canProceed` is false. One
    click, one transaction — `next()` is never called from a `useEffect`/watcher
-   anywhere in this file (INV-17). See `CheckoutFlow` in `SwapPanel.tsx`.
+   anywhere in this file. See `CheckoutFlow` in `SwapPanel.tsx`.
 
 ## How to run it
 

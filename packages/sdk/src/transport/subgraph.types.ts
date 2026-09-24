@@ -105,8 +105,8 @@ export interface SubgraphPair {
   readonly createdAtBlockNumber?: string
 }
 
-/** One `currency(id:...)` row — mirrors Drops `subgraphQueries.ts`'s `PoolInventory`
- * document (`currency{...}` + `_meta` in one POST). */
+/** One `currency(id:...)` row — mirrors the same `PoolInventory` GraphQL shape other
+ * SnF products query (`currency{...}` + `_meta` in one POST). */
 export interface SubgraphCurrency {
   readonly id: string
   readonly symbol: string

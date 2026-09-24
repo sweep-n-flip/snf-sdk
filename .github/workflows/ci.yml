@@ -9,7 +9,7 @@
 # This workflow references no repository secret anywhere: fork lanes default to
 # public RPCs so this new repo's CI never depends on a workspace Alchemy key.
 # OPTIONAL future opt-in: ALCHEMY_KEY as
-# a repo secret, once the founder decides to share it with this repo specifically.
+# a repo secret, if a maintainer decides to configure one for this repo specifically.
 name: ci
 
 on:
@@ -122,7 +122,7 @@ jobs:
         env:
           ANVIL_PORT: ${{ steps.port.outputs.port }}
           # OPTIONAL: ALCHEMY_KEY — not wired here on purpose (see file header
-          # comment). Public RPCs are the default until the founder opts this repo in.
+          # comment). Public RPCs are the default until a repo secret opts this workflow in.
 
       # Diagnosability without re-running: anvil's own log + the fork config it ran
       # against, uploaded ONLY on failure (nothing to upload on a green run).

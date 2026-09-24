@@ -19,8 +19,8 @@ export default function HomePage() {
       <h1>Sweep n&apos; Flip SDK — reference wiring</h1>
       <p style={{ opacity: 0.7 }}>
         Discovery → inventory → quote → checkout, through <code>@sweepnflip/sdk-react</code>
-        &apos;s public hooks only — no RainbowKit, no Drops Genesis code. This page is a wiring
-        reference, not a product; a partner&apos;s real UI is their own.
+        &apos;s public hooks only — no RainbowKit, no other product&apos;s checkout code. This page
+        is a wiring reference, not a product; a partner&apos;s real UI is their own.
       </p>
       <SwapPanel />
     </main>

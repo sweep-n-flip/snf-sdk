@@ -2,18 +2,19 @@ import type { DirectOnlyResult, EvaluateDirectOnlyArgs, IsDirectOnlyArgs } from 
 import type { TokenRef } from '../types/amount.types'
 
 /**
- * Gate 69.5 ported from the production AMM client's own direct-only routing logic.
+ * Direct-only routing, ported from the production AMM client's own equivalent logic.
  * Original context: the V2 delegate on Robinhood Chain holds
- * ~1e-9 of the 40 founder stock tokens, so any `[WETH, <stock>, collection]` hop
+ * ~1e-9 of the ~40 tokenized-stock tokens this registry recognises, so any
+ * `[WETH, <stock>, collection]` hop
  * reverts or returns a garbage quote. A stock token may only back a DIRECT pool with
  * a collection — the two-entry path `[<stock>, collection]` / `[collection,
  * <stock>]` — and must never be composed into a longer fungible leg.
  *
  * A blocked route is an explicit typed failure with an alternative, never a
- * silently empty quote (prohibition #9). `filterViablePayTokens` never returns an
+ * silently empty quote. `filterViablePayTokens` never returns an
  * empty array when at least one candidate pool exists: every candidate already has
  * an on-chain pair with the collection, so its base token is always viable when
- * paid DIRECTLY (the 2-entry path Gate 69.5 never restricts) — direct-only status
+ * paid DIRECTLY (the 2-entry path this module never restricts) — direct-only status
  * only forbids using that base as an INTERMEDIATE leg for a different payToken,
  * which `isDirectOnly` alone decides.
  */

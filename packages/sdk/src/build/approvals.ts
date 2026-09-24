@@ -13,9 +13,8 @@ import type { Quote } from '../types/quote.types'
  * before assembling its swap step. Reads `isApprovedForAll`/
  * `allowance` in ONE multicall and returns ONLY what is actually absent — a wallet
  * that already granted the operator approval, or whose ERC-20 allowance already
- * covers the required amount (`>=`, never `>`), gets no approval step for that leg
- * (DATASHEET §5: "skip any already granted — the builder pre-checks allowances and
- * only lists missing ones").
+ * covers the required amount (`>=`, never `>`), gets no approval step for that leg:
+ * the builder pre-checks allowances and only ever lists the missing ones.
  *
  * A read that FAILS (the RPC drops the call, or the multicall entry comes back
  * `status: 'failure'`) is treated as MISSING, fail-safe: emitting an unnecessary

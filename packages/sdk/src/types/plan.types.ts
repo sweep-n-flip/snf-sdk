@@ -2,12 +2,11 @@ import type { SnfChainId } from '../chains/chains.types'
 import type { Quote } from './quote.types'
 
 /**
- * Execution-plan shapes (DATASHEET §5 "NFT AMM — execution builders").
+ * Execution-plan shapes for the SDK's NFT AMM execution builders.
  */
 
-/** Unsigned calldata for one transaction — `chainId` is always explicit (SPEC
- * Constraint: "chainId explícito em toda tx"), never inferred from the active
- * `publicClient`. */
+/** Unsigned calldata for one transaction — `chainId` is always explicit, a hard
+ * constraint (never inferred from the active `publicClient`). */
 export interface UnsignedTx {
   readonly to: `0x${string}`
   readonly data: `0x${string}`

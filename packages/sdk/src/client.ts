@@ -154,7 +154,7 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
     /** Builds an unsigned sell `ExecutionPlan`, bounds re-quoted on-chain. */
     buildSell: (args) => buildSell(ctx, args),
 
-    /** Builds the user-driven, multi-step NFT×NFT `ExecutionPlan` (INV-17). */
+    /** Builds the user-driven, multi-step NFT×NFT `ExecutionPlan`. */
     buildNftToNft: (args) => buildNftToNft(ctx, args),
 
     /** Builds an unsigned fungible↔fungible `ExecutionPlan`. */

@@ -115,7 +115,7 @@ describe('no-silent-reconcile — static scan: no tolerance vocabulary anywhere 
   })
 })
 
-describe('no-silent-reconcile — GSD_PROHIB_SUBJECT causation control (fixtures/prohib/reconcile-{clean,violation}.ts)', () => {
+describe('no-silent-reconcile — SNF_SDK_PROHIB_SUBJECT causation control (fixtures/prohib/reconcile-{clean,violation}.ts)', () => {
   interface ReconcileSubjectModule {
     readonly reconcileGross: (args: { readonly pool: bigint; readonly marketplace: bigint; readonly royalty: bigint; readonly routerGross: bigint }) => void
   }

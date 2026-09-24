@@ -6,10 +6,9 @@ import { buildTwoLegEnv, ZERO_ADDRESS, type TwoLegConfig } from './nftToNftTestH
 
 /**
  * `quoteNftToNft` — two legs, per-leg royalty, saturating remainder, and a typed
- * refusal for cross-base pools (Task 2). Every
- * `<behavior>` bullet from the plan is at least one `it` below; parity against
- * `snf-client`'s `computeNftToNftQuote` lives in its own file
- * (`test/quote/nftToNft.parity.test.ts`).
+ * refusal for cross-base pools. Every documented behavior has at least one `it`
+ * below; parity against the reference production client's own `computeNftToNftQuote`
+ * lives in its own file (`test/quote/nftToNft.parity.test.ts`).
  */
 
 const SELL_PAIR = '0x000000000000000000000000000000005e11000a' as `0x${string}`

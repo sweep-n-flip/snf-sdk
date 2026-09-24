@@ -5,37 +5,37 @@
 
 /**
  * The closed, ASCII SCREAMING_SNAKE union every public `SnfError.code` belongs to.
- * Twelve members: DATASHEET §0.4 aligns several of these one-to-one (see each doc line
- * below); `QUOTE_RECONCILIATION_FAILED` and `USER_REJECTED` are a later addendum
- * (a divergence from DATASHEET needs a documented addendum, not a
- * silent extra code) — wallet rejection was split into its own code rather than folding
- * it into `INVALID_PARAMS`. Comparison is always strict string equality (`===`), never a
- * regex or case-fold (Edge `encoding`).
+ * Twelve members: most align one-to-one with an equivalent REST API error code and
+ * HTTP status (see each doc line below); `QUOTE_RECONCILIATION_FAILED` and
+ * `USER_REJECTED` were added later, deliberately, as their own dedicated codes rather
+ * than folding into `INVALID_PARAMS` — wallet rejection in particular is common
+ * enough, and different enough in meaning, to deserve its own code. Comparison is
+ * always strict string equality (`===`), never a regex or case-fold.
  */
 export type SnfErrorCode =
-  /** DATASHEET §0.4 `NO_ROUTE` (422) — no viable AMM path for the pay/receive token, or a cross-base NFT×NFT request. */
+  /** Equivalent to REST `NO_ROUTE` (422) — no viable AMM path for the pay/receive token, or a cross-base NFT×NFT request. */
   | 'NO_ROUTE'
-  /** DATASHEET §0.4 `TOKENIDS_UNAVAILABLE` (409) — pre-flight found tokenIds not redeemable/owned, or pool inventory unreadable. */
+  /** Equivalent to REST `TOKENIDS_UNAVAILABLE` (409) — pre-flight found tokenIds not redeemable/owned, or pool inventory unreadable. */
   | 'TOKENIDS_UNAVAILABLE'
-  /** Later addendum (no DATASHEET row) — the Router's own on-chain quote diverges from the SDK's reconstructed breakdown by even 1 wei. Never absorbed silently — see the documented prohibitions table. */
+  /** Added later, with no REST equivalent — the Router's own on-chain quote diverges from the SDK's reconstructed breakdown by even 1 wei. Never absorbed silently — see the documented prohibitions table. */
   | 'QUOTE_RECONCILIATION_FAILED'
-  /** SDK-only (no DATASHEET row) — the wrapper currently blocks releasing NFTs to a seller (`redemptionLocked`, Sell path). */
+  /** SDK-only, no REST equivalent — the wrapper currently blocks releasing NFTs to a seller (`redemptionLocked`, Sell path). */
   | 'REDEMPTION_LOCKED'
-  /** SDK-only (no DATASHEET row) — a wrapper's `collection()` disagrees with the requested address, or (Arc) its `decimals()` isn't 18 (`wrapperVerified`). */
+  /** SDK-only, no REST equivalent — a wrapper's `collection()` disagrees with the requested address, or (Arc) its `decimals()` isn't 18 (`wrapperVerified`). */
   | 'WRAPPER_UNVERIFIED'
-  /** DATASHEET §0.4 `UPSTREAM_DEGRADED` (503) — subgraph/RPC circuit breaker open, or indexer lag exceeds the degraded threshold. The only retryable code. */
+  /** Equivalent to REST `UPSTREAM_DEGRADED` (503) — subgraph/RPC circuit breaker open, or indexer lag exceeds the degraded threshold. The only retryable code. */
   | 'UPSTREAM_DEGRADED'
-  /** SDK-only (no DATASHEET row) — the `publicClient`'s chain doesn't match the connected wallet's chain at pre-flight. */
+  /** SDK-only, no REST equivalent — the `publicClient`'s chain doesn't match the connected wallet's chain at pre-flight. */
   | 'WRONG_CHAIN'
   /** Named after the Router's own revert string — a swap would execute below its `amountOutMin`/`amountInMax` bound (`parseReceipt`, `describeError`). */
   | 'INSUFFICIENT_OUTPUT_AMOUNT'
-  /** DATASHEET §0.4 `PRODUCT_NOT_LIVE` (501) — a draft-gated surface (e.g. multipool `strategy`) requested before its contracts deploy. */
+  /** Equivalent to REST `PRODUCT_NOT_LIVE` (501) — a draft-gated surface (e.g. multipool `strategy`) requested before its contracts deploy. */
   | 'PRODUCT_NOT_LIVE'
-  /** DATASHEET §0.4 `INVALID_PARAMS` (400) — validation failed; `details` names which field/reason. The SDK's most common code — `assertParam` throws it. */
+  /** Equivalent to REST `INVALID_PARAMS` (400) — validation failed; `details` names which field/reason. The SDK's most common code — `assertParam` throws it. */
   | 'INVALID_PARAMS'
-  /** Later addendum (no DATASHEET row; added when wallet-rejection handling became its own code) — the connected wallet rejected the signature request. */
+  /** Added later, with no REST equivalent (added when wallet-rejection handling became its own code) — the connected wallet rejected the signature request. */
   | 'USER_REJECTED'
-  /** Catch-all, analogous to DATASHEET §0.4 `INTERNAL` (500) — an unrecognised throwable was wrapped by `toSnfError`, or an unimplemented stub function was called. */
+  /** Catch-all, analogous to REST `INTERNAL` (500) — an unrecognised throwable was wrapped by `toSnfError`, or an unimplemented stub function was called. */
   | 'UNKNOWN'
 
 /**

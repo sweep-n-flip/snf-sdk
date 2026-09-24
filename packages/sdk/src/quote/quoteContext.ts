@@ -13,9 +13,8 @@ import type { SnfClientContext } from '../types/client.types'
 
 /**
  * `loadQuoteContext` — every on-chain input a `quoteBuy`/`quoteSell` call needs,
- * pinned to ONE block. Merges the reads spread across
- * `snf-client`'s `useNFTBuyQuote`/`useNFTSellQuote`/`useRouterFees`/
- * `useRouterRoyaltyCap`/`useReserves` into two multicalls: round 1 (reserves,
+ * pinned to ONE block. Merges the reads spread across the reference production
+ * client's own several buy/sell-quote and router-fee hooks into two multicalls: round 1 (reserves,
  * `token0`/`token1`, wrapper `decimals()`, `marketplaceFee()`, `royaltyFeeCap()`,
  * the Router's own `*Collection` gross/net, and the plain wrapper-leg `poolLeg`) and
  * round 2 (per-id `royaltyInfo` at the REAL sale price, which can only be computed

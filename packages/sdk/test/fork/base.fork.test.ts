@@ -25,7 +25,7 @@ import type { AnvilInstance } from './anvil'
  * Every signature in this file comes from one of anvil's own dev accounts — the
  * well-known Foundry/Hardhat test mnemonic ("test test test ... junk"), publicly
  * documented, funded only on the local fork, never used with real funds anywhere.
- * No real wallet key or founder funds are ever touched.
+ * No real wallet key or real funds are ever touched.
  */
 
 const BASE_LANE = FORK_LANES.find((l) => l.key === 'base')

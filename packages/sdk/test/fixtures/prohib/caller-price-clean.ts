@@ -9,7 +9,7 @@
  * property), so it IS its own "clean fixture": calling it with a tampered
  * `callerQuote` attached produces the exact same `Bounds` as calling it without one.
  * `test/prohibitions/no-caller-price.test.ts`'s causation-control block exploits this
- * directly — pointing `GSD_PROHIB_SUBJECT` at this file changes nothing, which is the
+ * directly — pointing `SNF_SDK_PROHIB_SUBJECT` at this file changes nothing, which is the
  * whole point of a "clean" control.
  */
 export { deriveBounds } from '../../../src/build/bounds'
