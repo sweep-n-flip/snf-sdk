@@ -6,15 +6,14 @@ import { useTradeCardCheckout, useTradeCardContext } from './context'
 import type { TradeCardStepsProps } from './TradeCard.types'
 
 /**
- * `TradeCardSteps` — renders the built plan's steps as a real list (R4, R11).
+ * `TradeCardSteps` — renders the built plan's steps as a real list.
  *
- * **Why this Part does not compute per-item done/current/pending status** (restated
- * from `snf-56-05-PLAN.md`'s own `<toolchain>` note, at the file that actually needs
- * it): no publicly exported symbol maps a `CheckoutState` to a `plan.steps[]` index —
+ * **Why this Part does not compute per-item done/current/pending status**: no
+ * publicly exported symbol maps a `CheckoutState` to a `plan.steps[]` index —
  * `NEXT_READY_BY_KIND` lives in `packages/sdk/src/checkout/reducer.ts`, internal to the
  * core package, not part of `@sweepnflip/sdk`'s public barrel or the `/checkout`
  * subpath. Re-deriving that mapping here would be exactly the "re-enumerate the step
- * list" D-07 forbids. `examples/next-app/src/components/SwapPanel.tsx`'s own
+ * list" the SDK's own contract forbids. `examples/next-app/src/components/SwapPanel.tsx`'s own
  * `CheckoutFlow` sets the precedent this Part follows exactly: `plan.steps.map(step =>
  * <li key={step.label}>{step.label}</li>)`, no per-item status at all — overall
  * progress is shown separately (there, `<p>State: {checkout.state}</p>`; here, the

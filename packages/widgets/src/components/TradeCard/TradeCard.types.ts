@@ -9,11 +9,11 @@ import type { SnfWidgetMessages } from '../../messages.types'
 
 /**
  * `TradeCard.types.ts` — the props and context-value shapes `TradeCardRoot` (this
- * plan) builds and every later Part (plan 05) reads from (R4). No behaviour lives
+ * plan) builds and every later Part reads from. No behaviour lives
  * here; every shape is a plain data contract.
  */
 
-/** The three sides `<SnfTradeCard.Root>` supports (R4). */
+/** The three sides `<SnfTradeCard.Root>` supports. */
 export type SnfTradeSide = 'buy' | 'sell' | 'nft-to-nft'
 
 /**
@@ -60,9 +60,7 @@ export interface QuoteQueryResult {
 }
 
 /**
- * plan 05 addition — not in plan 04's original `TradeCardRootContextValue` shape (see
- * `snf-56-05-PLAN.md`'s own `<toolchain>` note, the same documented-incremental-
- * addition pattern `snf-55-03-SUMMARY.md` records for its own plan 15 addition). A
+ * A later addition — not the original `TradeCardRootContextValue` shape. A
  * plain passthrough of the subset of `SnfTradeCardRootProps` `TradeCardInput` needs to
  * display BEFORE a quote resolves — `count`/`tokenIds` are not otherwise visible to a
  * Part, which only ever reads context, never Root's raw props.
@@ -75,7 +73,7 @@ export interface TradeCardParams {
 }
 
 /** Everything `TradeCardRoot` resolves before a plan exists — exposed via
- * `TradeCardRootContext` (R4, D-07). */
+ * `TradeCardRootContext`. */
 export interface TradeCardRootContextValue {
   readonly side: SnfTradeSide
   readonly collectionInfo: UseSnfCollectionResult
@@ -90,24 +88,24 @@ export interface TradeCardRootContextValue {
     readonly isLoading: boolean
   }
   readonly messages: SnfWidgetMessages | undefined
-  /** plan 05 addition — see `TradeCardParams`'s own header comment. */
+  /** A later addition — see `TradeCardParams`'s own header comment. */
   readonly params: TradeCardParams
 }
 
 /**
  * The exact shape `useSnfCheckout` returns — a type ALIAS, never redeclared field by
- * field, so this package can never silently drift from the SDK's own contract (D-07:
- * the eleven `CheckoutState` values are never re-enumerated anywhere in this
+ * field, so this package can never silently drift from the SDK's own contract (the
+ * eleven `CheckoutState` values are never re-enumerated anywhere in this
  * package).
  */
 export type TradeCardCheckoutContextValue = UseSnfCheckoutResult
 
 /**
- * plan 05 addition (R6) — a part's `children` may be a plain node/element/`undefined`
+ * A part's `children` may be a plain node/element/`undefined`
  * (rendered as-is, or the single substitution target `Slot` clones when `asChild` is
  * set) OR a function receiving the relevant context slice for fully custom rendering —
- * the second acceptance path R6 names ("or a render prop"). Shared by every Part this
- * plan builds (`Input`/`QuoteBreakdown`/`Steps`/`Action`), parameterized by whatever
+ * the second acceptance path names ("or a render prop"). Shared by every Part
+ * (`Input`/`QuoteBreakdown`/`Steps`/`Action`), parameterized by whatever
  * slice each Part's function `children` actually receives.
  */
 export type RenderPropChildren<T> = ReactNode | ((ctx: T) => ReactNode)

@@ -20,36 +20,36 @@ import { PoolStatsRoot } from '../src/components/PoolStats/PoolStatsRoot'
 import { SnfPoolStats } from '../src/components/PoolStats'
 import type { TradeCardCheckoutContextValue } from '../src/components/TradeCard/TradeCard.types'
 import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
-// The whole point under test (D-06, R7): a theme import sitting anywhere in this
+// The whole point under test: a theme import sitting anywhere in this
 // file's module graph must change appearance only, never behaviour. `sideEffects:
 // ["*.css"]` in package.json keeps a bundler from ever dropping this import as
 // dead — the exact reason that field exists (tsup.config.ts's own header comment).
 import '../src/theme.css'
 
 /**
- * `theme.test.ts` — the two proofs D-06/R7 stand on (56-SPEC.md; this plan's own
- * `must_haves.truths`):
+ * `theme.test.ts` — the two documented proofs the theme's opt-in contract stands on
+ * (`must_haves.truths`):
  *
  * 1. **The default entry point pulls in no stylesheet.** Read straight off the
- *    already-built `dist/index.js`/`dist/index.cjs` (a fresh `pnpm -r build` is
- *    assumed to have already run — this file reads build OUTPUT, it never invokes
- *    `pnpm build` itself, consistent with this repo's other build-output
- *    assertions, e.g. `grep-gate.mjs` scanning every package's own dist directory
- *    (do not spell that path with a literal glob here — it closes this comment).
+ * already-built `dist/index.js`/`dist/index.cjs` (a fresh `pnpm -r build` is
+ * assumed to have already run — this file reads build OUTPUT, it never invokes
+ * `pnpm build` itself, consistent with this repo's other build-output
+ * assertions, e.g. `grep-gate.mjs` scanning every package's own dist directory
+ * (do not spell that path with a literal glob here — it closes this comment).
  * 2. **Importing the theme changes appearance only.** jsdom does not run a real CSS
- *    cascade, so "the DOM looks different" is not a trustworthy assertion here —
- *    the real proof is behavioural: this file statically imports `../src/theme.css`
- *    above (a plain side-effect import — Vitest's default `test.css: false` treats
- *    it as a no-op module in this jsdom environment, so it neither throws nor
- *    applies any style), then RE-RUNS one full behavioural case from
- *    `TradeCardProof.test.tsx` (R8's single-dispatch-per-click case) and one from
- *    `PoolStats.test.tsx` (R5's ceiling-fidelity case) verbatim, with that import
- *    present. Both harnesses below are deliberate, faithful copies of those two
- *    files' own fixtures/mocks (not new test content) — the point of this file is
- *    that the SAME assertions hold identically with the theme in the module graph,
- *    not to invent new behaviour to test. This file stays a plain `.ts` module (no
- *    JSX syntax — `test/theme.test.ts`, not `.tsx`), so every element is built via
- *    `createElement` rather than JSX.
+ * cascade, so "the DOM looks different" is not a trustworthy assertion here —
+ * the real proof is behavioural: this file statically imports `../src/theme.css`
+ * above (a plain side-effect import — Vitest's default `test.css: false` treats
+ * it as a no-op module in this jsdom environment, so it neither throws nor
+ * applies any style), then RE-RUNS one full behavioural case from
+ * `TradeCardProof.test.tsx` (this rule's single-dispatch-per-click case) and one from
+ * `PoolStats.test.tsx` (this rule's ceiling-fidelity case) verbatim, with that import
+ * present. Both harnesses below are deliberate, faithful copies of those two
+ * files' own fixtures/mocks (not new test content) — the point of this file is
+ * that the SAME assertions hold identically with the theme in the module graph,
+ * not to invent new behaviour to test. This file stays a plain `.ts` module (no
+ * JSX syntax — `test/theme.test.ts`, not `.tsx`), so every element is built via
+ * `createElement` rather than JSX.
  */
 
 // jsdom (this project's `environment: 'jsdom'`) shadows the global `URL`
@@ -62,7 +62,7 @@ import '../src/theme.css'
 // + `join` do the relative-path arithmetic `new URL('../dist', ...)` would have.
 const DIST_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 
-describe('D-06 / T-56-15 — the default entry point pulls in no stylesheet', () => {
+describe('The default entry point pulls in no stylesheet', () => {
   it('dist/index.js contains no .css reference', () => {
     const content = readFileSync(join(DIST_DIR, 'index.js'), 'utf8')
     expect(content).not.toContain('.css')
@@ -80,7 +80,7 @@ describe('D-06 / T-56-15 — the default entry point pulls in no stylesheet', ()
   })
 })
 
-describe('R7 amendment (2026-09-23) — no component rule applies without the [data-snf-theme] opt-in ancestor', () => {
+describe('Amendment (2026-09-23) — no component rule applies without the [data-snf-theme] opt-in ancestor', () => {
   it('every selector in dist/theme.css, other than :root, is prefixed with [data-snf-theme]', () => {
     const content = readFileSync(join(DIST_DIR, 'theme.css'), 'utf8')
     // Strip block comments first (the header doc-comment is prose, not a selector) —
@@ -125,7 +125,7 @@ describe('R7 amendment (2026-09-23) — no component rule applies without the [d
 })
 
 // ---------------------------------------------------------------------------------
-// R8 harness — copied field-for-field from `TradeCardProof.test.tsx` (see that
+// Single-dispatch harness — copied field-for-field from `TradeCardProof.test.tsx` (see that
 // file's own header comment for why `@sweepnflip/sdk-react` is mocked at its own
 // package boundary rather than mocking `wagmi` directly: mocking `wagmi` does not
 // reliably intercept when it is imported transitively through `@sweepnflip/
@@ -240,7 +240,7 @@ function renderAssembledCard(client: SnfClient) {
 }
 
 // ---------------------------------------------------------------------------------
-// R5 harness — copied field-for-field from `PoolStats.test.tsx`.
+// Ceiling-fidelity harness — copied field-for-field from `PoolStats.test.tsx`.
 // ---------------------------------------------------------------------------------
 
 const POOL_STATS_COLLECTION = hexAddress('a')
@@ -328,7 +328,7 @@ beforeEach(() => {
   dispatchMocks.sendTransactionAsync.mockResolvedValue('0xaa')
 })
 
-describe('R7 — importing the theme changes appearance only, never behaviour', () => {
+describe('Importing the theme changes appearance only, never behaviour', () => {
   it('(a) the static import above resolves without throwing, and re-importing the same component modules yields the identical (cached) export identity', async () => {
     const tradeCardAgain = await import('../src/components/TradeCard')
     const poolStatsAgain = await import('../src/components/PoolStats')
@@ -336,7 +336,7 @@ describe('R7 — importing the theme changes appearance only, never behaviour', 
     expect(poolStatsAgain.SnfPoolStats).toBe(SnfPoolStats)
   })
 
-  it('(b) TradeCard: exactly one dispatch per click still holds with the theme import present (verbatim re-run of TradeCardProof.test.tsx’s R8 case)', async () => {
+  it("(b) TradeCard: exactly one dispatch per click still holds with the theme import present (verbatim re-run of TradeCardProof.test.tsx's single-dispatch case)", async () => {
     const client = fakeTradeCardClient()
     renderAssembledCard(client)
 
@@ -363,7 +363,7 @@ describe('R7 — importing the theme changes appearance only, never behaviour', 
     expect(dispatchMocks.sendTransactionAsync).toHaveBeenCalledTimes(2)
   })
 
-  it('(c) PoolStats: the ceiling still renders the SDK’s own availableCount, never a recomputation, with the theme import present (verbatim re-run of PoolStats.test.tsx’s R5 case)', async () => {
+  it("(c) PoolStats: the ceiling still renders the SDK's own availableCount, never a recomputation, with the theme import present (verbatim re-run of PoolStats.test.tsx's ceiling-fidelity case)", async () => {
     renderPoolStats(createElement(SnfPoolStats.Ceiling), fakePoolStatsClient())
 
     const inventory = fakePoolInventoryMismatched()

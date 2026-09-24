@@ -1,15 +1,15 @@
 /**
  * local/no-module-global-state
  *
- * SPEC R3 (54-SPEC.md): "Instância explícita, sem estado global de módulo... nenhum
+ * "Instância explícita, sem estado global de módulo... nenhum
  * `let`/`Map` mutável no escopo de módulo." Target: packages/sdk/src. Two clients on
  * the same page (Base + Arbitrum) must never share cache or breaker state — this rule
- * is the mechanical half; the behavioural half is plan 09's cross-talk test.
+ * is the mechanical half; the behavioural half is this module's cross-talk test.
  *
  * Banned at Program (module top-level) scope:
- *   - any `let`/`var` declaration
- *   - any `const` initialised to `new Map/Set/WeakMap/WeakSet/AbortController(...)`
- *   - any `const` initialised to a bare array literal (`[...]`)
+ * - any `let`/`var` declaration
+ * - any `const` initialised to `new Map/Set/WeakMap/WeakSet/AbortController(...)`
+ * - any `const` initialised to a bare array literal (`[...]`)
  * Allowed: `const` initialised to a literal, `Object.freeze(...)`, an arrow function,
  * a function, or a `satisfies`/`as const` expression — the legitimate registry/ABI
  * shapes plans 03 and 04 need. Function-scoped declarations are always fine.
@@ -36,15 +36,15 @@ export default {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Ban module-scope mutable state in packages/sdk/src (SPEC R3).',
+      description: 'Ban module-scope mutable state in packages/sdk/src.',
     },
     messages: {
       mutableBinding:
-        'SDK core MUST NOT declare module-scope mutable state (SPEC R3): "{{kind}}" at the top level can leak across client instances. Move it inside createSnfClient().',
+        'SDK core MUST NOT declare module-scope mutable state: "{{kind}}" at the top level can leak across client instances. Move it inside createSnfClient().',
       mutableConstructor:
-        'SDK core MUST NOT initialise a module-scope const with "new {{name}}()" (SPEC R3) — this is shared, mutable state across every client instance on the page. Move it inside createSnfClient().',
+        'SDK core MUST NOT initialise a module-scope const with "new {{name}}()" — this is shared, mutable state across every client instance on the page. Move it inside createSnfClient().',
       mutableArray:
-        'SDK core MUST NOT initialise a module-scope const with a bare array literal (SPEC R3) — arrays are mutable. Use "as const" for a frozen registry shape, or move it inside createSnfClient().',
+        'SDK core MUST NOT initialise a module-scope const with a bare array literal — arrays are mutable. Use "as const" for a frozen registry shape, or move it inside createSnfClient().',
     },
     schema: [],
   },

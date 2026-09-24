@@ -16,7 +16,7 @@ import { useSnfPoolInventory } from '../src/hooks/useSnfPoolInventory'
 import { renderWithSnf } from './setup'
 
 /**
- * R15/R18/INV-17 — `useSnfCheckout`: the ONE dispatch site, behind an explicit click.
+ * INV-17 — `useSnfCheckout`: the ONE dispatch site, behind an explicit click.
  * `wagmi`'s `useSendTransaction`/`useWaitForTransactionReceipt` are mocked (this
  * plan's own project_specifics: "no live RPC/wallet") — every test controls exactly
  * when a "wallet" resolves/rejects and when a "receipt" arrives.

@@ -7,8 +7,7 @@ formatting, no contract read or write. Every number shown and every transaction 
 comes straight from the SDK.
 
 `private: true`, consumed from a local checkout inside this monorepo. Publishing is a
-separate, still-pending founder decision — the same one already deferred from Phase 54,
-unchanged by this package becoming real.
+separate, still-pending founder decision, unchanged by this package becoming real.
 
 An optional SnF theme ships as a separate CSS entry point, `@sweepnflip/widgets/theme.css`
 — import it only if you want a working look on day one; not importing it leaves every
@@ -37,17 +36,17 @@ stylesheet but not its rules.
 
 ## Status
 
-This package is under active construction (Phase 56). What exists today:
+This package is under active construction. What exists today:
 
-- The toolchain — a real, buildable, testable workspace member (this plan, snf-56-01).
+- The toolchain — a real, buildable, testable workspace member.
 
-What is still owed, and which plan lands it:
+What is still owed:
 
-- `SnfTradeCard`, the compound component covering buy/sell/NFT×NFT (plan 05).
-- `SnfPoolStats`, price/reserves/buyable-ceiling (plan 06).
-- The theme's separate CSS entry point (plan 07).
+- `SnfTradeCard`, the compound component covering buy/sell/NFT×NFT.
+- `SnfPoolStats`, price/reserves/buyable-ceiling.
+- The theme's separate CSS entry point.
 - Internal primitives — compound-component context, styling helpers — that back both
-  components (plan 03).
+  components.
 
-Until plan 05 lands, this package's public surface is a single placeholder export
+Until those land, this package's public surface is a single placeholder export
 (`SNF_WIDGETS_VERSION`) proving the build and test pipeline works end to end.

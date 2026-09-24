@@ -5,7 +5,7 @@ import { TradeCardRoot } from './TradeCardRoot'
 import { TradeCardSteps } from './TradeCardSteps'
 
 /**
- * `SnfTradeCard` — the compound export (R4, R6). This is the ONE place the five
+ * `SnfTradeCard` — the compound export. This is the ONE place the five
  * pieces are assembled — `Root`/`Input`/`QuoteBreakdown`/`Steps`/`Action` are never
  * also exported individually from the package's top-level barrel, so a partner always
  * writes `SnfTradeCard.Root`, never a bare `TradeCardRoot` import. `Input`/

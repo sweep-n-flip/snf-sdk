@@ -34,7 +34,8 @@ on every chain:
   from a private key.
 - `scripts/grep-gate.mjs` (`pnpm grep:gate`) scans `packages/*/src` and `packages/*/dist`
   for `process.env`, `NEXT_PUBLIC_`, a hardcoded `sweepnflip.io`/`alchemy.com`/
-  `opensea.io`/`coingecko.com` host, and any `snf-client` import — none of which a
+  `opensea.io`/`coingecko.com` host, and any import of the founder's private production
+  client — none of which a
   partner-facing package has a legitimate reason to contain.
 - `scripts/release-gate.mjs` (`pnpm release:gate`) adds a secrets scan (64-hex
   literals, PEM private-key headers, `sk_live`/`snf_live_` prefixes, long-path indexer
@@ -55,7 +56,7 @@ on every chain:
   caller-supplied objects; the SDK ships no default that requires a key, and this
   package never proxies or stores a partner's key.
 
-## D-07 — the fence is the contract, not the SDK
+## The fence is the contract, not the SDK
 
 Copying, forking, or editing this SDK does not avoid the marketplace fee or the
 creator royalty. Both are charged by the SnF Router **on-chain**, computed from the
@@ -63,13 +64,13 @@ Router's own `marketplaceFee()` and EIP-2981 `royaltyInfo()` reads at the moment
 executes — this package only reads and reconstructs what the Router will charge; it has
 no way to change it, and neither does anyone who edits a local copy of this source.
 Logic that would ever be worth protecting from a hostile fork (best-execution routing,
-multipool splitting) is planned to live behind the SnF REST `/v1` API (Phase 53) with
+multipool splitting) is planned to live behind the SnF REST `/v1` API, with
 this SDK as a thin transport over it — never behind client-side obfuscation.
 
 ## Reporting a vulnerability
 
 Open a private security advisory on the `sweep-n-flip/snf-sdk` GitHub repository
-(Security tab → "Report a vulnerability") once the repository is public (D-08). Until
+(Security tab → "Report a vulnerability") once the repository is public. Until
 then, report directly to the founder through the existing SnF channels. Please do not
 open a public issue for a vulnerability that could put live funds at risk before it has
 been triaged.

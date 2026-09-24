@@ -6,12 +6,12 @@ import { useTradeCardContext } from './context'
 import type { TradeCardInputProps } from './TradeCard.types'
 
 /**
- * `TradeCardInput` — displays what is being traded on the active side (R4, R6, R9).
+ * `TradeCardInput` — displays what is being traded on the active side.
  *
  * This Part DISPLAYS the collection/quantity being traded; it renders no form
  * control of its own (no real `<input>`/quantity picker) — the partner owns the
- * actual quantity picker/tokenId selector, exactly the split `56-SPEC.md`'s Input
- * requirement draws. Collection identity always comes from `collectionInfo.data.
+ * actual quantity picker/tokenId selector, exactly the documented Input
+ * requirement's split. Collection identity always comes from `collectionInfo.data.
  * labels.name`/`.labels.symbol` (the subgraph/on-chain-resolved labels every product
  * in this workspace renders — CLAUDE.md's collection-identity rule) — NEVER the raw
  * `0x…` collection address, even as a fallback.

@@ -1,7 +1,7 @@
 /**
  * local/no-effect-dispatch
  *
- * 56-SPEC.md R3 prohibition #4 (amended 2026-09-23 list): "calls `next()` from inside
+ * The documented prohibition #4 (amended 2026-09-23 list): "calls `next()` from inside
  * an effect, a timer or a watcher." Requirement 8 / INV-17: the action button maps one
  * user click to one `next()` call; the kit never calls `next()` from an effect, a
  * timer or a watcher — every on-chain step is its own labelled click. Target:
@@ -69,11 +69,11 @@ export default {
     type: 'problem',
     docs: {
       description:
-        'Ban a next()/.next() dispatch anywhere in the lexical body of a useEffect callback in packages/widgets/src (56-SPEC.md R3/R8, INV-17).',
+        'Ban a next()/.next() dispatch anywhere in the lexical body of a useEffect callback in packages/widgets/src (INV-17).',
     },
     messages: {
       nextInEffect:
-        'Widgets MUST NOT dispatch from an effect, a timer or a watcher (56-SPEC.md R3/R8, INV-17): a next() call was found inside a useEffect body. Every on-chain step must map to one user click, not an automatic advance.',
+        'Widgets MUST NOT dispatch from an effect, a timer or a watcher (INV-17): a next() call was found inside a useEffect body. Every on-chain step must map to one user click, not an automatic advance.',
     },
     schema: [],
   },

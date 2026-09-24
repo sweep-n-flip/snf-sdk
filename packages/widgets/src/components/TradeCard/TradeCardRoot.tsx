@@ -17,7 +17,7 @@ import { TradeCardCheckoutContext, TradeCardRootContext } from './context'
 import type { QuoteQueryResult, SnfTradeCardRootProps, TradeCardRootContextValue } from './TradeCard.types'
 
 /**
- * `TradeCardRoot` — the state-orchestration heart of `<SnfTradeCard>` (R4, R8, D-07).
+ * `TradeCardRoot` — the state-orchestration heart of `<SnfTradeCard>`.
  * It resolves the collection, fetches the right quote, builds and preflights an
  * `ExecutionPlan` once a quote exists, and mounts the checkout hook only once that
  * plan is ready — exposing all of it through two React contexts. It adds NO state
@@ -37,7 +37,7 @@ import type { QuoteQueryResult, SnfTradeCardRootProps, TradeCardRootContextValue
 const PLAN_QUERY_TAG = 'snf-widgets-trade-card-plan'
 
 function CheckoutMount(props: { readonly plan: ExecutionPlan; readonly children: ReactNode }): ReactNode {
-  // The ONLY call to the checkout hook in this file (R8, D-07). Legal despite Rules
+  // The ONLY call to the checkout hook in this file. Legal despite Rules
   // of Hooks' ban on conditional hook calls because CheckoutMount only ever exists as
   // a distinct component instance once TradeCardRoot conditionally RENDERS it (a plan
   // exists) — never a conditional call to the hook itself inside one component body.
@@ -62,7 +62,7 @@ export function TradeCardRoot(props: SnfTradeCardRootProps): ReactNode {
   // All three quote hooks are called unconditionally on every render (Rules of
   // Hooks) — each gated by its own `enabled` option on top of its own internal
   // args-readiness check, so only the active side's hook ever actually fires a
-  // request (T-56-09). `exactOptionalPropertyTypes: true` forbids passing an
+  // request. `exactOptionalPropertyTypes: true` forbids passing an
   // explicit `{ key: undefined }` to an optional target field, so each optional key
   // below is spread in only when actually defined, never assigned `undefined`.
   const buyArgs =
@@ -107,7 +107,7 @@ export function TradeCardRoot(props: SnfTradeCardRootProps): ReactNode {
   const recipient = props.recipient
 
   // Plan-building as ordinary cached data-fetching, never a hand-rolled effect+state
-  // (D-07's whole point). `queryKey` is keyed on `quote.dataUpdatedAt` — a plain
+  // (this rule's whole point). `queryKey` is keyed on `quote.dataUpdatedAt` — a plain
   // number every `UseQueryResult` carries, bumped whenever react-query accepts fresh
   // data — NEVER the raw `Quote` object itself, which carries `bigint` fields
   // (`Amount.value`) that `JSON.stringify` (react-query's default key hasher) throws
@@ -145,7 +145,7 @@ export function TradeCardRoot(props: SnfTradeCardRootProps): ReactNode {
     retry: false,
   })
 
-  // plan 05 addition (see TradeCard.types.ts's TradeCardParams header comment) — a
+  // A later addition (see TradeCard.types.ts's TradeCardParams header comment) — a
   // plain passthrough of the subset of props a Part needs before a quote resolves.
   // `exactOptionalPropertyTypes: true` forbids assigning an explicit `{ key:
   // undefined }`, so each optional key is spread in only when actually defined,

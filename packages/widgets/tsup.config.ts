@@ -6,7 +6,7 @@ import { defineConfig } from 'tsup'
 // @tanstack/react-query) are externalised so the kit never bundles a second copy of
 // the partner's own instances.
 //
-// `sideEffects: ["*.css"]` in package.json anticipates plan 07's theme entry point
+// `sideEffects: ["*.css"]` in package.json anticipates this module's theme entry point
 // (a separate, non-JS `theme.css` placed into `dist/` by a sibling build step or an
 // extension of this config) — that step is not built yet; this comment is the marker
 // for why the package.json field is already set ahead of it.

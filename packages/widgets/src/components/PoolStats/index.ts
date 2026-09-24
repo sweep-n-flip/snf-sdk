@@ -4,7 +4,7 @@ import { PoolStatsReserves } from './PoolStatsReserves'
 import { PoolStatsRoot } from './PoolStatsRoot'
 
 /**
- * `SnfPoolStats` — the compound export (R5, R6). `Root` orchestrates a single
+ * `SnfPoolStats` — the compound export. `Root` orchestrates a single
  * collection's pool/inventory/one-unit price; `Price`/`Reserves`/`Ceiling` are the
  * leaf display Parts, each reading `usePoolStatsContext()` and never calling a
  * `useSnf*` hook directly.

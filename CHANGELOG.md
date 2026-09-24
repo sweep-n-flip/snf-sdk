@@ -8,22 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Versioning policy
 
 Both `@sweepnflip/sdk` and `@sweepnflip/sdk-react` stay on `0.x` until the founder's UAT
-of Phase 54 (a real, small-value purchase against the Base ETH/DEMON pool). `1.0.0` — and
-the first `npm publish` — happen together at Phase 55, when the repo also goes public
-(D-08). From `1.0.0` onward, breaking changes only ship in a major version, with a
-documented overlap of at least 6 months for any deprecated surface (REQ-SDK-52).
+(a real, small-value purchase against the Base ETH/DEMON pool). `1.0.0` — and
+the first `npm publish` — happen together, when the repo also goes public.
+From `1.0.0` onward, breaking changes only ship in a major version, with a
+documented overlap of at least 6 months for any deprecated surface.
 
 ## [Unreleased]
 
-Nothing since `0.1.0` — this repository is not yet published (D-08: `1.0.0`, the first
-`npm publish`, and the repo going public all happen together at Phase 55, after the
+Nothing since `0.1.0` — this repository is not yet published (`1.0.0`, the first
+`npm publish`, and the repo going public all happen together, after the
 founder's UAT of this `0.1.0`).
 
 ## [0.1.0] — 2026-09-21 (unpublished — internal, pre-founder-UAT)
 
-Phase 54 (SDK-0 Foundation + SDK-1 Swap): the first complete, buildable, testable
+The first complete, buildable, testable
 surface of both packages. Not yet published to npm and this repository is not yet
-public (D-08/D-05) — `pnpm link`/`pnpm pack` only, until Phase 55.
+public — `pnpm link`/`pnpm pack` only, until the repo goes public.
 
 ### Added
 
@@ -43,7 +43,7 @@ public (D-08/D-05) — `pnpm link`/`pnpm pack` only, until Phase 55.
 - `plan.preflight()` — the frame-of-signature pre-flight: ownership, pool-holds,
   wrapper identity, balance, and chain, in one Multicall3 call at one block.
 - `client.parseReceipt` — settled amounts read from the receipt's own logs (never a
-  wallet-balance diff), including the wNFT-remainder gap fixed in this phase (Finding 3).
+  wallet-balance diff), including the wNFT-remainder gap fixed here (Finding 3).
 - `createCheckout(plan)` (subpath `@sweepnflip/sdk/checkout`) — a headless, user-driven
   checkout state machine; `next()` is the only member that can ever produce a `Step` to
   send (INV-17): a receipt/rejection watcher is structurally incapable of dispatching.
@@ -52,15 +52,15 @@ public (D-08/D-05) — `pnpm link`/`pnpm pack` only, until Phase 55.
 - `SNF_CHAINS` / `getChain` / `isSupportedChain` — the 14-chain registry (chain id,
   native symbol, quote decimals, delegate variant, router variant).
 - `toNativeValue` / `fromNativeValue` / `getQuoteDecimals` / `getQuoteScale` /
-  `assertExactNativeMultiple` — the two-unit-axes module (R2/R11): 18 decimals on 13
+  `assertExactNativeMultiple` — the two-unit-axes module: 18 decimals on 13
   chains, 6 on Arc's native-USDC predeploy, one sanctioned conversion path.
 - `formatAmount` / `toAmount` — the `{ value, formatted }` money convention: never parse
   `formatted` back for math.
 - `abis` — the nine audited AMM ABI consts (ERC-20/ERC-721/IERC2981/Factory/Pair/
-  Router02Collection/the Arc NativeERC20 Router variant/WERC721/WETH9), nothing from
-  Advanced Router/Farm/Bridge/MktBids/Vault.
+  Router02Collection/the Arc NativeERC20 Router variant/WERC721/WETH9), nothing
+  outside this SDK's audited AMM surface.
 - Four anvil fork lanes (Base, Arbitrum, Robinhood, Arc) and a keyless, read-only live
-  backstop (`snf-tests/sdk/backstop-quote.mjs`) reconciling all four on every run.
+  backstop (in a separate, private exploration repo) reconciling all four on every run.
 - Seven standing prohibition tests: no signing surface, no module-global state, no SnF
   backend calls, no `process.env` reads, and the release gate's own five checks.
 
@@ -72,8 +72,8 @@ public (D-08/D-05) — `pnpm link`/`pnpm pack` only, until Phase 55.
   `useSnfQuoteSell`, `useSnfQuoteNftToNft` — thin `useQuery` wrappers over the core.
 - `useSnfCheckout(plan)` — the ONE dispatch site in either package: calls `next()` from
   a click, sends whatever `Step` it returns via wagmi's `useSendTransaction` in the same
-  synchronous frame as `reset()` (never a `useEffect`-driven auto-advance — INV-17,
-  `feedback_wagmi_reset_race`), and feeds receipts/rejections back through the core's
+  synchronous frame as `reset()` (never a `useEffect`-driven auto-advance — INV-17),
+  and feeds receipts/rejections back through the core's
   watcher-only entry points.
 
 **Examples** — `examples/vanilla` (no-React proof, runs on bare Node against the live
@@ -86,22 +86,22 @@ packages' `dist`, the 60 kB gzip bundle budget, and `SDK_VERSION`/`package.json#
 consistency). `pnpm grep:gate`, `pnpm lint`, `pnpm -r typecheck`, `pnpm -r test`,
 `pnpm test:fork`, `pnpm size` — all green at this release.
 
-- 2026-09-20 — Toolchain installed after founder approval (T-54-SC gate): `typescript@5.9.3`, `prettier@3.9.8`, `eslint@9.39.4`, `typescript-eslint@8.70.0`, `tsup@8.5.1`, `vitest@5.0.1`, `@vitest/coverage-v8@5.0.1`, `size-limit@14.0.0`, `@size-limit/preset-small-lib@14.0.0`, `fast-check@4.10.2`, `@changesets/cli@3.0.3` (root); `viem@2.47.0` (`@sweepnflip/sdk`); `viem@2.47.0`, `wagmi@2.19.5`, `@tanstack/react-query@5.90.21`, `react@19.2.5`, `react-dom@19.2.5`, `@types/react@19.3.0`, `@testing-library/react@16.3.3`, `@testing-library/dom@10.4.2`, `jsdom@30.1.0` (`@sweepnflip/sdk-react`). `tsx` skipped (founder decision). Bare `changesets` package never installed — only the scoped `@changesets/cli`.
+- 2026-09-20 — Toolchain installed after founder approval: `typescript@5.9.3`, `prettier@3.9.8`, `eslint@9.39.4`, `typescript-eslint@8.70.0`, `tsup@8.5.1`, `vitest@5.0.1`, `@vitest/coverage-v8@5.0.1`, `size-limit@14.0.0`, `@size-limit/preset-small-lib@14.0.0`, `fast-check@4.10.2`, `@changesets/cli@3.0.3` (root); `viem@2.47.0` (`@sweepnflip/sdk`); `viem@2.47.0`, `wagmi@2.19.5`, `@tanstack/react-query@5.90.21`, `react@19.2.5`, `react-dom@19.2.5`, `@types/react@19.3.0`, `@testing-library/react@16.3.3`, `@testing-library/dom@10.4.2`, `jsdom@30.1.0` (`@sweepnflip/sdk-react`). `tsx` skipped (founder decision). Bare `changesets` package never installed — only the scoped `@changesets/cli`.
 
 ### Known gaps (tracked, not blocking)
 
 - `CollectionInfo.labels.imageUrl` is declared but never populated — no per-token
   artwork resolution exists yet (`PARITY.md`'s one `not-covered` row).
 - `delegateNetFee` for Robinhood Chain (4663) and Arc (5042) has no canonical-source
-  row in `snf-contracts`; Arc's `9970` is empirically verified, Robinhood's is not (no
-  live delegated pair exists there yet to verify against) — see `deferred-items.md`.
+  row in the deployed-contracts registry; Arc's `9970` is empirically verified, Robinhood's is not (no
+  live delegated pair exists there yet to verify against).
 - A real value-moving Router write on Arc reverts on a generic anvil fork (a chain
   precompile anvil does not implement) — a fork-simulation fidelity gap, not an SDK
-  defect; every read path is fully verified — see `deferred-items.md`, Finding 4.
+  defect; every read path is fully verified (Finding 4).
 
 ### Gate
 
 `1.0.0` is not next. The next version bump on either package happens together with:
 the first real `npm publish`, the `sweep-n-flip/snf-sdk` repository going public, and
-the Phase 55 docs site — all three gated on the founder's own UAT of this `0.1.0`
-(`snf-54-UAT.md`), never on an agent's say-so (D-08, D-10, D-12).
+a generated docs site — all three gated on the founder's own UAT of this `0.1.0`,
+never on an agent's say-so.

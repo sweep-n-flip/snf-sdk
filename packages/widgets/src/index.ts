@@ -2,15 +2,15 @@
  * `@sweepnflip/widgets` — public entrypoint.
  *
  * Public surface so far:
- *   - plan 03: internal primitives (compound-component context, styling helpers) —
- *     built under `src/` but NOT re-exported here, same reasoning as
- *     `@sweepnflip/sdk`'s own internal `checkout/` module.
- *   - plan 05: `SnfTradeCard` (R4) — the first real component export, added below.
- *     This plan is the one that removes the placeholder-only marker this file used to
- *     carry.
- *   - plan 06: `SnfPoolStats` (R5) — added below.
- *   - plan 07: the theme's separate, non-JS CSS entry point (not exported from this
- *     file at all — a partner imports it by its own subpath, never through here).
+ * - Internal primitives (compound-component context, styling helpers) —
+ * built under `src/` but NOT re-exported here, same reasoning as
+ * `@sweepnflip/sdk`'s own internal `checkout/` module.
+ * - `SnfTradeCard` — the first real component export, added below.
+ * This is the addition that removed the placeholder-only marker this file used to
+ * carry.
+ * - `SnfPoolStats` — added below.
+ * - The theme's separate, non-JS CSS entry point (not exported from this
+ * file at all — a partner imports it by its own subpath, never through here).
  */
 export const SNF_WIDGETS_VERSION = '0.0.0'
 

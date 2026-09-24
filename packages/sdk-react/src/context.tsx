@@ -3,14 +3,14 @@ import { createSnfClient, SnfError, type SnfClient, type SnfClientConfig } from 
 
 /**
  * `SnfProvider` + `useSnfContext` — holds one `SnfClient` per chain and the instance's
- * `txInvalidationVersion` (R18; 54-SPEC.md). This is the adapter's own React state,
+ * `txInvalidationVersion`. This is the adapter's own React state,
  * separate from `SnfClientContext.nextTxInvalidationVersion` (the core's internal,
  * per-receipt counter that `parseReceipt` bumps and returns on `SwapReceipt` — see
  * `packages/sdk/src/client.ts`): the CORE counter proves a receipt's own
  * monotonicity to a caller who reads `SwapReceipt.txInvalidationVersion` directly;
  * THIS counter is what react-query's cache keys are built from (`queryKeys.ts`), so a
  * completed transaction busts every query key in this React tree, not just the
- * core's own internal bookkeeping. `useSnfCheckout` (plan 16 Task 2) is the only
+ * core's own internal bookkeeping. `useSnfCheckout` (Task 2) is the only
  * caller of `bumpInvalidation` — on a checkout's final success, not on every leg's
  * receipt.
  */
@@ -20,7 +20,7 @@ export interface SnfContextValue {
   readonly chainId: SnfClient['chainId']
   /** Strictly increasing per `<SnfProvider>` instance — baked into every
    * `snfQueryKeys.*` entry so a bump refetches every collection/inventory/quote query
-   * mounted under this provider (R18). */
+   * mounted under this provider. */
   readonly txInvalidationVersion: number
   readonly bumpInvalidation: () => void
 }
@@ -35,7 +35,7 @@ export interface SnfProviderProps {
    * Pass an already-built `SnfClient` instead of `publicClient`/`providers` — e.g. a
    * partner who constructed one with config this provider doesn't expose, or who
    * wants to share ONE client instance across two providers (their own choice to make;
-   * R3's per-instance isolation is about what `createSnfClient` itself guarantees, not
+   * this rule's per-instance isolation is about what `createSnfClient` itself guarantees, not
    * about forcing a fresh instance on every provider mount). When set, `chainId` is
    * read from `client.chainId` and `publicClient`/`providers` are ignored.
    */
@@ -51,7 +51,7 @@ export interface SnfProviderProps {
  * Mounts one `SnfClient` (memoized on `chainId`/`publicClient`/`providers`/`client`
  * identity — never recreated on every render) and exposes it, plus this provider's own
  * `txInvalidationVersion` counter, to every `useSnf*` hook underneath. Mounting two
- * `SnfProvider`s for two chains is supported and is exactly what R3's isolation
+ * `SnfProvider`s for two chains is supported and is exactly what this rule's isolation
  * guarantees at the client level — each provider's `SnfClient` shares no transport
  * cache, breaker state, or invalidation counter with the other (`test/client.test.ts`
  * in `packages/sdk` proves this at the core level; `test/hooks.test.tsx`'s per-chain

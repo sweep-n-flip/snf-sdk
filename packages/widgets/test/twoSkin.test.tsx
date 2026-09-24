@@ -16,12 +16,12 @@ import type { TradeCardCheckoutContextValue } from '../src/components/TradeCard/
 import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
 
 /**
- * `twoSkin.test.tsx` — R12's literal acceptance criterion, met directly: two
+ * `twoSkin.test.tsx` — this rule's literal acceptance criterion, met directly: two
  * INDEPENDENT `<SnfTradeCard.Root>` trees, driven through the identical interaction
  * sequence (resolve -> quote -> plan -> click Action twice, once per step of a real
  * two-step approval+swap plan), assert the SAME ordered sequence of SDK method calls
  * regardless of which skin (or none) each tree wears. This is the behavioural half of
- * R12's proof; `examples/next-app/src/app/two-skin/page.tsx` + `TwoSkinDemo.tsx` are
+ * this rule's proof; `examples/next-app/src/app/two-skin/page.tsx` + `TwoSkinDemo.tsx` are
  * the "the example builds and runs, a human can look at it" half (this plan's own
  * `<toolchain>` note explains the split — no test runner is wired into that example's
  * own workspace member).
@@ -35,7 +35,7 @@ import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
  *
  * **Tagging the checkout-hook (wallet dispatch) side of the sequence.** `next()`'s
  * dispatch does not go through `SnfClient` at all (`useSnfCheckout`'s own contract) —
- * it is included in each tree's log anyway, tagged the same way, because R12's
+ * it is included in each tree's log anyway, tagged the same way, because this rule's
  * acceptance text explicitly drives the proof "through the same interaction ... click
  * Action" and a proof that stopped at `buildBuy` would leave the actual dispatch step
  * unverified. `useSnfCheckout` is mocked at the `@sweepnflip/sdk-react` package
@@ -163,7 +163,7 @@ function hexAddress(char: string): `0x${string}` {
   return `0x${char.repeat(40)}` as `0x${string}`
 }
 
-// The SAME collection/count/recipient constants fed to BOTH trees — R12's own
+// The SAME collection/count/recipient constants fed to BOTH trees — this rule's own
 // wording ("fed the SAME props so both instances are driven by identical inputs").
 const COLLECTION = hexAddress('c')
 const RECIPIENT = hexAddress('f')
@@ -238,7 +238,7 @@ beforeEach(() => {
   hoisted.sendTransactionAsync.mockResolvedValue('0xaa')
 })
 
-describe('R12 — two independently-styled SnfTradeCard trees produce identical SDK call sequences', () => {
+describe('Two independently-styled SnfTradeCard trees produce identical SDK call sequences', () => {
   it('tree A (bare/themed stand-in) and tree B (distinct className on every part) call the SAME SDK methods, in the SAME order, with the SAME arguments', async () => {
     const resultA = renderTree('A', 'themed')
     const resultB = renderTree('B', 'partner')
@@ -268,7 +268,7 @@ describe('R12 — two independently-styled SnfTradeCard trees produce identical 
 
     // 5. Resolve the approval receipt on each. Mid-flow (approval done, swap not yet
     // dispatched) the button re-enables for the next step — same wait TradeCardProof.
-    // test.tsx's own R8 case uses between its two clicks.
+    // test.tsx's own single-dispatch case uses between its two clicks.
     await waitFor(() => expect(buttonA.disabled).toBe(false))
     await waitFor(() => expect(buttonB.disabled).toBe(false))
     const secondLabelA = buttonA.textContent
@@ -282,7 +282,7 @@ describe('R12 — two independently-styled SnfTradeCard trees produce identical 
 
     // 7. Resolve the swap receipt on each. The flow is now COMPLETE (checkout state
     // 'success') — the button's final state is permanently `disabled` with a "Done"-
-    // style label, exactly like TradeCardProof.test.tsx's own R8 case, which for this
+    // style label, exactly like TradeCardProof.test.tsx's own single-dispatch case, which for this
     // same reason waits on a TEXT change here, never on `disabled === false` (that
     // condition is never reached again after the terminal state).
     await waitFor(() => expect(buttonA.textContent).not.toBe(secondLabelA))
@@ -295,7 +295,7 @@ describe('R12 — two independently-styled SnfTradeCard trees produce identical 
     const methodsA = hoisted.logA.map((r) => r.method)
     const methodsB = hoisted.logB.map((r) => r.method)
 
-    // The literal R12 acceptance criterion: same length, same order, same method
+    // The literal acceptance criterion: same length, same order, same method
     // names, same call arguments — appearance (className on every part, or none at
     // all) had ZERO effect on which SDK methods fired or in what order. `expiresAt`
     // is stripped before the deep-equal: `fakeQuote()`/`fakePlan()` stamp it from
@@ -306,7 +306,7 @@ describe('R12 — two independently-styled SnfTradeCard trees produce identical 
     expect(methodsA).toEqual(['collection', 'quoteBuy', 'buildBuy', 'sendTransactionAsync', 'sendTransactionAsync'])
     expect(hoisted.logA.map(stripVolatile)).toEqual(hoisted.logB.map(stripVolatile))
 
-    // Pasted verbatim into snf-56-08-SUMMARY.md per this task's own acceptance
+    // Pasted verbatim into per this task's own acceptance
     // criteria — logging here so a `vitest run --reporter=verbose` capture matches
     // exactly what the SUMMARY quotes.
     // eslint-disable-next-line no-console -- deliberate, documented proof-of-record

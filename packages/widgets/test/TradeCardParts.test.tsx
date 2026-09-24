@@ -6,17 +6,17 @@ import type { TradeCardCheckoutContextValue } from '../src/components/TradeCard/
 import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
 
 /**
- * R4/R9/R10/D-05 — focused, per-Part checks for `TradeCardInput`/`TradeCardQuoteBreakdown`/
+ * Focused, per-Part checks for `TradeCardInput`/`TradeCardQuoteBreakdown`/
  * `TradeCardSteps`, each rendered inside a REAL `<SnfTradeCard.Root>` (the only way a
  * Part ever legally mounts — `useTradeCardContext()` throws outside one) with a
- * stubbed `SnfClient`. The cross-cutting, whole-card proofs (R6/R8/R11, and the
- * assembled-card echo of R9/R10) live in `TradeCardProof.test.tsx`; this file is the
+ * stubbed `SnfClient`. The cross-cutting, whole-card proofs (and the
+ * assembled-card echo) live in `TradeCardProof.test.tsx`; this file is the
  * per-Part half of the same coverage.
  *
  * The `TradeCardSteps` cases below reach a resolved `ExecutionPlan`, which mounts
  * `CheckoutMount` (`TradeCardRoot.tsx`) and therefore the REAL `useSnfCheckout` —
  * requiring a real `WagmiProvider` this suite never sets up. Per
- * `snf-56-04-SUMMARY.md`'s own toolchain finding (#19: mocking `wagmi` does not
+ * this file's own toolchain finding (#19: mocking `wagmi` does not
  * reliably intercept when imported transitively through `@sweepnflip/sdk-react`),
  * `useSnfCheckout` is replaced with the SAME small controlled fake
  * `TradeCardRoot.test.tsx` established, mocking `@sweepnflip/sdk-react` at its own
@@ -120,7 +120,7 @@ describe('TradeCardInput', () => {
 })
 
 describe('TradeCardQuoteBreakdown', () => {
-  it('renders fees.marketplace.formatted/.symbol character-identical to what the quote returned (R9)', async () => {
+  it('renders fees.marketplace.formatted/.symbol character-identical to what the quote returned', async () => {
     const quote: Quote = {
       ...fakeQuote(),
       fees: {
@@ -147,7 +147,7 @@ describe('TradeCardQuoteBreakdown', () => {
     expect(screen.getByTestId('quote-price-impact').textContent).toBe('0%')
   })
 
-  it('renders the error code plus the default message, then a partner messages override replaces only the text (R10)', async () => {
+  it('renders the error code plus the default message, then a partner messages override replaces only the text', async () => {
     const client = fakeClient({
       collection: vi.fn().mockResolvedValue(fakeCollectionInfo()),
       quoteBuy: vi.fn().mockRejectedValue(new SnfError('WRONG_CHAIN', 'Your wallet is on the wrong network.')),
@@ -177,7 +177,7 @@ describe('TradeCardQuoteBreakdown', () => {
     )
 
     await waitFor(() => expect(screen.getByTestId('quote-error').textContent).toContain('Custom copy for this partner.'))
-    // The code is NEVER hidden by the override (T-56-11).
+    // The code is NEVER hidden by the override.
     expect(screen.getByTestId('quote-error').textContent).toContain('WRONG_CHAIN')
     expect(screen.getByTestId('quote-error').getAttribute('data-error-code')).toBe('WRONG_CHAIN')
   })

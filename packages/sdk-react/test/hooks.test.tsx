@@ -9,7 +9,7 @@ import { useSnfQuoteBuy } from '../src/hooks/useSnfQuoteBuy'
 import { createTestQueryClient, renderWithSnf } from './setup'
 
 /**
- * R18 — the read hooks' cache behaviour: per-`chainId` isolation, invalidation by
+ * The read hooks' cache behaviour: per-`chainId` isolation, invalidation by
  * `txInvalidationVersion`, dedupe, `staleTime`, `refetchInterval`, `enabled` guards,
  * error passthrough, the outside-provider throw, and unmount safety mid-fetch. A
  * stubbed `SnfClient` (`vi.fn()` methods) is used throughout — this suite tests the
@@ -107,7 +107,7 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('read hooks — R18 cache behaviour', () => {
+describe('read hooks — cache behaviour', () => {
   it('per-chain isolation: two providers, same address, two distinct cache entries and no data bleed', async () => {
     const queryClient = createTestQueryClient()
     const clientBase = fakeClient(8453)

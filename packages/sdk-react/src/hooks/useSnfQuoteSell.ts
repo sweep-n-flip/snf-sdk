@@ -9,7 +9,7 @@ export type UseSnfQuoteSellArgs = Omit<QuoteSellArgs, 'chainId'>
 export type UseSnfQuoteSellOptions = SnfQueryOptions<Quote>
 export type UseSnfQuoteSellResult = SnfQueryResult<Quote>
 
-/** Mirrors `quoteSell`'s own runtime contract (R8): exactly one of `tokenIds`/
+/** Mirrors `quoteSell`'s own runtime contract: exactly one of `tokenIds`/
  * `count`/`amount` is required. */
 function hasRequiredArgs(args: UseSnfQuoteSellArgs | undefined): args is UseSnfQuoteSellArgs {
   if (args === undefined || args.collection === undefined) return false
@@ -17,8 +17,8 @@ function hasRequiredArgs(args: UseSnfQuoteSellArgs | undefined): args is UseSnfQ
 }
 
 /**
- * Wraps `SnfClient.quoteSell` (R8). Same 20 s `staleTime` / 5 s `refetchInterval`
- * cadence as `useSnfQuoteBuy` (R18), both overridable via `options`.
+ * Wraps `SnfClient.quoteSell`. Same 20 s `staleTime` / 5 s `refetchInterval`
+ * cadence as `useSnfQuoteBuy`, both overridable via `options`.
  */
 export function useSnfQuoteSell(
   args: UseSnfQuoteSellArgs | undefined,

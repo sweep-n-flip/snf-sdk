@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react'
 
 /**
- * `AsChildProps` — every public part's own props type extends this one (D-04, R6).
+ * `AsChildProps` — every public part's own props type extends this one.
  * When a part receives `asChild={true}`, it renders no DOM node of its own: it hands
  * its own merged props to `Slot`, which clones the caller's single substituted child
  * instead of wrapping it in an extra element. When `asChild` is absent or `false`

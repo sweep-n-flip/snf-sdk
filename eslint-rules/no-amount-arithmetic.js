@@ -1,7 +1,7 @@
 /**
  * local/no-amount-arithmetic
  *
- * 56-SPEC.md R3 prohibition #2 (amended 2026-09-23 list): "performs arithmetic on a
+ * The documented prohibition #2 (amended 2026-09-23 list): "performs arithmetic on a
  * money value." Every number the widgets kit shows comes from the SDK's `Amount` as
  * given — `formatted`/`symbol` for display, never a recomputation of `value`. Target:
  * packages/widgets/src only (see eslint.config.js).
@@ -9,7 +9,7 @@
  * This is a syntactic heuristic keyed on the SDK's own `Amount.value` field name, not a
  * type-checked rule — it cannot see through an alias that renames the field (e.g.
  * `const { value: v } = quote.totalCost; v + 1n` slips past it). That tradeoff is
- * accepted because `Amount` is a stable, documented shape (54-SPEC.md), so the
+ * accepted because `Amount` is a stable, documented shape, so the
  * `.value` member-access pattern is the overwhelmingly common way a contributor would
  * reach for the raw bigint. Bigint literals are banned outright for the same reason:
  * there is no legitimate reason for widgets source to construct or combine a raw bigint
@@ -44,11 +44,11 @@ export default {
     type: 'problem',
     docs: {
       description:
-        'Ban arithmetic on an Amount.value member access or a bigint literal in packages/widgets/src (56-SPEC.md R3).',
+        'Ban arithmetic on an Amount.value member access or a bigint literal in packages/widgets/src.',
     },
     messages: {
       amountArithmetic:
-        'Widgets MUST NOT perform arithmetic on a money value (56-SPEC.md R3): render Amount.formatted/symbol as given, never recompute .value. Every number shown must come from the SDK.',
+        'Widgets MUST NOT perform arithmetic on a money value: render Amount.formatted/symbol as given, never recompute .value. Every number shown must come from the SDK.',
     },
     schema: [],
   },

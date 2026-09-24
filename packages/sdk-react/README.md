@@ -12,7 +12,7 @@ transaction it sends is the direct result of a user's own click, never a
 pnpm add @sweepnflip/sdk @sweepnflip/sdk-react viem wagmi @tanstack/react-query
 ```
 
-Until Phase 55's first `npm publish` (D-08), consume this package from a local
+Until the first `npm publish`, consume this package from a local
 checkout via `pnpm link` or a tarball (`pnpm pack`).
 
 ## Minimal snippet

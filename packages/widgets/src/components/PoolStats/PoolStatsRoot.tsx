@@ -8,12 +8,12 @@ import type { PoolStatsContextValue, SnfPoolStatsRootProps } from './PoolStats.t
 
 /**
  * `PoolStatsRoot` — orchestrates one collection's pool, inventory and one-unit price
- * for `<SnfPoolStats>` (R5, R10). Entirely read-only: no plan, no checkout, no
+ * for `<SnfPoolStats>`. Entirely read-only: no plan, no checkout, no
  * dispatch path anywhere in this file — `local/no-effect-dispatch` and
  * `local/no-signing-imports` have nothing to catch here, which is itself the expected
  * shape of this component, not a false-negative to worry about.
  *
- * **Price resolution, binding on this component (SPEC R5 as amended 2026-09-23) —
+ * **Price resolution, binding on this component (as amended 2026-09-23) —
  * stated here in full so a future reader never mistakes the omission of a ratio-based
  * figure for an oversight.** This component calls `useSnfQuoteBuy({ collection, count:
  * 1 })` — the SDK's own on-chain-reconciled quote for exactly one unit, gated on a real
@@ -28,7 +28,7 @@ import type { PoolStatsContextValue, SnfPoolStatsRootProps } from './PoolStats.t
  * these two SDK-returned figures is, and this kit has no accessor for it and never
  * derives one client-side.
  *
- * No `'use client'` directive — same rationale as `TradeCardRoot.tsx` (plan 04): this
+ * No `'use client'` directive — same rationale as `TradeCardRoot.tsx`: this
  * is a framework-agnostic package, and that directive is an App Router convention
  * belonging at a consuming app's own boundary, not inside this package.
  */

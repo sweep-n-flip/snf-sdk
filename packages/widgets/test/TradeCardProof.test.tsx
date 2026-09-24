@@ -8,22 +8,21 @@ import type { TradeCardCheckoutContextValue } from '../src/components/TradeCard/
 import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
 
 /**
- * `TradeCardProof.test.tsx` — the phase's central cross-cutting proof suite, one
- * `describe` per `56-SPEC.md` "proof" requirement, each run against the REAL
+ * `TradeCardProof.test.tsx` — the central cross-cutting proof suite, one
+ * `describe` per documented "proof" requirement, each run against the REAL
  * assembled `<SnfTradeCard>` (Root wrapping real Input/QuoteBreakdown/Steps/Action
- * children), never a throwaway test double: R6 (all three styling mechanisms), R8
- * (the single-dispatch guarantee, including the negative "never before any click"
- * proof), R9 (amount fidelity echoed at the assembled-card level), R10 (error-code
- * override echoed at the assembled-card level), R11 (accessibility, completed via
+ * children), never a throwaway test double: all three styling mechanisms,
+ * the single-dispatch guarantee (including the negative "never before any click"
+ * proof), amount fidelity echoed at the assembled-card level, error-code
+ * override echoed at the assembled-card level, and accessibility (completed via
  * keyboard-only activation).
  *
  * **Why this file does not `vi.mock('wagmi', ...)`.** `CheckoutMount`
  * (`TradeCardRoot.tsx`) calls the REAL `useSnfCheckout` from `@sweepnflip/sdk-react`
  * once a plan exists, which calls `wagmi`'s `useSendTransaction`. Per
- * `snf-56-04-SUMMARY.md`'s own toolchain finding (#19 in this plan's own
- * `<toolchain>` block): mocking `wagmi` does NOT reliably intercept when it is
+ * this file's own toolchain finding: mocking `wagmi` does NOT reliably intercept when it is
  * imported transitively through `@sweepnflip/sdk-react` from a DIFFERENT package
- * (`packages/widgets`) — confirmed empirically in plan 04 even after aliasing
+ * (`packages/widgets`) — confirmed empirically later even after aliasing
  * `@sweepnflip/sdk-react` to its own TypeScript source and inlining both packages as
  * server deps; `useSnfCheckout.test.tsx`'s own `vi.mock('wagmi', ...)` only works
  * there because IT imports the hook via a relative path within its OWN package,
@@ -31,15 +30,15 @@ import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
  *
  * **The single-dispatch proof therefore needs a real, honest dispatch-counting
  * surface without a real wallet.** `useSnfCheckout` is replaced (mocking
- * `@sweepnflip/sdk-react` at its own package boundary, the pattern `snf-56-04-
- * SUMMARY.md` and `snf-56-05-PLAN.md`'s own toolchain both sanction and instruct
+ * `@sweepnflip/sdk-react` at its own package boundary, a pattern this file's
+ * own toolchain both sanctions and instructs
  * reusing) with `useFakeCheckout` below — NOT a hand-rolled state machine (that would
- * re-derive `NEXT_READY_BY_KIND`/`CHECKOUT_STATES`, exactly what D-07 forbids), but a
+ * re-derive `NEXT_READY_BY_KIND`/`CHECKOUT_STATES`, exactly what the SDK's own contract forbids), but a
  * thin wrapper around the REAL, already-exhaustively-tested `createCheckout` engine
  * from `@sweepnflip/sdk/checkout` (the same public subpath `useSnfCheckout.ts` itself
  * imports — pure, no wagmi dependency at all). The only thing replaced is the actual
  * wallet I/O: `next()` calls a `sendTransactionAsync` spy (named exactly that, so
- * R8's own literal wording — "assert `sendTransactionAsync` was called exactly
+ * this rule's own literal wording — "assert `sendTransactionAsync` was called exactly
  * once" — has a real, single-purpose spy to assert against) instead of `wagmi`'s
  * hook, then feeds the resolved hash back through the REAL session's `onReceipt`,
  * exactly mirroring `useSnfCheckout.ts`'s own `next()`/receipt-watcher shape. Every
@@ -119,7 +118,7 @@ const CSS_UNIT_SHAPED = /^-?\d+(\.\d+)?(px|rem|em|%)$/
 const HEX_COLOR_SHAPED = /^#/
 
 /** A stubbed `SnfClient` whose `buildBuy` resolves a real TWO-STEP plan (approval +
- * swap-buy) — the "real two-step (approval + swap) plan" R8's own acceptance text
+ * swap-buy) — the "real two-step (approval + swap) plan" this rule's own acceptance text
  * asks for, mirroring `useSnfCheckout.test.tsx`'s own `fakePlan(['approval',
  * 'swap-sell'])` fixture shape. `describeError` is the REAL implementation. */
 function fakeClient(overrides: Partial<SnfClient> = {}): SnfClient {
@@ -144,7 +143,7 @@ function fakeClient(overrides: Partial<SnfClient> = {}): SnfClient {
 }
 
 /** Same shape as `fakeClient()`, additionally recording the ORDER `collection`/
- * `quoteBuy`/`buildBuy` are actually called in — used by the three R6 styling-mode
+ * `quoteBuy`/`buildBuy` are actually called in — used by the three styling-mode
  * renders to prove identical SDK-call behaviour regardless of appearance. */
 function fakeClientWithCallLog(): { readonly client: SnfClient; readonly calls: string[] } {
   const calls: string[] = []
@@ -199,7 +198,7 @@ beforeEach(() => {
   dispatchMocks.sendTransactionAsync.mockResolvedValue('0xaa')
 })
 
-describe('R6 — the three styling mechanisms, against the REAL assembled SnfTradeCard', () => {
+describe('The three styling mechanisms, against the REAL assembled SnfTradeCard', () => {
   it('(a) bare render: no className anywhere on Root/Action, no style attribute, no color/size-shaped attribute value', async () => {
     const { client, calls } = fakeClientWithCallLog()
     const { container } = renderAssembledCard(client)
@@ -269,11 +268,11 @@ describe('R6 — the three styling mechanisms, against the REAL assembled SnfTra
   })
 })
 
-describe('R8 — exactly one dispatch per click, and zero dispatches without one', () => {
+describe('Exactly one dispatch per click, and zero dispatches without one', () => {
   it('never dispatches before any click; one sendTransactionAsync call per click; two clicks across a real two-step plan total exactly two calls', async () => {
     const client = fakeClient()
     // Re-runs through the SAME asChild-substituted button case 1(c) above proved
-    // styling on (R6's own cross-reference to this case) — the single-dispatch
+    // styling on (this rule's own cross-reference to this case) — the single-dispatch
     // guarantee is proven at the exact surface a partner actually clicks, substituted
     // element included, not only against the kit's own default button.
     renderAssembledCard(client, { actionAsChild: true })
@@ -284,7 +283,7 @@ describe('R8 — exactly one dispatch per click, and zero dispatches without one
     await waitFor(() => expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false))
     const button = screen.getByRole('button') as HTMLButtonElement
 
-    // Negative proof (T-56-10): NOTHING dispatches merely from mounting/resolving a
+    // Negative proof: NOTHING dispatches merely from mounting/resolving a
     // ready plan — only an explicit click ever does.
     expect(dispatchMocks.sendTransactionAsync).not.toHaveBeenCalled()
 
@@ -301,7 +300,7 @@ describe('R8 — exactly one dispatch per click, and zero dispatches without one
     const secondLabel = button.textContent
     expect(secondLabel).not.toBe(firstLabel)
     // Still exactly one call — the receipt watcher only ADVANCES the machine, it
-    // never dispatches on its own (T-54-37's own structural invariant).
+    // never dispatches on its own (a core structural invariant).
     expect(dispatchMocks.sendTransactionAsync).toHaveBeenCalledTimes(1)
 
     dispatchMocks.sendTransactionAsync.mockResolvedValueOnce('0xbb')
@@ -314,7 +313,7 @@ describe('R8 — exactly one dispatch per click, and zero dispatches without one
   })
 })
 
-describe('R9 — amount fidelity survives in the FULL assembled tree, not only in isolation', () => {
+describe('Amount fidelity survives in the FULL assembled tree, not only in isolation', () => {
   it('renders the known fees.marketplace.formatted/.symbol pair verbatim inside the assembled card', async () => {
     const quote: Quote = {
       ...fakeQuote(),
@@ -331,7 +330,7 @@ describe('R9 — amount fidelity survives in the FULL assembled tree, not only i
   })
 })
 
-describe('R10 — error-code override at the assembled-card level (a BUILD failure, not a quote failure)', () => {
+describe('Error-code override at the assembled-card level (a BUILD failure, not a quote failure)', () => {
   it('surfaces INVALID_PARAMS and the default message by default; a partner override replaces only the text, never the code', async () => {
     const client = fakeClient({
       buildBuy: vi.fn().mockRejectedValue(new SnfError('INVALID_PARAMS', 'Something about this request is invalid.')),
@@ -363,13 +362,13 @@ describe('R10 — error-code override at the assembled-card level (a BUILD failu
     await waitFor(() =>
       expect(screen.getByTestId('quote-error').textContent).toContain('Custom build-failure copy for this partner.'),
     )
-    // The code is NEVER hidden by the override (T-56-11).
+    // The code is NEVER hidden by the override.
     expect(screen.getByTestId('quote-error').textContent).toContain('INVALID_PARAMS')
     expect(screen.getByTestId('quote-error').getAttribute('data-error-code')).toBe('INVALID_PARAMS')
   })
 })
 
-describe('R11 — accessibility: accessible name tracks state, a live region announces it, keyboard-only completion', () => {
+describe('Accessibility: accessible name tracks state, a live region announces it, keyboard-only completion', () => {
   it('completes the whole two-step flow via focus() + a click dispatched at document.activeElement only', async () => {
     const client = fakeClient()
     renderWithSnf(
@@ -380,7 +379,7 @@ describe('R11 — accessibility: accessible name tracks state, a live region ann
       { client },
     )
 
-    // See the R6(c)/R8 cases' comment — the button REMOUNTS once between "no plan"
+    // See the styling-mode (c) case's comment above — the button REMOUNTS once between "no plan"
     // and "plan ready"; query fresh inside `waitFor` before capturing a stable
     // reference, or the wait polls a permanently-detached node forever.
     await waitFor(() => expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false))

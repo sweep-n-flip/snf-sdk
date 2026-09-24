@@ -1,13 +1,14 @@
 /**
  * local/no-numeric-formatting
  *
- * 56-SPEC.md R3 prohibition #3 (amended 2026-09-23 list): "calls a numeric formatting
+ * The documented prohibition #3 (amended 2026-09-23 list): "calls a numeric formatting
  * function." Requirement 9: "the kit displays `formatted` and `symbol` as given; it
  * never calls `toFixed`, `toLocaleString` or any arithmetic on `value`." Target:
- * packages/widgets/src only (see eslint.config.js). The arithmetic half of R9 is
+ * packages/widgets/src only (see eslint.config.js). The arithmetic half of this
+ * prohibition is
  * mechanised by local/no-amount-arithmetic; this rule is the formatting half.
  *
- * `bigint.toString()` is deliberately NOT flagged anywhere in this rule. R9's ban is
+ * `bigint.toString()` is deliberately NOT flagged anywhere in this rule. this rule's ban is
  * `toFixed`/`toLocaleString`/arithmetic-on-`.value` — reformatting a *money* value — not
  * the ability to print a block number or a raw reserve count as digits.
  * `SwapPanel.tsx`'s own `asOfBlock.toString()` is the precedent this rule preserves:
@@ -28,13 +29,13 @@ export default {
     type: 'problem',
     docs: {
       description:
-        'Ban toFixed/toLocaleString/Number/parseFloat/parseInt/Intl.NumberFormat calls and formatAmount/toAmount imports in packages/widgets/src (56-SPEC.md R3/R9).',
+        'Ban toFixed/toLocaleString/Number/parseFloat/parseInt/Intl.NumberFormat calls and formatAmount/toAmount imports in packages/widgets/src.',
     },
     messages: {
       formattingCall:
-        'Widgets MUST NOT reformat a numeric value (56-SPEC.md R3/R9): "{{name}}" is a numeric formatting call. Display Amount.formatted/symbol as given.',
+        'Widgets MUST NOT reformat a numeric value: "{{name}}" is a numeric formatting call. Display Amount.formatted/symbol as given.',
       formattingImport:
-        'Widgets MUST NOT import "{{name}}" from @sweepnflip/sdk (56-SPEC.md R3/R9) — the kit only renders the Amount the SDK already formatted; it never reformats a value itself.',
+        'Widgets MUST NOT import "{{name}}" from @sweepnflip/sdk — the kit only renders the Amount the SDK already formatted; it never reformats a value itself.',
     },
     schema: [],
   },

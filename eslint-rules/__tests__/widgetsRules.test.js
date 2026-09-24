@@ -8,7 +8,7 @@ import noEffectDispatch from '../no-effect-dispatch.js'
 import noNumericFormatting from '../no-numeric-formatting.js'
 
 // Sibling to rules.test.js (the core package's own three-rule suite) — this file
-// covers only the four widgets-specific rules from 56-SPEC.md R3/R8/R9, D-08. Same
+// covers only the four widgets-specific rules. Same
 // RuleTester/vitest wiring as rules.test.js
 // (https://eslint.org/docs/latest/integrate/nodejs-api#ruletester).
 RuleTester.describe = describe

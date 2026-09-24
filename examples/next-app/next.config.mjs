@@ -1,7 +1,7 @@
 /**
  * examples/next-app/next.config.mjs
  *
- * Deliberately minimal — this example is a wiring reference, not a product (D-11).
+ * Deliberately minimal — this example is a wiring reference, not a product.
  * No custom webpack/turbopack config, no rewrites, no image domains: nothing here
  * needs a bundler tweak to run this app's four sections (collection, inventory,
  * quote, checkout).

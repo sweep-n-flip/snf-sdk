@@ -3,7 +3,7 @@ import { SNF_ERROR_CODES } from '@sweepnflip/sdk'
 import { DEFAULT_WIDGET_MESSAGES, resolveErrorMessage } from '../src/messages'
 
 /**
- * D-10 / R10 — every SDK error code has a partner-facing default, overridable per
+ * Every SDK error code has a partner-facing default, overridable per
  * code, with `code` always available to whatever renders it (this function returns
  * only the text; the caller renders `code` alongside it — see `messages.ts`'s own
  * header comment).

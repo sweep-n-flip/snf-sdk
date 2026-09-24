@@ -7,7 +7,7 @@ import { usePoolStatsContext } from './context'
 import type { PoolStatsPartProps } from './PoolStats.types'
 
 /**
- * `PoolStatsReserves` — renders this pool's raw reserves as plain text (R9).
+ * `PoolStatsReserves` — renders this pool's raw reserves as plain text.
  *
  * `.toString()`-only, exactly like `examples/next-app`'s own `InventorySection`
  * renders `asOfBlock.toString()`: `pool.reserves.base`/`pool.reserves.wnft` are raw

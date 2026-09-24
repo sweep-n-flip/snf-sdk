@@ -8,8 +8,8 @@ subgraph, and hands back unsigned calldata. It never signs a transaction, never 
 one through an SnF-operated server, and never custodies a user's funds or NFTs — see
 [`SECURITY.md`](./SECURITY.md) for the full posture.
 
-**Status:** private during development — goes public and ships to npm at `1.0.0`
-(Phase 55), once the founder's UAT on this package passes (D-08).
+**Status:** private during development — goes public and ships to npm at `1.0.0`,
+once the founder's UAT on this package passes.
 
 ## Install
 
@@ -19,9 +19,9 @@ pnpm add @sweepnflip/sdk viem
 pnpm add @sweepnflip/sdk-react wagmi @tanstack/react-query
 ```
 
-Until Phase 55 ships the first `npm publish`, consume these packages from a local
+Until the first `npm publish` ships, consume these packages from a local
 checkout via `pnpm link` or a tarball (`pnpm pack`) — there is no private registry and
-no GitHub Packages in between (D-08).
+no GitHub Packages in between.
 
 ## Quickstart
 
@@ -120,28 +120,29 @@ axes; never hardcode a `1e18`/`parseEther` literal against a pool-side amount.
 This SDK never signs, never relays, and never custodies. Every value that affects a
 transaction is read on-chain at build/pre-flight time — nothing is trusted from the
 caller. Copying or editing this SDK does not avoid the marketplace fee or the creator
-royalty: both are charged by the SnF Router on-chain, not by this client (D-07). Full
+royalty: both are charged by the SnF Router on-chain, not by this client. Full
 detail, the four non-negotiables, and how each is enforced: [`SECURITY.md`](./SECURITY.md).
 
 ## Free forever
 
 There is no license key, no paywall, and no usage fee anywhere in this SDK, and there
-never will be (D-06) — the revenue is the on-chain volume it brings to SnF pools (the
+never will be — the revenue is the on-chain volume it brings to SnF pools (the
 2.5% marketplace fee, charged by the Router, not by this package).
 
 ## Scope
 
-**In v1 (this phase):** collection/pool discovery, pool inventory, buy/sell/NFT×NFT/
+**In v1:** collection/pool discovery, pool inventory, buy/sell/NFT×NFT/
 fungible quotes with a reconciled fee breakdown, execution-plan builders with
 frame-of-signature pre-flight, a user-driven checkout state machine, and the React
 adapter.
 
-**Explicitly deferred:** liquidity (add/remove/create pool) → Phase 87. Portfolio/LP
-position reads → Phase 88. A styled widget/UI kit (`@sweepnflip/widgets`) → Phase 56.
-A generated docs site → Phase 55. Marketplace aggregator (OpenSea/Seaport), Relay,
-sell-into-bids, Sweep & Bridge, Farm, Bridge, and the SnF Advanced Router's atomic
-NFT×NFT contract are out of scope for this SDK entirely for now — see `54-SPEC.md`
-Boundaries.
+**Explicitly deferred:** liquidity (add/remove/create pool). Portfolio/LP
+position reads. A styled widget/UI kit (`@sweepnflip/widgets`) is under active
+construction — see that package's own README for status.
+A generated docs site is also planned.
+Marketplace aggregation, third-party marketplace integrations,
+sell-into-bids, and any atomic multi-step NFT×NFT execution
+contract are out of scope for this SDK entirely for now.
 
 ## Development
 
@@ -151,16 +152,13 @@ pnpm -r build
 pnpm -r test
 pnpm test:fork      # 4-chain anvil fork lanes — Base, Arbitrum, Robinhood, Arc
 pnpm lint
-pnpm grep:gate      # no SnF-server endpoints, keys, process.env, or snf-client imports
+pnpm grep:gate      # no SnF-server endpoints, keys, process.env, or private-client imports
 pnpm size            # bundle budget: <= 60 kB gzip
 pnpm release:gate    # stubs, ABI inventory, secrets, bundle, version — one command, five checks
 ```
 
-## Canonical documents (in `snf-workspace`)
+## More documentation
 
-- PRD: `.specs/features/snf-sdk/PRD.md`
-- SPEC (Phase 54): `.planning/phases/snf-54-partner-sdk-foundation-swap/54-SPEC.md`
-- Public API datasheet (types contract): `.specs/features/snf-api/DATASHEET.md`
 - Permissionless parity checklist: [`PARITY.md`](./PARITY.md)
 - Security posture: [`SECURITY.md`](./SECURITY.md)
 - Release history: [`CHANGELOG.md`](./CHANGELOG.md)

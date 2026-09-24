@@ -1,7 +1,7 @@
 import { defineConfig } from 'vitest/config'
 
 // Same shape as packages/sdk-react/vitest.config.ts. `setupFiles` now points at
-// `test/setup.ts` (plan 03), which registers Testing Library's `afterEach(cleanup)`
+// `test/setup.ts`, which registers Testing Library's `afterEach(cleanup)`
 // and exports the shared `renderWithSnf` component-render harness every later widgets
 // test file imports.
 export default defineConfig({

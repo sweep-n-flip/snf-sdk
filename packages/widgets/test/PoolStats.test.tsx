@@ -7,8 +7,8 @@ import { SnfPoolStats } from '../src/components/PoolStats'
 import { fakeCollectionInfo, fakeQuote, renderWithSnf } from './setup'
 
 /**
- * `PoolStats.test.tsx` — `<SnfPoolStats>`'s behavioural + styling proof (R5, R6, R9,
- * R10), mirroring `slot.test.tsx`'s own three-mechanism shape (D-05) and
+ * `PoolStats.test.tsx` — `<SnfPoolStats>`'s behavioural + styling proof,
+ * mirroring `slot.test.tsx`'s own three-mechanism shape and
  * `TradeCardRoot.test.tsx`'s fixture/render conventions, scoped to `SnfPoolStats`.
  *
  * This word is never used anywhere in this file, its comments, or its test names —
@@ -30,7 +30,7 @@ const PAIR = hexAddress('1')
 /** A pool reserve shaped so a naive `reserves.wnft / 1e18` would NOT match the
  * fixture's own `availableCount` below — proving the rendered ceiling number came
  * from the SDK's own `PoolInventory.availableCount` field, never a local
- * recomputation from these reserves (R5's literal acceptance criterion). */
+ * recomputation from these reserves (this rule's literal acceptance criterion). */
 function fakeCollectionInfoWithPool(): CollectionInfo {
   return {
     ...fakeCollectionInfo(),
@@ -176,7 +176,7 @@ describe('styling mechanism (c): asChild substitution on Price — clone, not wr
   })
 })
 
-describe('R9 — amount fidelity: legs[0].amount is rendered character-identical, never reformatted', () => {
+describe('Amount fidelity: legs[0].amount is rendered character-identical, never reformatted', () => {
   it('renders exactly the fixture formatted/symbol pair, no rounding or reformatting', async () => {
     renderPoolStats(<SnfPoolStats.Price />, fakeClient())
 
@@ -188,7 +188,7 @@ describe('R9 — amount fidelity: legs[0].amount is rendered character-identical
   })
 })
 
-describe('R10 — error state exposes the code and resolves messages through resolveErrorMessage', () => {
+describe('Error state exposes the code and resolves messages through resolveErrorMessage', () => {
   it('renders the default English message and the code for a rejected quote', async () => {
     const client = fakeClient({
       quoteBuy: () => Promise.reject(new Error('NO_ROUTE: nothing to price')),
@@ -218,7 +218,7 @@ describe('R10 — error state exposes the code and resolves messages through res
   })
 })
 
-describe("R5 — the buyable ceiling is the SDK's own field, never a recomputation from reserves", () => {
+describe("The buyable ceiling is the SDK's own field, never a recomputation from reserves", () => {
   it('renders availableCount exactly as the fixture gives it, matching neither a naive reserves.wnft/1e18 nor that minus one', async () => {
     renderPoolStats(<SnfPoolStats.Ceiling />, fakeClient())
 
@@ -248,7 +248,7 @@ describe("R5 — the buyable ceiling is the SDK's own field, never a recomputati
   })
 })
 
-describe('R9 — reserves render raw bigints via .toString() only, never a division', () => {
+describe('Reserves render raw bigints via .toString() only, never a division', () => {
   it('renders the exact wei-shaped reserve strings plus their symbols', async () => {
     renderPoolStats(<SnfPoolStats.Reserves />, fakeClient())
 

@@ -24,10 +24,10 @@ export interface SnfQueryResult<T> extends Omit<UseQueryResult<T, SnfError>, 'er
 
 /**
  * Wraps a raw react-query result so `error` is always a real `SnfError` — never a
- * react-query-passthrough of whatever the `queryFn` happened to throw (T-54-93).
+ * react-query-passthrough of whatever the `queryFn` happened to throw.
  * `client.describeError` is idempotent on an `SnfError` (it returns the SAME instance
  * unchanged — `packages/sdk/src/describeError.ts`'s own first check), so a query that
- * already rejected with a proper `SnfError` (every core domain method does, per R5)
+ * already rejected with a proper `SnfError` (every core domain method does)
  * survives this call byte-identical — proven by `test/hooks.test.tsx`'s "error
  * passthrough" case (`instanceof SnfError`, same `code`, not a react-query wrapper).
  */

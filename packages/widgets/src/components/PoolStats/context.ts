@@ -3,8 +3,8 @@ import type { PoolStatsContextValue } from './PoolStats.types'
 
 /**
  * `context.ts` — the one React context `PoolStatsRoot` provides and every Part
- * (`Price`/`Reserves`/`Ceiling`) reads from (R5, R10). Mirrors `TradeCard/context.ts`'s
- * own `useTradeCardContext` shape (plan 04): throws a plain `Error` (not `SnfError` —
+ * (`Price`/`Reserves`/`Ceiling`) reads from. Mirrors `TradeCard/context.ts`'s
+ * own `useTradeCardContext` shape: throws a plain `Error` (not `SnfError` —
  * this is a widgets-internal programmer-misuse error, not an SDK domain error) naming
  * `<SnfPoolStats.Root>` when called outside one. `PoolStats` has no checkout mount (it
  * is read-only), so there is only ever this one context — no second, nullable

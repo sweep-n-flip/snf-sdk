@@ -6,7 +6,7 @@ import type { SnfClient } from '@sweepnflip/sdk'
 import { SnfProvider, type SnfProviderProps } from '../src/context'
 
 /**
- * jsdom global setup (R18; 54-SPEC.md). `@testing-library/react`'s own `cleanup`
+ * jsdom global setup. `@testing-library/react`'s own `cleanup`
  * unmounts every tree rendered by `render`/`renderHook` after each test — without
  * this, a component left mounted by one test (e.g. deliberately, to assert an
  * unmount-safety behavior mid-test) would leak into the next test's DOM and query
@@ -29,7 +29,7 @@ export function createTestQueryClient(): QueryClient {
  * needs it to type-check and (when no `client` override is given) to pass
  * `createSnfClient`'s own `readContract`/`multicall`-presence check at construction;
  * no test in this suite lets a real RPC call reach it (every test passes a stubbed
- * `SnfClient` via the `client` prop instead, per this plan's own instruction: "no
+ * `SnfClient` via the `client` prop instead, per this suite's own discipline: "no
  * live RPC/wallet"). */
 export function makeStubPublicClient(): SnfProviderProps['publicClient'] {
   return {

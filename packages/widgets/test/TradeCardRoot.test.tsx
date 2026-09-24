@@ -8,7 +8,7 @@ import type { TradeCardCheckoutContextValue } from '../src/components/TradeCard/
 import { fakeCollectionInfo, fakePlan, fakeQuote, renderWithSnf } from './setup'
 
 /**
- * R4/R8/D-07 — `TradeCardRoot`'s behavioural proof: each side selects exactly the
+ * `TradeCardRoot`'s behavioural proof: each side selects exactly the
  * right quote/build hooks, plan-building stays gated on a real recipient, the checkout
  * hook mounts only once a plan exists (never before), and no dispatch ever happens
  * without an explicit `next()` call.

@@ -3,7 +3,7 @@ import type { TradeCardCheckoutContextValue, TradeCardRootContextValue } from '.
 
 /**
  * `context.ts` — the two React contexts `TradeCardRoot` (this plan) provides and every
- * later Part (plan 05) reads from (R4, D-07). Mirrors
+ * later Part reads from. Mirrors
  * `packages/sdk-react/src/context.tsx`'s own error-on-missing-provider pattern for
  * `useTradeCardContext`, but `useTradeCardCheckout` deliberately does NOT throw — "no
  * plan yet" is a normal, expected state every consuming Part must handle on its own

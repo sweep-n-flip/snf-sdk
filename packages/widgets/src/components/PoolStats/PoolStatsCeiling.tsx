@@ -7,9 +7,9 @@ import { usePoolStatsContext } from './context'
 import type { PoolStatsPartProps } from './PoolStats.types'
 
 /**
- * `PoolStatsCeiling` — renders the buyable ceiling for this pool (R5).
+ * `PoolStatsCeiling` — renders the buyable ceiling for this pool.
  *
- * R5's literal acceptance criterion: the number shown is `inventory.data.
+ * this rule's literal acceptance criterion: the number shown is `inventory.data.
  * availableCount` READ DIRECTLY off the SDK's own `PoolInventory` — never a
  * client-side recomputation from the pool's raw wrapper-token reserve (this component
  * never divides that reserve by anything). `source`/`stale`/`lagSeconds` are rendered

@@ -5,7 +5,7 @@ import { createCheckout } from '@sweepnflip/sdk/checkout'
 import { useSnfContext } from '../context'
 
 /**
- * The ONE dispatch site in either package (D-04, INV-17; 54-SPEC.md). `createCheckout`
+ * The ONE dispatch site in either package (INV-17). `createCheckout`
  * (`@sweepnflip/sdk/checkout` — see `packages/sdk/tsup.config.ts` for why this is a
  * subpath rather than the main barrel: `createCheckout` was deliberately left off
  * `SnfClient`'s 13-method surface, not off the SDK entirely) returns a pure state
@@ -29,7 +29,7 @@ export interface UseSnfCheckoutResult {
 
 /** `'wallet'`/`'wallet-approve'` are the core's own busy states, held from `next()`'s
  * dispatch until a receipt/rejection arrives — the reducer never enters a distinct
- * "signed, awaiting confirmation" state (`snf-54-08-SUMMARY.md`: "left available for
+ * "signed, awaiting confirmation" state (: "left available for
  * the React adapter to project as its own richer, wagmi-hook-derived UI state").
  * Once wagmi hands back a hash, THIS hook projects the busy state one step further —
  * the only display richness this file adds; the core snapshot itself never changes
@@ -126,8 +126,8 @@ export function useSnfCheckout(plan: ExecutionPlan): UseSnfCheckoutResult {
       const receipt = receiptQuery.data
       // Deliberately UN-annotated (no `: ReceiptLike`) — `@sweepnflip/sdk`'s public
       // barrel only exports `checkout.types.ts`'s `ReceiptLike` (`logs: readonly
-      // unknown[]`, plan 04's original placeholder), while `SnfClient.parseReceipt`'s
-      // signature was later widened (plan 08) to the STRICTER, unexported `receipt/
+      // unknown[]`, this module's original placeholder), while `SnfClient.parseReceipt`'s
+      // signature was later widened to the STRICTER, unexported `receipt/
       // receipt.types.ts` `ReceiptLike` (`logs: readonly Log[]`) — two same-named,
       // structurally different types the core never reconciled (out of this plan's
       // scope: `packages/sdk/src` is not editable here). `receipt.logs` is viem's

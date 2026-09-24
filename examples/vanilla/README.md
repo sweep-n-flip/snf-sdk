@@ -2,7 +2,7 @@
 
 ## What it proves
 
-`@sweepnflip/sdk`'s core is genuinely framework-agnostic (R1, `54-SPEC.md`): this
+`@sweepnflip/sdk`'s core is genuinely framework-agnostic: this
 script runs on bare Node.js with **only `viem` as a peer** — `react`, `react-dom`,
 `wagmi` and `@tanstack/react-query` do not exist anywhere in this example's own
 `package.json`, and `pnpm --filter @sweepnflip/example-vanilla list --depth 10` finds
@@ -13,7 +13,7 @@ point of shipping it as a compile-time contract, not documentation that can drif
 It walks the exact call sequence a partner integrates: `createSnfClient` → discover a
 collection → read its pool's candidate inventory → quote a buy → build a plan →
 pre-flight it — against the real, live Base ETH/DEMON pool (no mocks, no fixtures),
-and prints the reconciled fee breakdown D-03's two-field `{ value, formatted }` money
+and prints the reconciled fee breakdown this rule's two-field `{ value, formatted }` money
 convention produces. This is the exact sequence the root README's `## Quickstart`
 shows — a test (`packages/sdk/test/release/surface.test.ts`) asserts the two have not
 drifted apart.
@@ -37,7 +37,7 @@ No wallet, no private key, no API key and no SnF server are required — every c
 script makes (the quote, `buildBuy`, `plan.preflight()`) is a read against a public
 Base RPC; nothing is ever signed or sent. Override the RPC with `BASE_RPC_URL` if you
 have your own (e.g. an Alchemy/Infura endpoint); the SDK itself never reads
-`process.env` (D-04) — only this example script does, for its own transport setup.
+`process.env` — only this example script does, for its own transport setup.
 
 > The default RPC is `https://base-rpc.publicnode.com`, not the chain registry's
 > listed `defaultRpcUrl` (`mainnet.base.org`) — the latter's free tier started
@@ -67,7 +67,7 @@ send each step in plan.steps with your own wallet — one click per step (see ex
 ```
 
 Every fee amount is printed both `formatted` (for display) and as its raw `value`
-`bigint` (what a real transaction would actually use) — D-03's convention: never parse
+`bigint` (what a real transaction would actually use) — this rule's convention: never parse
 `formatted` back for math, `value` is always the exact figure.
 
 If the quote does not reconcile against the Router's own on-chain read, the SDK never

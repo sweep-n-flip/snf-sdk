@@ -1,5 +1,5 @@
 /**
- * The hooks barrel. D-02: exactly `useSnf*` names, no other public hook.
+ * The hooks barrel. Exactly `useSnf*` names, no other public hook.
  */
 export { useSnfClient } from './useSnfClient'
 

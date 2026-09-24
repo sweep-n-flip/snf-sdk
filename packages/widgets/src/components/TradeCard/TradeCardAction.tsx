@@ -7,10 +7,10 @@ import { useTradeCardCheckout, useTradeCardContext } from './context'
 import type { TradeCardActionProps, TradeCardRootContextValue } from './TradeCard.types'
 
 /**
- * `TradeCardAction` — the single dispatch site's UI surface, and R11's accessibility
- * anchor (R4, R8, R11).
+ * `TradeCardAction` — the single dispatch site's UI surface, and this rule's accessibility
+ * anchor.
  *
- * **R8 / T-56-10 — the single-dispatch guarantee.** `next()` is called from exactly
+ * **The single-dispatch guarantee.** `next()` is called from exactly
  * ONE place: this `onClick` handler, synchronously, never from a `useEffect`/timer/
  * watcher (mechanically enforced by `local/no-effect-dispatch` against this file too —
  * `examples/next-app/src/components/SwapPanel.tsx`'s own `CheckoutFlow` button is the
@@ -19,11 +19,11 @@ import type { TradeCardActionProps, TradeCardRootContextValue } from './TradeCar
  * `canProceed` already encodes (`checkout/reducer.ts`'s `canDispatch`) — no additional
  * debounce or double-click guard is added on top of it; none is needed.
  *
- * **R11 — accessibility is this file's whole job.** A real `<button type="button">` is
+ * **Accessibility is this file's whole job.** A real `<button type="button">` is
  * always rendered by default (never a `<div onClick>`) — its visible text IS its
- * accessible name with zero extra ARIA wiring ("free correctness" per
- * `56-CONTEXT.md`), and it changes automatically whenever `checkout.label` changes
- * (the core reducer's own `buildConfirmLabel`, never re-derived here — D-07). A
+ * accessible name with zero extra ARIA wiring ("free correctness"),
+ * and it changes automatically whenever `checkout.label` changes
+ * (the core reducer's own `buildConfirmLabel`, never re-derived here). A
  * sibling `<span role="status" aria-live="polite">`, visually hidden via an
  * absolute-positioned, zero-size inline style (never `display: none`/
  * `visibility: hidden`, which would ALSO remove it from the accessibility tree),
@@ -46,7 +46,7 @@ export function TradeCardAction(props: TradeCardActionProps): ReactNode {
   const disabled = !checkout || !checkout.canProceed
   const busy = checkout ? isBusyState(checkout.state) : false
 
-  // The ONE dispatch site (R8). Called ONLY from this synchronous click handler —
+  // The ONE dispatch site. Called ONLY from this synchronous click handler —
   // never wrapped in a useEffect, timer or `.then()` watcher anywhere in this file.
   const handleClick = (): void => {
     if (checkout && checkout.canProceed) {

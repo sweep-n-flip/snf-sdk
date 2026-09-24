@@ -1,6 +1,6 @@
 /**
  * `mergeClassNames` — the ONLY place two class strings are combined anywhere in this
- * package (D-05, R6). Every part calls this instead of template-literal-concatenating
+ * package. Every part calls this instead of template-literal-concatenating
  * classes inline, so the "partner's class always survives" guarantee has one
  * implementation to audit, not N.
  *

@@ -1,7 +1,7 @@
 /**
  * `toDataAttrs` — converts a plain object of primitive state/identity values into
  * `data-*` attribute keys a partner can style against with pure CSS, no JavaScript
- * (D-05, R4, R6). Nothing this function touches may ever be a color, size, spacing or
+ *. Nothing this function touches may ever be a color, size, spacing or
  * font value — it carries STATE and IDENTITY only (`data-snf-part`, `data-state`,
  * `data-side`, `data-step-kind`, `data-busy`, `data-disabled`), never a visual
  * decision. Every later plan's `data-*` vocabulary goes through this one function so

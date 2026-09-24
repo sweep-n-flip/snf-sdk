@@ -1,31 +1,33 @@
 #!/usr/bin/env node
 // scripts/release-gate.mjs
 //
-// snf-54-20 (R21, REQ-SDK-01, REQ-SDK-52). One command, six checks, non-zero exit and
+// One command, six checks, non-zero exit and
 // a readable report on ANY failure:
 //
-//   1. No surviving stubs      — `@gsd-stub` must not appear anywhere under packages/*/src
-//   2. ABI inventory           — packages/sdk/src/abis holds exactly the audited set,
-//                                 no forbidden non-AMM identifier fingerprint anywhere in it
-//   3. Secrets scan            — the whole repo, then packages/*/dist, clean of any
-//                                 private-key/API-key-shaped literal or a tracked .env
-//   4. Bundle budget            — `pnpm size` (size-limit) exits 0
-//   5. Version consistency      — built SDK_VERSION === package.json#version, and
-//                                 sdk-react's peer range on @sweepnflip/sdk admits it
-//   6. Forbidden-name fingerprints, tracked tree — same guard as check 2, over every
-//                                 tracked file instead of just the ABI directory. Off
-//                                 by default; see SCAN_TRACKED_TREE_FOR_FORBIDDEN_FINGERPRINTS.
+// 1. No surviving stubs — `@gsd-stub` must not appear anywhere under packages/*/src
+// 2. ABI inventory — packages/sdk/src/abis holds exactly the audited set,
+// no forbidden non-AMM identifier fingerprint anywhere in it
+// 3. Secrets scan — the whole repo, then packages/*/dist, clean of any
+// private-key/API-key-shaped literal or a tracked .env
+// 4. Bundle budget — `pnpm size` (size-limit) exits 0
+// 5. Version consistency — built SDK_VERSION === package.json#version, and
+// sdk-react's peer range on @sweepnflip/sdk admits it
+// 6. Forbidden-name fingerprints, tracked tree — same guard as check 2, over every
+// tracked file instead of just the ABI directory. Always on;
+// see SCAN_TRACKED_TREE_FOR_FORBIDDEN_FINGERPRINTS.
 //
-// Deliberately zero npm dependencies (D-05/D-06 spirit: nothing in this repo's own
+// Deliberately zero npm dependencies (nothing in this repo's own
 // tooling should need a registry fetch to gate a release) — only Node's `node:fs`,
-// `node:path`, `node:crypto` and one `node:child_process` shell-out to the existing
+// `node:path`, `node:crypto` (via the shared fingerprint module) and one
+// `node:child_process` shell-out to the existing
 // `pnpm size` script (check 4 composes that check rather than re-implementing
 // size-limit's own gzip math).
 import { execSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { findForbiddenFingerprintLines } from './forbidden-name-fingerprints.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -112,108 +114,14 @@ const EXPECTED_ABI_FILES = [
 // ---------------------------------------------------------------------------
 // Forbidden-name guard, by fingerprint rather than by name.
 //
-// A gate that keeps a plaintext deny-list is only as private as the file it lives
-// in — publish the file, and the list itself becomes the disclosure it exists to
-// prevent. This guard instead stores only the SHA-256 fingerprint of each
-// forbidden identifier (lowercased before hashing — comparisons below are
-// case-insensitive, matching the previous substring check's behavior). It never
-// holds, logs, or derives the plaintext identifiers themselves; a failure report
-// can therefore only ever say THAT an identifier's fingerprint matched, and
-// WHERE — never WHICH identifier.
-//
-// The previous mechanism matched by raw substring against a whole file's
-// lowercased text, so a forbidden identifier embedded inside a longer compound
-// identifier (prefix+name+suffix, e.g. a function name that contains one of the
-// guarded words as an inner segment) was still caught. Fingerprinting whole
-// candidate strings alone would lose that: a hash of a compound identifier
-// doesn't reveal anything about a hash of a substring of it. To preserve
-// coverage, every candidate identifier found in scanned text is decomposed into
-// its "words" (splitting on `_`/`-` and on camelCase/acronym/digit boundaries),
-// and every contiguous run of those words — from a single word up to the whole
-// identifier — is fingerprinted and checked. A guarded word that lines up with
-// natural identifier-word boundaries anywhere inside a longer identifier is
-// still caught this way, exactly as the old substring check would have caught
-// it; only identifiers whose casing deliberately obscures every natural word
-// boundary could slip past both this and the previous mechanism.
-const FORBIDDEN_NAME_FINGERPRINTS = new Set([
-  '17f29b073143d8cd97b5bbe492bdeffec1c5fee55cc1fe2112c8b9335f8b6121',
-  '1e22a737a0a63204be0c83f899126d24d48ad317787ea5a431175de4347ba709',
-  '41a01f9945b8b394953d4d44a1522eb9c7654c7fc86a572b71fc63408e854440',
-  '45335bcffd7f70fa32d8d3c216b2cf384c752b4a6e2d2246fc36cea5ee1e6c60',
-  '48b9f30d90d630c93fec79d11a4736e24d30d10c6e4ad033ce321c89229c8f2a',
-  '7d458f2e1cb829f1d25c1a4f4cb5353b3bc5fbca2d8d62349b7e70cc22fe6738',
-  '9aee9ba4da6002e08a0ea992b3b654d7f46a23d67124ec37c13eef1172d84617',
-  'c279e4c4471257af26e9c2c739705a0171959e33aaae5061c6f3766ca1f7f96d',
-  'c76f02cb19defd5ce516d730e5f6f2b3674ee1d8b86642ad82d2f938affb22b0',
-  'c8cf701f30ad11d3ee877dced0d774ab2da9159894296887b8439a63c9aa0655',
-  'df78f3743df088a526a599039eb8b18d6fe5f2a7ee38a3d56acfa82aa298d189',
-  'e6f0a1fbb43c89196dcfcbef85908f19ab4c5f7cc4f4c452284697757683d7ef',
-])
-
-function fingerprintOf(candidate) {
-  return createHash('sha256').update(candidate.toLowerCase(), 'utf8').digest('hex')
-}
-
-/** Splits one `_`/`-`-delimited part into camelCase/acronym/digit "words":
- * lower-or-digit followed by upper (`xY` -> `x|Y`), an uppercase run followed
- * by an uppercase+lowercase pair (`XYz` -> `X|Yz`, the acronym case), and any
- * letter/digit transition (`x9` -> `x|9`, `9x` -> `9|x`). */
-function splitCamelCase(part) {
-  return part
-    .replace(/([a-z0-9])([A-Z])/g, '$1\u0000$2')
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1\u0000$2')
-    .replace(/([A-Za-z])([0-9])/g, '$1\u0000$2')
-    .replace(/([0-9])([A-Za-z])/g, '$1\u0000$2')
-    .split('\u0000')
-    .filter(Boolean)
-}
-
-function segmentToken(token) {
-  const words = []
-  for (const part of token.split(/[_-]+/).filter(Boolean)) words.push(...splitCamelCase(part))
-  return words
-}
-
-/** Every contiguous run of a token's words, concatenated and lowercased, plus
- * the raw token itself — the full candidate set checked against
- * FORBIDDEN_NAME_FINGERPRINTS for one token. */
-function candidatesForToken(token) {
-  const words = segmentToken(token)
-  const candidates = new Set([token.toLowerCase()])
-  for (let i = 0; i < words.length; i++) {
-    let run = ''
-    for (let j = i; j < words.length; j++) {
-      run += words[j]
-      candidates.add(run.toLowerCase())
-    }
-  }
-  return candidates
-}
-
-function tokensFromText(text) {
-  const raw = text.match(/[A-Za-z0-9_-]+/g) || []
-  return raw.filter((t) => /[A-Za-z]/.test(t))
-}
-
-/** 1-based line numbers where some candidate identifier on that line
- * fingerprints to an entry in FORBIDDEN_NAME_FINGERPRINTS. Deliberately
- * returns only line numbers — never the token, the candidate, or the line's
- * text — so a caller can report WHERE a match happened without ever being
- * able to say WHAT matched. */
-function findForbiddenFingerprintLines(text) {
-  const hitLines = []
-  text.split('\n').forEach((line, i) => {
-    for (const token of tokensFromText(line)) {
-      for (const candidate of candidatesForToken(token)) {
-        if (FORBIDDEN_NAME_FINGERPRINTS.has(fingerprintOf(candidate))) {
-          hitLines.push(i + 1)
-          return
-        }
-      }
-    }
-  })
-  return hitLines
-}
+// The fingerprint set and the matching logic (camelCase/acronym/digit
+// tokenization, contiguous-word-run candidate generation, SHA-256 comparison)
+// live in one shared module — `scripts/forbidden-name-fingerprints.mjs` — used
+// here AND by `packages/sdk/test/abis/inventory.test.ts`, so there is exactly
+// one source of truth instead of two independent copies that could drift.
+// See that module's own header for the full rationale (a plaintext deny-list
+// is only as private as the file it lives in; the fingerprint approach never
+// holds, logs, or derives the plaintext identifiers themselves).
 
 function checkAbiInventory() {
   const hits = []
@@ -274,18 +182,26 @@ const SECRET_RULES = [
 // shows up, never silence a rule at the pattern level.
 const BINARY_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2', '.map'])
 
-// Exactly two files in this repo legitimately NAME these patterns in prose/code
+// Exactly three files in this repo legitimately NAME these patterns in prose/code
 // rather than CONTAINING a secret shaped like them — excluded by exact path, not by
-// weakening any pattern, so a real secret pasted into either would still need a
-// human to notice it is outside this one narrow exemption:
-//   - `SECURITY.md` documents the four prefixes/formats this gate blocks, for a
-//     human reader ("...enforced by a secrets scan for sk_live/snf_live_...").
-//   - `scripts/release-gate.mjs` (this file) is the gate's own implementation —
-//     Pass 1 walks the whole repo including `scripts/`, so its own rule table and
-//     comments (which must literally spell out what they block) would otherwise
-//     trip its own check, the identical self-reference problem
-//     `scripts/grep-gate.mjs`'s header comment already documents for itself.
-const SECRETS_SCAN_EXCLUDE_PATHS = new Set(['SECURITY.md', 'scripts/release-gate.mjs'])
+// weakening any pattern, so a real secret pasted into any other file would still
+// need a human to notice it is outside this one narrow exemption:
+// - `SECURITY.md` documents the four prefixes/formats this gate blocks, for a
+// human reader ("...enforced by a secrets scan for sk_live/snf_live_...").
+// - `scripts/release-gate.mjs` (this file) is the gate's own implementation —
+// Pass 1 walks the whole repo including `scripts/`, so its own rule table and
+// comments (which must literally spell out what they block) would otherwise
+// trip its own check, the identical self-reference problem
+// `scripts/grep-gate.mjs`'s header comment already documents for itself.
+// - `scripts/forbidden-name-fingerprints.mjs` stores SHA-256 fingerprints — each a
+// 64-hex-character string by construction, the same shape the "64-hex literal"
+// rule below exists to catch. These are hashes, never secrets: the gate must be
+// able to publish its own guard mechanism.
+const SECRETS_SCAN_EXCLUDE_PATHS = new Set([
+  'SECURITY.md',
+  'scripts/release-gate.mjs',
+  'scripts/forbidden-name-fingerprints.mjs',
+])
 
 function scanFileForSecrets(file) {
   if (SECRETS_SCAN_EXCLUDE_PATHS.has(relative(ROOT, file).replace(/\\/g, '/'))) return []
@@ -329,11 +245,18 @@ function checkSecrets() {
   const hits = []
 
   // Pass 1 — the whole repo, excluding node_modules/.git/build caches AND dist
-  // (dist gets its own dedicated pass 2 below, per the plan's own two-pass action text).
+  // (dist gets its own dedicated pass 2 below).
   const wholeRepoFiles = []
   walk(ROOT, wholeRepoFiles, { includeDist: false })
   for (const file of wholeRepoFiles) {
     if (file.endsWith('pnpm-lock.yaml')) continue
+    // A gitignored, untracked Next.js build artifact — regenerates on every
+    // `next build` inside examples/next-app. Its content is an opaque incremental-
+    // build cache, not source; it can coincidentally contain a 64-hex-shaped
+    // substring that trips the "64-hex literal" secret rule as a false positive.
+    // Excluded by exact filename suffix, not by weakening the rule itself — a real
+    // secret with this exact shape pasted into any OTHER file still fails the gate.
+    if (file.endsWith('.tsbuildinfo')) continue
     hits.push(...scanFileForSecrets(file))
   }
 
@@ -380,7 +303,7 @@ function checkBundleBudget() {
 /** Minimal, dependency-free "does this range admit this exact version" check —
  * this repo's own two packages only ever use pnpm's `workspace:` protocol or a plain
  * `^x.y.z`/`~x.y.z`/exact/`*` specifier for this ONE internal edge, so a full semver
- * range parser is unwarranted (`D-05`'s "no dependencies" instruction for this script). */
+ * range parser is unwarranted (this script's own "no dependencies" instruction). */
 function admitsVersion(range, version) {
   if (range === '*') return true
   if (range.startsWith('workspace:')) {
@@ -456,11 +379,11 @@ function checkVersionConsistency() {
 // guard permanent — a guarded identifier that returns to tracked source
 // anywhere in the repo fails the gate, not only if it lands in packages/sdk/src/abis.
 //
-// Off by default. The tracked tree can currently contain guarded identifiers
-// this check exists to keep out; turning this on before that source-level
-// cleanup lands would fail the gate on unrelated work. A later commit removes
-// those identifiers from source and flips this flag on.
-const SCAN_TRACKED_TREE_FOR_FORBIDDEN_FINGERPRINTS = false
+// Enabled: the source-level cleanup that removed every guarded identifier from
+// the tracked tree has landed, so this check now runs on every `release:gate`
+// invocation — a guarded identifier that returns anywhere in the repo fails the
+// gate immediately, not only if it lands in packages/sdk/src/abis.
+const SCAN_TRACKED_TREE_FOR_FORBIDDEN_FINGERPRINTS = true
 
 function checkForbiddenFingerprintsTrackedTree() {
   if (!SCAN_TRACKED_TREE_FOR_FORBIDDEN_FINGERPRINTS) {
@@ -512,7 +435,7 @@ if (failures.length > 0) {
 } else {
   console.log(
     'release-gate: PASS — all checks green (stubs, ABI inventory, secrets, bundle budget, version consistency, ' +
-      'forbidden-name fingerprints tracked-tree scan skipped/disabled)',
+      'forbidden-name fingerprints tracked-tree scan)',
   )
   process.exit(0)
 }

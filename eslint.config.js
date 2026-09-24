@@ -4,7 +4,7 @@ import local from './eslint-rules/index.js'
 
 // Flat ESLint 9 config. `local` is a virtual, repo-only plugin (no publish step —
 // see https://eslint.org/docs/latest/use/configure/plugins#virtual-plugins) exposing
-// the three rules that make SPEC prohibitions #1, #5 and R3 machine-checkable.
+// the three rules that make SPEC prohibitions #1 and #5 machine-checkable.
 export default tseslint.config(
   {
     ignores: ['**/dist/**', '**/node_modules/**', 'examples/next-app/.next/**'],
@@ -30,7 +30,7 @@ export default tseslint.config(
     },
   },
 
-  // R3 + SPEC prohibition #1 — core only: no signing surfaces, no module-global state.
+  // SPEC prohibition #1 — core only: no signing surfaces, no module-global state.
   {
     files: ['packages/sdk/src/**/*.ts'],
     plugins: { local },
@@ -40,7 +40,7 @@ export default tseslint.config(
     },
   },
 
-  // SPEC prohibition #5 / R19 — both packages: no SnF backend calls, no third-party
+  // SPEC prohibition #5 — both packages: no SnF backend calls, no third-party
   // keys, no process.env reads, no import outside the allowed surface.
   {
     files: ['packages/*/src/**/*.ts', 'packages/*/src/**/*.tsx'],
@@ -50,11 +50,11 @@ export default tseslint.config(
     },
   },
 
-  // D-04: the sdk-react adapter is the ONLY dispatch site — useSnfCheckout sends via
+  // The sdk-react adapter is the ONLY dispatch site — useSnfCheckout sends via
   // wagmi sendTransaction/writeContract when the user clicks next(). It legitimately
   // touches wagmi's WalletClient-adjacent surface, so no-signing-imports is off here;
   // its own no-auto-advance discipline is enforced by
-  // test/prohibitions/no-auto-advance.test.ts (plan 17), not by this lint rule.
+  // test/prohibitions/no-auto-advance.test.ts, not by this lint rule.
   {
     files: ['packages/sdk-react/src/**/*.ts', 'packages/sdk-react/src/**/*.tsx'],
     plugins: { local },
@@ -63,7 +63,7 @@ export default tseslint.config(
     },
   },
 
-  // 56-SPEC.md R3/R8/R9, D-08 — widgets only: the five mechanical guards keeping
+  // Widgets only: the five mechanical guards keeping
   // trading logic out of the kit. no-signing-imports is the repository's existing
   // rule (SPEC prohibition #1), switched ON here rather than rewritten — neither the
   // sdk-only ON block above nor the sdk-react OFF block reaches this package's source,
@@ -84,10 +84,10 @@ export default tseslint.config(
     },
   },
 
-  // Examples, scripts, the rule files themselves and snf-tests legitimately read
+  // Examples, scripts and the rule files themselves legitimately read
   // process.env and send transactions — none of them ship in the published package.
   {
-    files: ['examples/**', 'scripts/**', 'eslint-rules/**', 'snf-tests/**'],
+    files: ['examples/**', 'scripts/**', 'eslint-rules/**'],
     plugins: { local },
     rules: {
       'local/no-signing-imports': 'off',

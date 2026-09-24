@@ -1,7 +1,7 @@
 'use client'
 
 // A single, module-top-level side-effect import applies to this WHOLE module (not
-// per-instance) — importing it here does not, by itself, style anything (R7's
+// per-instance) — importing it here does not, by itself, style anything (this rule's
 // 2026-09-23 amendment): every rule inside `theme.css` is nested under the
 // `[data-snf-theme]` opt-in ancestor selector. Only the wrapper below that actually
 // carries the `data-snf-theme` attribute picks up the look.
@@ -14,21 +14,21 @@ import { SnfTradeCard } from '@sweepnflip/widgets'
 /**
  * examples/next-app/src/components/TwoSkinDemo.tsx
  *
- * R12's proof surface: `<SnfTradeCard.Root>` rendered TWICE on one page, fed the
+ * this rule's proof surface: `<SnfTradeCard.Root>` rendered TWICE on one page, fed the
  * SAME `collection`/`count`/`recipient` props, wearing two skins that share NOTHING:
  *
- *   1. **SnF-themed instance** — wrapped in a single `data-snf-theme` ancestor `<div>`.
- *      No `className` prop appears anywhere on this instance's parts; the theme's own
- *      `[data-snf-theme] [data-part="..."]` rules (imported once, above) do all the
- *      work.
- *   2. **Partner-skinned instance** — no `data-snf-theme` anywhere. Styled entirely by
- *      `PARTNER_SKIN_CSS` below, a small hand-authored inline stylesheet (this
- *      phase's toolchain forbids adding CSS tooling as an eleventh dependency) scoped
- *      to a distinct wrapper class, `.partner-skin`, and applied via `className`
- *      props passed directly to `Root`/`Input`/`QuoteBreakdown`/`Steps`/`Action`.
- *      `PARTNER_SKIN_CSS` shares ZERO selectors and ZERO `--snf-*` custom-property
- *      names with `theme.css` — a completely independent stylesheet, standing in for
- *      "a partner's own design system."
+ * 1. **SnF-themed instance** — wrapped in a single `data-snf-theme` ancestor `<div>`.
+ * No `className` prop appears anywhere on this instance's parts; the theme's own
+ * `[data-snf-theme] [data-part="..."]` rules (imported once, above) do all the
+ * work.
+ * 2. **Partner-skinned instance** — no `data-snf-theme` anywhere. Styled entirely by
+ * `PARTNER_SKIN_CSS` below, a small hand-authored inline stylesheet (this
+ * phase's toolchain forbids adding CSS tooling as an eleventh dependency) scoped
+ * to a distinct wrapper class, `.partner-skin`, and applied via `className`
+ * props passed directly to `Root`/`Input`/`QuoteBreakdown`/`Steps`/`Action`.
+ * `PARTNER_SKIN_CSS` shares ZERO selectors and ZERO `--snf-*` custom-property
+ * names with `theme.css` — a completely independent stylesheet, standing in for
+ * "a partner's own design system."
  *
  * Both instances share the ONE `SnfProvider`/wallet connection this page's ancestor
  * `<Providers>` already mounts (`app/providers.tsx`) — proving STYLE independence,

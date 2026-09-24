@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // examples/vanilla/src/index.mjs
 //
-// R1's no-React proof: `@sweepnflip/sdk`'s core runs on bare Node with `viem` as its
+// this rule's no-React proof: `@sweepnflip/sdk`'s core runs on bare Node with `viem` as its
 // ONLY peer — see package.json (no react, no wagmi anywhere in this example's own
 // dependency tree) and README.md for the depth-10 `pnpm list` proof. This script
 // quotes a real buy of 3 NFTs from the live Base ETH/DEMON pool, prints the
@@ -21,7 +21,7 @@ import { createSnfClient, describeError } from '@sweepnflip/sdk'
 // (collection -> poolInventory -> quoteBuy, each its own read); publicnode's mirror
 // does not. A partner may override with their own RPC via BASE_RPC_URL — the SDK
 // itself never reads process.env; this EXAMPLE does, because the publicClient is
-// always the caller's, never the SDK's own (D-04).
+// always the caller's, never the SDK's own.
 const RPC = process.env.BASE_RPC_URL ?? 'https://base-rpc.publicnode.com'
 const DEMON_COLLECTION = '0x7e50af303A0422ebec6bc198034A2430bBe0195c'
 
@@ -41,13 +41,13 @@ try {
   if (q.reconciled !== true) throw new Error('quote did not reconcile against the Router on-chain read')
 
   console.log(`Sweep n' Flip — buy 3 ${col.labels.symbol} from pool ${col.pools[0].pair}\n`)
-  console.log(`pool         bps=${q.fees.pool.bps} (${q.fees.pool.note})`)
-  console.log(`marketplace  ${q.fees.marketplace.formatted}  (value=${q.fees.marketplace.value}n)`)
-  console.log(`royalty      ${q.fees.royalty.formatted}  (value=${q.fees.royalty.value}n)`)
-  console.log(`gross        ${q.totalCost.formatted}  (value=${q.totalCost.value}n)`)
-  console.log(`deliverable  ${q.deliverable}`)
-  console.log(`bestEffort   ${q.bestEffort}`)
-  console.log(`priceImpact  ${q.priceImpact}`)
+  console.log(`pool bps=${q.fees.pool.bps} (${q.fees.pool.note})`)
+  console.log(`marketplace ${q.fees.marketplace.formatted} (value=${q.fees.marketplace.value}n)`)
+  console.log(`royalty ${q.fees.royalty.formatted} (value=${q.fees.royalty.value}n)`)
+  console.log(`gross ${q.totalCost.formatted} (value=${q.totalCost.value}n)`)
+  console.log(`deliverable ${q.deliverable}`)
+  console.log(`bestEffort ${q.bestEffort}`)
+  console.log(`priceImpact ${q.priceImpact}`)
   console.log(`reconciled: ${q.reconciled}`)
 
   // The rest of the README's Quickstart (`## Quickstart`, root README.md): building

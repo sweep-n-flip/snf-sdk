@@ -2,7 +2,7 @@ import { SNF_ERROR_CODES, type SnfErrorCode } from '@sweepnflip/sdk'
 import type { SnfWidgetMessages } from './messages.types'
 
 /**
- * D-10 / R10 — one partner-facing English default per SDK error code.
+ * One partner-facing English default per SDK error code.
  *
  * `MESSAGE_BY_CODE` is typed `satisfies Readonly<Record<SnfErrorCode, string>>` — the
  * same `as const satisfies` discipline `packages/sdk/src/errors.ts`'s own
@@ -42,10 +42,10 @@ export const DEFAULT_WIDGET_MESSAGES: Readonly<Record<SnfErrorCode, string>> = O
 ) as Readonly<Record<SnfErrorCode, string>>
 
 /**
- * D-10's whole contract: a partner may override the text shown for any code
+ * this rule's whole contract: a partner may override the text shown for any code
  * (per-code, freely translatable); the default is used otherwise. This function
  * returns ONLY the text — the `code` itself is always a separate, always-present
- * field the caller renders alongside whatever text is chosen (R10: "every error state
+ * field the caller renders alongside whatever text is chosen ("every error state
  * exposes the code to the consumer"), so an override can never mask which code
  * actually occurred.
  */

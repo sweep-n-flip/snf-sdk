@@ -9,7 +9,7 @@ export type UseSnfQuoteBuyArgs = Omit<QuoteBuyArgs, 'chainId'>
 export type UseSnfQuoteBuyOptions = SnfQueryOptions<Quote>
 export type UseSnfQuoteBuyResult = SnfQueryResult<Quote>
 
-/** Mirrors `quoteBuy`'s own runtime contract (R8): exactly one of `count`/`tokenIds`/
+/** Mirrors `quoteBuy`'s own runtime contract: exactly one of `count`/`tokenIds`/
  * `amount` is required — this hook is `enabled` only once one is actually present, so
  * a partially-filled form never fires a request the client would reject anyway. */
 function hasRequiredArgs(args: UseSnfQuoteBuyArgs | undefined): args is UseSnfQuoteBuyArgs {
@@ -18,9 +18,9 @@ function hasRequiredArgs(args: UseSnfQuoteBuyArgs | undefined): args is UseSnfQu
 }
 
 /**
- * Wraps `SnfClient.quoteBuy` (R8). `staleTime` 20 s — just under the quote's own 30 s
+ * Wraps `SnfClient.quoteBuy`. `staleTime` 20 s — just under the quote's own 30 s
  * `expiresAt` — and a 5 s `refetchInterval` so a displayed price never outlives the
- * on-chain reserves it was read against (R18), both overridable via `options`.
+ * on-chain reserves it was read against, both overridable via `options`.
  */
 export function useSnfQuoteBuy(
   args: UseSnfQuoteBuyArgs | undefined,

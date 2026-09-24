@@ -11,7 +11,7 @@ import { mergeClassNames } from './classNames'
 import type { SlotProps } from './slot.types'
 
 /**
- * `Slot` — the hand-written `asChild` primitive (D-04, D-05, R6). No headless-UI
+ * `Slot` — the hand-written `asChild` primitive. No headless-UI
  * library import anywhere in this file or this package — this IS the payoff of that
  * constraint. No browser-only API is used here (pure prop-merging), so no
  * `'use client'` directive is added: this component is a plain `cloneElement` call,
@@ -23,17 +23,17 @@ import type { SlotProps } from './slot.types'
  * "substitutes the partner's own element" means literally — there is never a wrapper
  * `<span>`/`<div>` between the kit's behaviour and the partner's markup.
  *
- * Merge order (T-56-05 — Slot must merge, never silently drop, either side's props):
- *   - `className`: `mergeClassNames(ownClassName, childClassName)` — the CHILD's
- *     value is passed SECOND, so the partner's own class (present on the element they
- *     substituted) is concatenated after the kit's and never dropped.
- *   - every other own prop except `className`/`children`: spread FIRST, then the
- *     CHILD's own matching props spread OVER them — an event handler or attribute the
- *     partner's own element explicitly sets is never silently replaced by the kit's.
- *   - `ref`: composed via `composeRefs` so both the forwarded ref and the child's own
- *     ref (if any) are called — the child's own ref is never dropped. React 19 carries
- *     `ref` as a regular member of `element.props` (the legacy separate `element.ref`
- *     field was removed), so it is read from `children.props.ref` like any other prop.
+ * Merge order (— Slot must merge, never silently drop, either side's props):
+ * - `className`: `mergeClassNames(ownClassName, childClassName)` — the CHILD's
+ * value is passed SECOND, so the partner's own class (present on the element they
+ * substituted) is concatenated after the kit's and never dropped.
+ * - every other own prop except `className`/`children`: spread FIRST, then the
+ * CHILD's own matching props spread OVER them — an event handler or attribute the
+ * partner's own element explicitly sets is never silently replaced by the kit's.
+ * - `ref`: composed via `composeRefs` so both the forwarded ref and the child's own
+ * ref (if any) are called — the child's own ref is never dropped. React 19 carries
+ * `ref` as a regular member of `element.props` (the legacy separate `element.ref`
+ * field was removed), so it is read from `children.props.ref` like any other prop.
  *
  * Implementation note: `forwardRef`'s own `PropsWithoutRef<P>` helper collapses any
  * props type that carries a blanket string index signature (as `SlotProps` does, by
@@ -96,7 +96,7 @@ function toRef(value: unknown): Ref<HTMLElement> | undefined {
 
 /** Calls every supplied ref (callback or object form) with the same node, so a
  * forwarded ref and a substituted child's own ref both observe the mounted element —
- * neither is ever silently dropped (T-56-05). */
+ * neither is ever silently dropped. */
 function composeRefs<T>(...refs: ReadonlyArray<Ref<T> | undefined>): Ref<T> {
   return (node: T | null) => {
     for (const ref of refs) {

@@ -8,9 +8,9 @@ import type { TradeCardQuoteBreakdownProps } from './TradeCard.types'
 
 /**
  * `TradeCardQuoteBreakdown` — renders the resolved `Quote`'s fee/total/price-impact
- * breakdown, or the active error, verbatim (R4, R9, R10, D-05).
+ * breakdown, or the active error, verbatim.
  *
- * R9's whole contract lives here: every `Amount` (`fees.marketplace`, `fees.royalty`,
+ * this rule's whole contract lives here: every `Amount` (`fees.marketplace`, `fees.royalty`,
  * and whichever of `totalCost`/`totalProceeds`/`netProceeds`/`buyCost`/`remainder` the
  * active side's `Quote` actually populates) is rendered via its own `.formatted`/
  * `.symbol` fields, character-identical to what the SDK returned — never through any
@@ -20,7 +20,7 @@ import type { TradeCardQuoteBreakdownProps } from './TradeCard.types'
  * directly via string interpolation, exactly `examples/next-app`'s own `QuoteSection`
  * precedent (`{quote.data.priceImpact}%`), never reformatted.
  *
- * R10's whole contract also lives in exactly one place here: when `quote.error` or
+ * this rule's whole contract also lives in exactly one place here: when `quote.error` or
  * `planQuery.error` is set, this Part renders the error's own `code` (as text AND as a
  * `data-error-code` attribute) alongside `resolveErrorMessage(code, ctx.messages)` — a
  * partner's `messages` override replaces the text, never the code.
@@ -107,7 +107,7 @@ export function TradeCardQuoteBreakdown(props: TradeCardQuoteBreakdownProps): Re
   if (props.asChild) {
     const slotProps = { ...dataAttrs, ...(mergedClassName === undefined ? {} : { className: mergedClassName }) }
     // See `PoolStatsPrice.tsx`'s header comment — same content-injection pattern, not
-    // a re-implementation of `Slot`'s own attrs/className/ref merge logic (D-05).
+    // a re-implementation of `Slot`'s own attrs/className/ref merge logic.
     const substituted = cloneElement(props.children as ReactElement, undefined, content)
     return <Slot {...slotProps}>{substituted}</Slot>
   }

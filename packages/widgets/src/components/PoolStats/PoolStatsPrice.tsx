@@ -8,9 +8,9 @@ import type { PoolStatsPartProps } from './PoolStats.types'
 
 /**
  * `PoolStatsPrice` — renders the SDK's own one-NFT quote for this collection's pool
- * (R5, R9, R10).
+ *.
  *
- * Price resolution (SPEC R5, amended 2026-09-23 — restated here at the leaf that
+ * Price resolution (amended 2026-09-23 — restated here at the leaf that
  * actually renders it, mirroring `PoolStatsRoot.tsx`'s own header comment): this Part
  * renders two SEPARATE figures, both real `Amount` values taken verbatim from
  * `priceQuote.data` via `.formatted`/`.symbol` with zero arithmetic — `legs[0]?.amount`

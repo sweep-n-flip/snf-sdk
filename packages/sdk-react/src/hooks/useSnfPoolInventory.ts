@@ -8,7 +8,7 @@ export type UseSnfPoolInventoryOptions = SnfQueryOptions<PoolInventory>
 export type UseSnfPoolInventoryResult = SnfQueryResult<PoolInventory>
 
 /**
- * Wraps `SnfClient.poolInventory` (R7) — a pool's candidate tokenIds and buyable
+ * Wraps `SnfClient.poolInventory` — a pool's candidate tokenIds and buyable
  * ceiling. `staleTime` 15 s and a 5 s `refetchInterval` (the reserve cadence this
  * plan's own truth mandates as the default — mirrors `snf-client`'s
  * `usePoolLiveData` 10 s reserve-polling pattern, tightened to 5 s per this plan's

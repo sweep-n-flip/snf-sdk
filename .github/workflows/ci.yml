@@ -1,14 +1,14 @@
-# SnF Partner SDK CI (54-SPEC.md R19/R20/R21).
+# SnF Partner SDK CI.
 #
 # `unit`: lint + typecheck + test + build + size-limit + grep-gate on every push/PR.
 # `fork`: 4-chain anvil fork matrix skeleton (Base/Arbitrum/Robinhood/Arc) — body
-#   filled in by plan 18. Deliberately a SEPARATE job that `unit` does not depend on
-#   (54-SPEC.md must_haves: "the fork-lane matrix is a separate, opt-in workflow job
-#   that unit CI does not depend on").
+# filled in later. Deliberately a SEPARATE job that `unit` does not depend on
+# (the fork-lane matrix is a separate, opt-in workflow job that unit CI does not
+# depend on).
 #
 # This workflow references no repository secret anywhere: fork lanes default to
-# public RPCs so this new repo's CI never depends on a workspace Alchemy key
-# (RESEARCH.md "Environment Availability"). OPTIONAL future opt-in: ALCHEMY_KEY as
+# public RPCs so this new repo's CI never depends on a workspace Alchemy key.
+# OPTIONAL future opt-in: ALCHEMY_KEY as
 # a repo secret, once the founder decides to share it with this repo specifically.
 name: ci
 
@@ -17,7 +17,7 @@ on:
   pull_request:
   workflow_dispatch: {}
   schedule:
-    # Weekly, keyless, read-only re-verification against live mainnet (D-12) — see
+    # Weekly, keyless, read-only re-verification against live mainnet — see
     # the `backstop` job below for why it cannot actually run from this repo alone.
     - cron: '0 6 * * 1'
 
@@ -55,13 +55,13 @@ jobs:
       - name: Build
         run: pnpm -r build
 
-      - name: Bundle size gate (R1 — 60 kB gzip ceiling)
+      - name: Bundle size gate (60 kB gzip ceiling)
         run: pnpm size
 
-      - name: Grep gate (R19 — no SnF endpoints/keys/process.env/snf-client import)
+      - name: Grep gate (no SnF endpoints/keys/process.env/private-client import)
         run: pnpm grep:gate
 
-      - name: Release gate (R21, REQ-SDK-52 — stubs, ABI inventory, secrets, bundle, version)
+      - name: Release gate (stubs, ABI inventory, secrets, bundle, version)
         run: pnpm release:gate
 
   fork:
@@ -91,7 +91,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
-      - name: Build (fork lanes exercise the real published-shaped package, R20)
+      - name: Build (fork lanes exercise the real published-shaped package)
         run: pnpm -r build
 
       # Each matrix leg's port is FIXED per chain in test/fork/chains.fork.json
@@ -100,8 +100,8 @@ jobs:
       # distinct. ANVIL_PORT below is a small case mapping over the SAME four ports,
       # set here purely so CI's own environment is an explicit, auditable witness
       # that it agrees with the JSON config — the real uniqueness guarantee is the
-      # fixed per-lane port in chains.fork.json, not this env var (the R20 backstop
-      # edge, enforced twice: once in the isolation test, once here).
+      # fixed per-lane port in chains.fork.json, not this env var (the fork-lane
+      # isolation edge, enforced twice: once in the isolation test, once here).
       - name: Resolve this matrix leg's anvil port
         id: port
         run: |
@@ -135,20 +135,19 @@ jobs:
             packages/sdk/test/fork/chains.fork.json
           retention-days: 7
 
-  # The keyless, read-only live backstop (D-12, R20) — lives in the SEPARATE
-  # `snf-tests` repo (snf-tests/sdk/backstop-quote.mjs), not this one. This job is
+  # The keyless, read-only live backstop — lives in a SEPARATE, private
+  # exploration repo, not this one. This job is
   # documentation of intent for when both repos are checked out together in one CI
   # environment (e.g. a workspace-level pipeline, or a future consolidation) — it is
-  # NOT runnable as-is from a snf-sdk-only checkout, since `snf-tests` is not a
-  # submodule of this repo. Recorded here per Task 3's action text; see
-  # snf-54-18-SUMMARY.md for the full account of why this job cannot run today.
+  # NOT runnable as-is from an snf-sdk-only checkout, since that other repo is not a
+  # submodule of this repo.
   backstop:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
     runs-on: ubuntu-latest
     steps:
       - name: Not runnable from this repo alone
         run: |
-          echo "snf-tests/sdk/backstop-quote.mjs lives in the separate sweep-n-flip/snf-tests repo."
+          echo "The backstop script lives in a separate, private exploration repo."
           echo "This job is intent-documentation only until both repos are checked out together"
-          echo "(e.g. a workspace-level CI pipeline). See snf-54-18-SUMMARY.md."
+          echo "(e.g. a workspace-level CI pipeline)."
           exit 0

@@ -17,7 +17,7 @@ import type { ExecutionPlan, Quote, SnfClient, SnfError } from '@sweepnflip/sdk'
  * examples/next-app/src/components/SwapPanel.tsx
  *
  * One client component, four sections, discovery -> inventory -> quote -> checkout
- * (D-11). Every read goes through a `useSnf*` hook; the ONLY wallet dispatch in this
+ *. Every read goes through a `useSnf*` hook; the ONLY wallet dispatch in this
  * whole file happens inside `useSnfCheckout` itself, from the explicit click on
  * `CheckoutFlow`'s single button — never from a `useEffect` here (INV-17). This file
  * has zero `useEffect` calls; react-query's own hooks already refetch declaratively,

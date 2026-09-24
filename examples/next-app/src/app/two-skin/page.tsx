@@ -4,7 +4,7 @@ import { TwoSkinDemo } from '../../components/TwoSkinDemo'
 export const metadata: Metadata = {
   title: 'Two skins, one component — @sweepnflip/widgets example',
   description:
-    'R12’s proof surface: SnfTradeCard rendered twice on one page, once wrapped in the SnF ' +
+    'Proof surface: SnfTradeCard rendered twice on one page, once wrapped in the SnF ' +
     'theme, once styled by an independent, hand-authored "partner" stylesheet, both driven by ' +
     'identical props.',
 }

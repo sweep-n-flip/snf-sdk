@@ -2,7 +2,7 @@
 // scripts/copyTheme.mjs
 //
 // Places the optional SnF theme (`src/theme.css` — plain CSS custom properties plus
-// the `data-part`-scoped rules that consume them, D-06/R7) into `dist/theme.css` as
+// the `data-part`-scoped rules that consume them) into `dist/theme.css` as
 // part of this package's build. tsup does not process raw CSS on its own, and
 // `theme.css` needs no transpilation (plain, static CSS with custom properties, which
 // every target browser this package supports already understands natively), so this

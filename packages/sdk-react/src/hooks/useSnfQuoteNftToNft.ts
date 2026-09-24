@@ -9,7 +9,7 @@ export type UseSnfQuoteNftToNftArgs = Omit<QuoteNftToNftArgs, 'chainId'>
 export type UseSnfQuoteNftToNftOptions = SnfQueryOptions<Quote>
 export type UseSnfQuoteNftToNftResult = SnfQueryResult<Quote>
 
-/** `quoteNftToNft`'s args (R9) have no optional field to gate on the way buy/sell do
+/** `quoteNftToNft`'s args have no optional field to gate on the way buy/sell do
  * — `sell.tokenIds`/`buy.count` are always required, so this hook is `enabled` only
  * once BOTH sides of the trade are actually filled in. */
 function hasRequiredArgs(args: UseSnfQuoteNftToNftArgs | undefined): args is UseSnfQuoteNftToNftArgs {
@@ -23,9 +23,9 @@ function hasRequiredArgs(args: UseSnfQuoteNftToNftArgs | undefined): args is Use
 }
 
 /**
- * Wraps `SnfClient.quoteNftToNft` (R9) — the two-leg sell-one/buy-N collection swap.
+ * Wraps `SnfClient.quoteNftToNft` — the two-leg sell-one/buy-N collection swap.
  * Same 20 s `staleTime` / 5 s `refetchInterval` cadence as the other quote hooks
- * (R18), both overridable via `options`.
+ *, both overridable via `options`.
  */
 export function useSnfQuoteNftToNft(
   args: UseSnfQuoteNftToNftArgs | undefined,

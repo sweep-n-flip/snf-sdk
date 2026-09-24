@@ -1,5 +1,5 @@
 /**
- * @sweepnflip/widgets/theme.css — the optional SnF look (D-06, R7).
+ * @sweepnflip/widgets/theme.css — the optional SnF look.
  *
  * Nothing in `src/index.ts` imports this file, and nothing in any component file
  * references it either — the default entry point (`dist/index.js`/`dist/index.cjs`)
@@ -11,7 +11,7 @@
  * `toDataAttrs` (see `src/internal/dataState.ts`) — this file adds no attribute, no
  * className hook, and requires no change to any component file.
  *
- * **Opt-in scoping (SPEC R7, amended 2026-09-23).** Importing this file alone styles
+ * **Opt-in scoping (amended 2026-09-23).** Importing this file alone styles
  * NOTHING — every component rule below is nested under the single ancestor selector
  * `[data-snf-theme]`. A partner must ALSO put a `data-snf-theme` attribute on some
  * ancestor element for any rule to match: a wrapper `<div data-snf-theme>` around one

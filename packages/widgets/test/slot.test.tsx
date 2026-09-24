@@ -5,13 +5,13 @@ import { Slot } from '../src/internal/slot'
 import { toDataAttrs } from '../src/internal/dataState'
 
 /**
- * Primitive-level proof of R6's three independent styling mechanisms (D-05):
- *   (a) a bare render carries no `style` attribute and no color/size/spacing/font-
- *       shaped attribute — nothing visual is baked in;
- *   (b) a merged `className` where the caller's own class survives verbatim alongside
- *       the kit's own class;
- *   (c) `asChild` substitution via `Slot`, proven to clone rather than wrap (exactly
- *       one DOM node, the partner's own element type, carrying the merged className).
+ * Primitive-level proof of this rule's three independent styling mechanisms:
+ * (a) a bare render carries no `style` attribute and no color/size/spacing/font-
+ * shaped attribute — nothing visual is baked in;
+ * (b) a merged `className` where the caller's own class survives verbatim alongside
+ * the kit's own class;
+ * (c) `asChild` substitution via `Slot`, proven to clone rather than wrap (exactly
+ * one DOM node, the partner's own element type, carrying the merged className).
  * A fourth test proves `toDataAttrs` never emits a color/size/spacing/font-shaped
  * value. Uses a tiny local test component, not a real widgets part (none exist yet).
  */
