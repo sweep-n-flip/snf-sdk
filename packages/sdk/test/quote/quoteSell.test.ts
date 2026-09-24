@@ -302,4 +302,36 @@ describe('quoteSell (Task 3, R8)', () => {
     })
     expect(quote.totalProceeds?.value).toBe(237_988_677_509_668n)
   })
+
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+    const poolLeg1 = poolLegSell(1n)
+    const marketplace1 = (poolLeg1 * MARKETPLACE_FEE_E18) / 10n ** 18n
+    const royalty1 = (poolLeg1 * (5n * 10n ** 16n)) / 10n ** 18n
+    const net1 = poolLeg1 - marketplace1 - royalty1
+    const fixtureOverrides = {
+      poolLeg: poolLeg1,
+      routerTotal: net1,
+      perId: [{ tokenId: '245830', receiver: RECEIVER, amount: royalty1 }],
+    }
+    const { ctx: ctxMatching } = sellEnv(fixtureOverrides)
+    const quoteMatching = await quoteSell(ctxMatching, { chainId: 8453, collection: COLLECTION, tokenIds: ['245830'] })
+    const { ctx: ctxOmitted } = sellEnv(fixtureOverrides)
+    const quoteOmitted = await quoteSell(ctxOmitted, { collection: COLLECTION, tokenIds: ['245830'] })
+    // expiresAt is wall-clock-derived (Date.now() + QUOTE_TTL_MS) so it is compared
+    // separately rather than via a blanket toEqual, which would be flaky across a
+    // millisecond boundary between the two calls.
+    const { expiresAt: expiresAtMatching, ...restMatching } = quoteMatching
+    const { expiresAt: expiresAtOmitted, ...restOmitted } = quoteOmitted
+    expect(restMatching).toEqual(restOmitted)
+    expect(typeof expiresAtMatching).toBe('string')
+    expect(typeof expiresAtOmitted).toBe('string')
+  })
+
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+    const { ctx, multicall } = sellEnv()
+    await expect(
+      quoteSell(ctx, { chainId: 1, collection: COLLECTION, tokenIds: ['245830'] }),
+    ).rejects.toMatchObject({ code: 'WRONG_CHAIN' })
+    expect(multicall).not.toHaveBeenCalled()
+  })
 })

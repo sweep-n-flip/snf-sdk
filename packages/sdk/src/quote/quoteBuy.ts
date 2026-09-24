@@ -1,7 +1,7 @@
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
 import { resolveCollection } from '../collection/resolveCollection'
-import { assertParam, SnfError } from '../errors'
+import { assertChainMatch, assertParam, SnfError } from '../errors'
 import { bpsFromRatio, toQuoteAmount } from '../format'
 import { availableCountFromReserve, normalizeTokenIds } from '../inventory/availability'
 import { poolInventory } from '../inventory/poolInventory'
@@ -154,6 +154,7 @@ async function quoteBuyFungible(
 }
 
 export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promise<Quote> {
+  assertChainMatch(args.chainId, ctx.chain.chainId)
   validateArgs(args)
 
   const collection = await resolveCollection(ctx, args.collection)

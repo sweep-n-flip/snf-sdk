@@ -5,7 +5,7 @@ import { FACTORY_ABI } from '../abis/UniswapV2Factory'
 import { PAIR_ABI } from '../abis/UniswapV2Pair'
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
-import { SnfError, assertParam } from '../errors'
+import { assertChainMatch, SnfError, assertParam } from '../errors'
 import { toAmount, toQuoteAmount } from '../format'
 import { getAmountsInChain, getAmountsOutChain } from '../math/quoteMath'
 import { crossPoolPriceImpact, singlePoolPriceImpact } from './priceImpact'
@@ -211,6 +211,7 @@ function chainedNominal(amountIn: bigint, hops: readonly HopContext[]): bigint {
 }
 
 export async function quoteSwap(ctx: SnfClientContext, args: QuoteSwapArgs): Promise<Quote> {
+  assertChainMatch(args.chainId, ctx.chain.chainId)
   const quoteToken = ctx.chain.quoteToken
   validateArgs(args, quoteToken)
 

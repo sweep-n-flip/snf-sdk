@@ -247,4 +247,27 @@ describe('quoteBuy (Task 2, R8)', () => {
       quoteBuy(ctx, { chainId: 8453, collection: COLLECTION, tokenIds: ['1'], count: 1 }),
     ).rejects.toMatchObject({ code: 'INVALID_PARAMS' })
   })
+
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+    const { ctx: ctxMatching } = demonEnv()
+    const quoteMatching = await quoteBuy(ctxMatching, { chainId: 8453, collection: COLLECTION, tokenIds: ['245830'] })
+    const { ctx: ctxOmitted } = demonEnv()
+    const quoteOmitted = await quoteBuy(ctxOmitted, { collection: COLLECTION, tokenIds: ['245830'] })
+    // expiresAt is wall-clock-derived (Date.now() + QUOTE_TTL_MS) so it is compared
+    // separately rather than via a blanket toEqual, which would be flaky across a
+    // millisecond boundary between the two calls.
+    const { expiresAt: expiresAtMatching, ...restMatching } = quoteMatching
+    const { expiresAt: expiresAtOmitted, ...restOmitted } = quoteOmitted
+    expect(restMatching).toEqual(restOmitted)
+    expect(typeof expiresAtMatching).toBe('string')
+    expect(typeof expiresAtOmitted).toBe('string')
+  })
+
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+    const { ctx, multicall } = demonEnv()
+    await expect(
+      quoteBuy(ctx, { chainId: 1, collection: COLLECTION, tokenIds: ['245830'] }),
+    ).rejects.toMatchObject({ code: 'WRONG_CHAIN' })
+    expect(multicall).not.toHaveBeenCalled()
+  })
 })

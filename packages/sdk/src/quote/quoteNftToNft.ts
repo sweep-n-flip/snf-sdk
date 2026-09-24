@@ -1,5 +1,5 @@
 import { resolveCollection } from '../collection/resolveCollection'
-import { SnfError, assertParam } from '../errors'
+import { assertChainMatch, SnfError, assertParam } from '../errors'
 import { bpsFromRatio, toAmount, toQuoteAmount } from '../format'
 import { availableCountFromReserve, normalizeTokenIds } from '../inventory/availability'
 import { poolInventory } from '../inventory/poolInventory'
@@ -139,6 +139,7 @@ async function resolveBuyLeg(
 }
 
 export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftArgs): Promise<Quote> {
+  assertChainMatch(args.chainId, ctx.chain.chainId)
   validateArgs(args)
 
   const [sellCollection, buyCollection] = await Promise.all([

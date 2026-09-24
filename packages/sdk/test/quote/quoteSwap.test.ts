@@ -188,4 +188,30 @@ describe('quoteSwap (Task 3, R10)', () => {
     expect(quote.amountOut?.decimals).toBe(6)
     expect(quote.amountOut?.symbol).toBe('USDX')
   })
+
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+    const hops = [{ from: TOKEN_A, to: TOKEN_B, pair: PAIR_AB, reserveFrom: 1_000n * ONE_E18, reserveTo: 1_000n * ONE_E18 }]
+    const { ctx: ctxMatching } = buildSwapEnv({ hops })
+    const quoteMatching = await quoteSwap(ctxMatching, { chainId: 8453, tokenIn: TOKEN_A, tokenOut: TOKEN_B, amountIn: 10n * ONE_E18 })
+    const { ctx: ctxOmitted } = buildSwapEnv({ hops })
+    const quoteOmitted = await quoteSwap(ctxOmitted, { tokenIn: TOKEN_A, tokenOut: TOKEN_B, amountIn: 10n * ONE_E18 })
+    // expiresAt is wall-clock-derived (Date.now() + QUOTE_TTL_MS) so it is compared
+    // separately rather than via a blanket toEqual, which would be flaky across a
+    // millisecond boundary between the two calls.
+    const { expiresAt: expiresAtMatching, ...restMatching } = quoteMatching
+    const { expiresAt: expiresAtOmitted, ...restOmitted } = quoteOmitted
+    expect(restMatching).toEqual(restOmitted)
+    expect(typeof expiresAtMatching).toBe('string')
+    expect(typeof expiresAtOmitted).toBe('string')
+  })
+
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+    const { ctx, multicall } = buildSwapEnv({
+      hops: [{ from: TOKEN_A, to: TOKEN_B, pair: PAIR_AB, reserveFrom: 1_000n * ONE_E18, reserveTo: 1_000n * ONE_E18 }],
+    })
+    await expect(
+      quoteSwap(ctx, { chainId: 1, tokenIn: TOKEN_A, tokenOut: TOKEN_B, amountIn: 10n * ONE_E18 }),
+    ).rejects.toMatchObject({ code: 'WRONG_CHAIN' })
+    expect(multicall).not.toHaveBeenCalled()
+  })
 })

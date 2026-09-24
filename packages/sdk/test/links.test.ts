@@ -67,6 +67,7 @@ describe('src/index.ts — the wave-5 public barrel surface (D-01, R21)', () => 
       'SnfError',
       'abis',
       'addressLink',
+      'assertChainMatch',
       'assertExactNativeMultiple',
       'assertParam',
       'createSnfClient',

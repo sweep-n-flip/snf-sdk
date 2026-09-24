@@ -43,6 +43,7 @@ const CORE_EXPORTS = [
   'SnfError',
   'abis',
   'addressLink',
+  'assertChainMatch',
   'assertExactNativeMultiple',
   'assertParam',
   'createSnfClient',
