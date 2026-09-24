@@ -1,4 +1,5 @@
-import type { PublicClient } from 'viem'
+import { createPublicClient, http, type PublicClient } from 'viem'
+import { abstract, base } from 'viem/chains'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getChain, SNF_CHAINS } from '../src/chains/registry'
@@ -226,5 +227,27 @@ describe('createSnfClient — R3 acceptance: two clients, two chains, one page, 
 
     expect(callsByUrl.get(baseUrl) ?? 0).toBe(1)
     expect(callsByUrl.get(arbitrumUrl) ?? 0).toBe(0) // R3's literal acceptance criterion
+  })
+})
+
+describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-102-08, R13)', () => {
+  // Every case here is `fakePublicClient()`'s opposite: a REAL `createPublicClient`
+  // result, never a hand-rolled stand-in. `fakePublicClient()` above satisfies
+  // `SnfClientConfig['publicClient']` by construction (it IS the declared type,
+  // cast), so it can never exercise viem's own structural-typing variance — only a
+  // real client, built for a real chain with real `formatters`, can. Neither test
+  // below ever calls `http()`'s transport: `createPublicClient` builds a lazy
+  // object, and `createSnfClient`'s own construction-time validation only checks
+  // that `readContract`/`multicall` exist as functions (they do, on any real
+  // client) — no network I/O happens in this describe block.
+
+  it('accepts a real PublicClient built for Base — OP-Stack formatters add a "deposit" transaction variant to getBlock() that a bare, un-parameterized PublicClient type does not declare (TS2719 before this plan; see client.types.ts SnfPublicClient)', () => {
+    const publicClient = createPublicClient({ chain: base, transport: http('https://example.invalid') })
+    expect(() => createSnfClient(config({ publicClient }))).not.toThrow()
+  })
+
+  it('accepts a real PublicClient built for Abstract — zkSync Era formatters, a structurally different formatter family than Base\'s OP-Stack ones, so this proves the fix is not accidentally OP-Stack-specific', () => {
+    const publicClient = createPublicClient({ chain: abstract, transport: http('https://example.invalid') })
+    expect(() => createSnfClient(config({ publicClient }))).not.toThrow()
   })
 })
