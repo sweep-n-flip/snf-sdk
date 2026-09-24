@@ -2,7 +2,7 @@ import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
 import { resolveCollection } from '../collection/resolveCollection'
 import { assertChainMatch, assertParam, SnfError } from '../errors'
-import { bpsFromRatio, toQuoteAmount } from '../format'
+import { bpsFromRatio, toPoolAmount } from '../format'
 import { normalizeTokenIds } from '../inventory/availability'
 import { getAmountOut, ONE_E18 } from '../math/quoteMath'
 import { reconcileNet } from '../math/reconcile'
@@ -117,13 +117,13 @@ async function quoteSellFungible(
   const poolBps = 10_000 - ctx.chain.poolNetFee
   const fees: FeeBreakdown = {
     pool: { bps: poolBps, note: 'included in curve' },
-    marketplace: { ...toQuoteAmount(chainId, 0n), bps: 0 },
-    royalty: { ...toQuoteAmount(chainId, 0n), bps: 0, capApplied: false },
+    marketplace: { ...toPoolAmount(pool.baseToken, 0n), bps: 0 },
+    royalty: { ...toPoolAmount(pool.baseToken, 0n), bps: 0, capApplied: false },
   }
   const leg: QuoteLeg = {
     pair: pool.pair,
     count: 0,
-    amount: toQuoteAmount(chainId, routerProceeds),
+    amount: toPoolAmount(pool.baseToken, routerProceeds),
     path,
     feeBps: poolBps,
     kind: 'wnft',
@@ -138,7 +138,7 @@ async function quoteSellFungible(
     collection: collection.address,
     legs: [leg],
     fees,
-    totalProceeds: toQuoteAmount(chainId, routerProceeds),
+    totalProceeds: toPoolAmount(pool.baseToken, routerProceeds),
     priceImpact: sellPriceImpact(pool.reserves, routerProceeds, amount),
     deliverable: 0,
     bestEffort: false,
@@ -207,8 +207,8 @@ export async function quoteSell(ctx: SnfClientContext, args: QuoteSellArgs): Pro
 
   const fees: FeeBreakdown = {
     pool: { bps: poolBps, note: 'included in curve' },
-    marketplace: { ...toQuoteAmount(chainId, marketplace), bps: marketplaceBps },
-    royalty: { ...toQuoteAmount(chainId, royaltyCharged), bps: royaltyBps, capApplied: false },
+    marketplace: { ...toPoolAmount(pool.baseToken, marketplace), bps: marketplaceBps },
+    royalty: { ...toPoolAmount(pool.baseToken, royaltyCharged), bps: royaltyBps, capApplied: false },
   }
 
   const baseAddress = pool.baseToken.address ?? ctx.chain.quoteToken
@@ -219,7 +219,7 @@ export async function quoteSell(ctx: SnfClientContext, args: QuoteSellArgs): Pro
     // The Router's getAmountsOutCollection result is already NET (fee and
     // royalty deducted on-chain) — assigned straight through, no further
     // subtraction (see the capitalized warning on `totalProceeds` below).
-    amount: toQuoteAmount(chainId, ctxData.routerTotal),
+    amount: toPoolAmount(pool.baseToken, ctxData.routerTotal),
     path,
     feeBps: poolBps,
     kind: pool.baseToken.isNative ? 'native' : 'erc20',
@@ -251,7 +251,7 @@ export async function quoteSell(ctx: SnfClientContext, args: QuoteSellArgs): Pro
     fees,
     // NEVER SUBTRACT AGAIN — see the leg's `amount` comment above; this is the
     // same Router-net value, never re-derived.
-    totalProceeds: toQuoteAmount(chainId, ctxData.routerTotal),
+    totalProceeds: toPoolAmount(pool.baseToken, ctxData.routerTotal),
     priceImpact: sellPriceImpact(ctxData.reserves, ctxData.poolLeg, wnftUnitsFromCount(deliverable)),
     deliverable,
     bestEffort: false,

@@ -1,6 +1,6 @@
 import { getChain } from './chains/registry'
 import { getQuoteDecimals } from './chains/units'
-import type { Amount } from './types/amount.types'
+import type { Amount, TokenRef } from './types/amount.types'
 
 /**
  * this rule's two-field money — the only place in this package that turns a
@@ -112,6 +112,18 @@ export function toAmount(value: bigint, decimals: number, symbol: string): Amoun
 export function toQuoteAmount(chainId: number, value: bigint): Amount {
   const chain = getChain(chainId)
   return toAmount(value, getQuoteDecimals(chainId), chain.nativeSymbol)
+}
+
+/**
+ * An amount denominated in one specific pool's base token. Every quote money field
+ * (totals, fees, leg amounts) must go through this, not `toQuoteAmount`: on an
+ * ERC-20-base pool the chain's native symbol and quote decimals are simply wrong.
+ * For a native-base pool `resolveCollection` already fills `baseToken` with the
+ * chain's native symbol and `getQuoteDecimals(chainId)`, so this is identical to
+ * `toQuoteAmount` there — including Arc's 6-decimal pool axis.
+ */
+export function toPoolAmount(baseToken: Pick<TokenRef, 'symbol' | 'decimals'>, value: bigint): Amount {
+  return toAmount(value, baseToken.decimals, baseToken.symbol)
 }
 
 /** The EVM axis (`tx.value`, `eth_getBalance`) — always 18 decimals + the chain's

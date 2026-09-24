@@ -67,7 +67,7 @@ function encodeDynamic(abi: Abi, functionName: string, args: readonly unknown[])
 
 export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Promise<ExecutionPlan> {
   const now = Math.floor(Date.now() / 1000)
-  const validated = validateBuildArgs(args, now)
+  const validated = validateBuildArgs(args, now, ctx.config.defaults)
   assertParam(args.quote.side === 'nft-to-nft', 'buildNftToNft requires an nft-to-nft Quote', {
     field: 'quote.side',
   })

@@ -63,7 +63,7 @@ export function selectFungibleEntryPoint(args: {
 
 export async function buildSwap(ctx: SnfClientContext, args: BuildArgs): Promise<ExecutionPlan> {
   const now = Math.floor(Date.now() / 1000)
-  const validated = validateBuildArgs(args, now)
+  const validated = validateBuildArgs(args, now, ctx.config.defaults)
   assertParam(args.quote.side === 'swap', 'buildSwap requires a swap Quote', { field: 'quote.side' })
   const leg = args.quote.legs[0]
   const path = leg?.path ?? []

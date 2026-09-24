@@ -30,9 +30,13 @@ try {
   const snf = createSnfClient({ chainId: 8453, publicClient })
 
   const col = await snf.collection(DEMON_COLLECTION)
-  if (col.pools.length === 0) throw new Error('DEMON collection currently has no pool on Base')
+  // Read inventory from the pool quoteBuy will price: with no payToken that is the
+  // first native-base pool, which is not necessarily pools[0] (pools are ranked by
+  // liquidity, and an ERC-20-base pool can rank first).
+  const pool = col.pools.find((p) => p.isNative)
+  if (!pool) throw new Error('no native-base pool for this collection')
 
-  const inv = await snf.poolInventory(col.pools[0].pair)
+  const inv = await snf.poolInventory(pool.pair)
   if (inv.tokenIds.length < 3) {
     throw new Error(`pool only has ${inv.tokenIds.length} candidate tokenIds right now, need 3`)
   }
@@ -40,7 +44,7 @@ try {
   const q = await snf.quoteBuy({ collection: col.address, tokenIds: inv.tokenIds.slice(0, 3) })
   if (q.reconciled !== true) throw new Error('quote did not reconcile against the Router on-chain read')
 
-  console.log(`Sweep n' Flip — buy 3 ${col.labels.symbol} from pool ${col.pools[0].pair}\n`)
+  console.log(`Sweep n' Flip — buy 3 ${col.labels.symbol} from pool ${pool.pair}\n`)
   console.log(`pool bps=${q.fees.pool.bps} (${q.fees.pool.note})`)
   console.log(`marketplace ${q.fees.marketplace.formatted} (value=${q.fees.marketplace.value}n)`)
   console.log(`royalty ${q.fees.royalty.formatted} (value=${q.fees.royalty.value}n)`)

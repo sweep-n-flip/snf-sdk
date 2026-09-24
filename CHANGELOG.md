@@ -10,13 +10,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Both `@sweepnflip/sdk` and `@sweepnflip/sdk-react` stay on `0.x` until a real,
 small-value purchase has been verified end-to-end against the Base ETH/DEMON pool.
 While on `0.x`, the public API may still change between minor versions — pin an exact
-version if you need stability. `1.0.0` marks the first `npm publish`. From `1.0.0`
+version if you need stability. `0.1.0` was the first `npm publish`. From `1.0.0`
 onward, breaking changes only ship in a major version, with a documented overlap of at
 least 6 months for any deprecated surface.
 
 ## [Unreleased]
 
-Nothing since `0.1.0`.
+Nothing since `0.1.1`.
+
+## [0.1.1] — 2026-09-24
+
+`@sweepnflip/sdk` only; `@sweepnflip/sdk-react` is unchanged and stays `0.1.0`.
+
+### Fixed
+
+- **Quotes on an ERC-20-base pool are denominated in that token.** Every money field
+  of `quoteBuy`, `quoteSell` and `quoteNftToNft` (totals, `fees.marketplace`,
+  `fees.royalty`, leg amounts) used the chain's native symbol and decimals. On a
+  USDC-base pool the total read as ETH with 18 decimals. `value` was always correct;
+  `formatted`, `symbol` and `decimals` now come from the pool's `baseToken`.
+- **`config.defaults` is applied.** `slippageBps` and `deadlineSeconds` set on
+  `createSnfClient` were validated but never used; every `build*` call fell back to
+  100 bps and 1200 s. Precedence is now: the call's own argument, then
+  `config.defaults`, then the SDK constant. The hard caps still apply to all three.
+- **Inventory is read from the pool the quote prices.** The README quickstart, both
+  examples and the widgets read `pools[0]`, while `quoteBuy` without `payToken` prices
+  the first native-base pool. When an ERC-20-base pool ranked first, the tokenIds
+  shown came from a different pool than the price.
+- **Approval and swap labels match the step.** An ERC-20 spending allowance was
+  labelled "Approve collection" and a fungible swap "Confirm sale". They now read
+  "Approve token spending" and "Confirm swap".
+- **`SNF_ERROR_RETRYABLE` is exported as a value.** It was re-exported only as a type,
+  so it could not be read at runtime.
 
 ## [0.1.0] — 2026-09-21
 

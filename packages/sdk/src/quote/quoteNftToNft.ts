@@ -1,6 +1,6 @@
 import { resolveCollection } from '../collection/resolveCollection'
 import { assertChainMatch, SnfError, assertParam } from '../errors'
-import { bpsFromRatio, toAmount, toQuoteAmount } from '../format'
+import { bpsFromRatio, toAmount, toPoolAmount } from '../format'
 import { availableCountFromReserve, normalizeTokenIds } from '../inventory/availability'
 import { poolInventory } from '../inventory/poolInventory'
 import { getAmountOut, ONE_E18 } from '../math/quoteMath'
@@ -13,7 +13,7 @@ import { loadQuoteContext } from './quoteContext'
 import type { CollectionInfo, PoolRef } from '../types/collection.types'
 import type { PoolRef as RoutingPoolRef } from '../routing/routing.types'
 import type { SnfClientContext } from '../types/client.types'
-import type { Amount } from '../types/amount.types'
+import type { Amount, TokenRef } from '../types/amount.types'
 import type { FeeBreakdown, Quote, QuoteLeg, QuoteNftToNftArgs } from '../types/quote.types'
 
 /**
@@ -107,11 +107,11 @@ function royaltyCharged(
   return raw - unpayable
 }
 
-function legFees(chainId: number, poolBps: number, marketplace: bigint, royalty: bigint, poolLeg: bigint): FeeBreakdown {
+function legFees(baseToken: TokenRef, poolBps: number, marketplace: bigint, royalty: bigint, poolLeg: bigint): FeeBreakdown {
   return {
     pool: { bps: poolBps, note: 'included in curve' },
-    marketplace: { ...toQuoteAmount(chainId, marketplace), bps: marketplace > 0n ? bpsFromRatio(marketplace, poolLeg) : 0 },
-    royalty: { ...toQuoteAmount(chainId, royalty), bps: royalty > 0n ? bpsFromRatio(royalty, poolLeg) : 0, capApplied: false },
+    marketplace: { ...toPoolAmount(baseToken, marketplace), bps: marketplace > 0n ? bpsFromRatio(marketplace, poolLeg) : 0 },
+    royalty: { ...toPoolAmount(baseToken, royalty), bps: royalty > 0n ? bpsFromRatio(royalty, poolLeg) : 0, capApplied: false },
   }
 }
 
@@ -227,7 +227,7 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
     }
     remainderAmount = toAmount(remainderWnftUnits, 18, buyCollection.labels.symbol)
   } else {
-    remainderAmount = toQuoteAmount(chainId, remainderBaseValue)
+    remainderAmount = toPoolAmount(sellPool.baseToken, remainderBaseValue)
   }
 
   // ── priceImpact — spot-vs-actual across both pools (Task 1), never a curve quote.
@@ -252,12 +252,12 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
   const sellLeg: QuoteLeg = {
     pair: sellPool.pair,
     count: sellTokenIds.length,
-    amount: toQuoteAmount(chainId, netProceedsValue),
+    amount: toPoolAmount(sellPool.baseToken, netProceedsValue),
     path: buildNftRoutePath({ collection: sellCollection.address, baseToken: sellBaseAddress, side: 'sell' }),
     feeBps: poolBps,
     kind: sellPool.baseToken.isNative ? 'native' : 'erc20',
     side: 'sell',
-    fees: legFees(chainId, poolBps, sellMarketplace, sellRoyalty, sellCtx.poolLeg),
+    fees: legFees(sellPool.baseToken, poolBps, sellMarketplace, sellRoyalty, sellCtx.poolLeg),
     collection: sellCollection.address,
     wrapper: sellCollection.wrapper,
     tokenIds: sellTokenIds,
@@ -265,12 +265,12 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
   const buyLeg: QuoteLeg = {
     pair: buyPool.pair,
     count: deliverable,
-    amount: toQuoteAmount(chainId, buyCostValue),
+    amount: toPoolAmount(sellPool.baseToken, buyCostValue),
     path: buildNftRoutePath({ collection: buyCollection.address, baseToken: buyBaseAddress, side: 'buy' }),
     feeBps: poolBps,
     kind: buyPool.baseToken.isNative ? 'native' : 'erc20',
     side: 'buy',
-    fees: legFees(chainId, poolBps, buyMarketplace, buyRoyalty, buyCtx.poolLeg),
+    fees: legFees(buyPool.baseToken, poolBps, buyMarketplace, buyRoyalty, buyCtx.poolLeg),
     collection: buyCollection.address,
     wrapper: buyCollection.wrapper,
     tokenIds: buyTokenIds,
@@ -282,11 +282,11 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
   const fees: FeeBreakdown = {
     pool: { bps: poolBps, note: 'included in curve (both legs)' },
     marketplace: {
-      ...toQuoteAmount(chainId, totalMarketplace),
+      ...toPoolAmount(sellPool.baseToken, totalMarketplace),
       bps: totalMarketplace > 0n ? bpsFromRatio(totalMarketplace, totalPoolLeg) : 0,
     },
     royalty: {
-      ...toQuoteAmount(chainId, totalRoyalty),
+      ...toPoolAmount(sellPool.baseToken, totalRoyalty),
       bps: totalRoyalty > 0n ? bpsFromRatio(totalRoyalty, totalPoolLeg) : 0,
       capApplied: false,
     },
@@ -309,8 +309,8 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
     chainId,
     legs: [sellLeg, buyLeg],
     fees,
-    netProceeds: toQuoteAmount(chainId, netProceedsValue),
-    buyCost: toQuoteAmount(chainId, buyCostValue),
+    netProceeds: toPoolAmount(sellPool.baseToken, netProceedsValue),
+    buyCost: toPoolAmount(sellPool.baseToken, buyCostValue),
     remainder: remainderAmount,
     remainderMode: args.remainder,
     priceImpact,

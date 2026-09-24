@@ -17,13 +17,16 @@
  * `SDK_VERSION` must stay in sync with `package.json#version` — a dedicated test
  * asserts that.
  */
-export const SDK_VERSION = '0.1.0'
+export const SDK_VERSION = '0.1.1'
 
 export { createSnfClient } from './client'
 export * from './chains'
 export { describeError } from './describeError'
 export * from './errors'
 export type * from './errors.types'
+// A runtime value, so it cannot ride the `export type *` above: partners read it to
+// decide whether an error code is worth retrying.
+export { SNF_ERROR_RETRYABLE } from './errors.types'
 export { addressLink, tokenLink, txLink } from './links'
 export { formatAmount, toAmount } from './format'
 export type * from './types'

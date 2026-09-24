@@ -64,6 +64,7 @@ describe('src/index.ts — the public barrel surface', () => {
       'SNF_CHAINS',
       'SNF_CHAIN_IDS',
       'SNF_ERROR_CODES',
+      'SNF_ERROR_RETRYABLE',
       'SnfError',
       'abis',
       'addressLink',
@@ -100,5 +101,13 @@ describe('src/index.ts — the public barrel surface', () => {
   it('abis is a namespace exposing all nine ABI consts', async () => {
     const { abis } = await import('../src/index')
     expect(Object.keys(abis)).toHaveLength(9)
+  })
+})
+
+describe('SNF_ERROR_RETRYABLE is a runtime export', () => {
+  it('is importable as a value and covers every error code', async () => {
+    const { SNF_ERROR_RETRYABLE, SNF_ERROR_CODES } = await import('../src/index')
+    expect(typeof SNF_ERROR_RETRYABLE).toBe('object')
+    for (const code of SNF_ERROR_CODES) expect(typeof SNF_ERROR_RETRYABLE[code]).toBe('boolean')
   })
 })

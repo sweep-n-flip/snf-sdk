@@ -133,3 +133,30 @@ describe('validateBuildArgs — deadline (boundary)', () => {
     expectInvalidParams(() => validateBuildArgs(buildArgs({ deadline: NOW }), NOW))
   })
 })
+
+describe('validateBuildArgs — config.defaults', () => {
+  it('applies the client defaults when the call omits slippageBps and deadline', () => {
+    const result = validateBuildArgs(buildArgs({}), NOW, { slippageBps: 250, deadlineSeconds: 600 })
+    expect(result.slippageBps).toBe(250)
+    expect(result.deadline).toBe(BigInt(NOW + 600))
+  })
+
+  it('lets a per-call argument win over the client defaults', () => {
+    const result = validateBuildArgs(buildArgs({ slippageBps: 50, deadline: NOW + 90 }), NOW, {
+      slippageBps: 250,
+      deadlineSeconds: 600,
+    })
+    expect(result.slippageBps).toBe(50)
+    expect(result.deadline).toBe(BigInt(NOW + 90))
+  })
+
+  it('falls back to the SDK constants when neither is set', () => {
+    const result = validateBuildArgs(buildArgs({}), NOW, {})
+    expect(result.slippageBps).toBe(DEFAULT_SLIPPAGE_BPS)
+    expect(result.deadline).toBe(BigInt(NOW + DEFAULT_DEADLINE_SECONDS))
+  })
+
+  it('still enforces the hard caps on a default taken from config', () => {
+    expectInvalidParams(() => validateBuildArgs(buildArgs({}), NOW, { deadlineSeconds: MAX_DEADLINE_SECONDS + 1 }))
+  })
+})

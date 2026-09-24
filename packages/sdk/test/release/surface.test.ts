@@ -40,6 +40,7 @@ const CORE_EXPORTS = [
   'SNF_CHAINS',
   'SNF_CHAIN_IDS',
   'SNF_ERROR_CODES',
+  'SNF_ERROR_RETRYABLE',
   'SnfError',
   'abis',
   'addressLink',

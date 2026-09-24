@@ -2,7 +2,7 @@ import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
 import { resolveCollection } from '../collection/resolveCollection'
 import { assertChainMatch, assertParam, SnfError } from '../errors'
-import { bpsFromRatio, toQuoteAmount } from '../format'
+import { bpsFromRatio, toPoolAmount } from '../format'
 import { availableCountFromReserve, normalizeTokenIds } from '../inventory/availability'
 import { poolInventory } from '../inventory/poolInventory'
 import { getAmountIn, ONE_E18 } from '../math/quoteMath'
@@ -123,13 +123,13 @@ async function quoteBuyFungible(
   const poolBps = 10_000 - ctx.chain.poolNetFee
   const fees: FeeBreakdown = {
     pool: { bps: poolBps, note: 'included in curve' },
-    marketplace: { ...toQuoteAmount(chainId, 0n), bps: 0 },
-    royalty: { ...toQuoteAmount(chainId, 0n), bps: 0, capApplied: false },
+    marketplace: { ...toPoolAmount(pool.baseToken, 0n), bps: 0 },
+    royalty: { ...toPoolAmount(pool.baseToken, 0n), bps: 0, capApplied: false },
   }
   const leg: QuoteLeg = {
     pair: pool.pair,
     count: 0,
-    amount: toQuoteAmount(chainId, routerCost),
+    amount: toPoolAmount(pool.baseToken, routerCost),
     path,
     feeBps: poolBps,
     kind: 'wnft',
@@ -144,7 +144,7 @@ async function quoteBuyFungible(
     collection: collection.address,
     legs: [leg],
     fees,
-    totalCost: toQuoteAmount(chainId, routerCost),
+    totalCost: toPoolAmount(pool.baseToken, routerCost),
     priceImpact: buyPriceImpact(pool.reserves, routerCost, amount),
     deliverable: 0,
     bestEffort: false,
@@ -237,11 +237,11 @@ export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promi
 
   const fees: FeeBreakdown = {
     pool: { bps: poolBps, note: 'included in curve' },
-    marketplace: { ...toQuoteAmount(chainId, marketplace), bps: marketplaceBps },
+    marketplace: { ...toPoolAmount(pool.baseToken, marketplace), bps: marketplaceBps },
     // capApplied is always false in v1: capRoyaltyFee is pinned false, so the
     // Router itself always evaluates the cap as "100%" (no-op) — see
     // math/quoteMath.ts's reconstructRoyalty header.
-    royalty: { ...toQuoteAmount(chainId, royaltyCharged), bps: royaltyBps, capApplied: false },
+    royalty: { ...toPoolAmount(pool.baseToken, royaltyCharged), bps: royaltyBps, capApplied: false },
   }
 
   const baseAddress = pool.baseToken.address ?? ctx.chain.quoteToken
@@ -249,7 +249,7 @@ export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promi
   const leg: QuoteLeg = {
     pair: pool.pair,
     count: deliverable,
-    amount: toQuoteAmount(chainId, ctxData.routerTotal),
+    amount: toPoolAmount(pool.baseToken, ctxData.routerTotal),
     path,
     feeBps: poolBps,
     kind: pool.baseToken.isNative ? 'native' : 'erc20',
@@ -274,7 +274,7 @@ export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promi
     tokenIds,
     legs: [leg],
     fees,
-    totalCost: toQuoteAmount(chainId, ctxData.routerTotal),
+    totalCost: toPoolAmount(pool.baseToken, ctxData.routerTotal),
     priceImpact: buyPriceImpact(ctxData.reserves, ctxData.poolLeg, wnftUnitsFromCount(deliverable)),
     deliverable,
     bestEffort,

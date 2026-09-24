@@ -1,6 +1,6 @@
 {
   "name": "@sweepnflip/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Headless TypeScript SDK for quoting and executing swaps against Sweep n' Flip NFT AMM pools. Client-direct, unsigned calldata only.",
   "type": "module",

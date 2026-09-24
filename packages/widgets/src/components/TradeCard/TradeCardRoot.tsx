@@ -49,9 +49,10 @@ export function TradeCardRoot(props: SnfTradeCardRootProps): ReactNode {
   const client = useSnfClient()
 
   const collectionInfo = useSnfCollection(props.collection)
-  // `noUncheckedIndexedAccess` already types `pools[0]` as `PoolRef | undefined` — the
-  // wrapper can be either pool side, but only `.pair` is needed to read inventory.
-  const pair = collectionInfo.data?.pools[0]?.pair
+  // Inventory must come from the pool the quote hooks price. With no payToken that is
+  // the first native-base pool — not necessarily pools[0], which is ranked by
+  // liquidity. `undefined` (no native pool yet) is a valid, honest state.
+  const pair = collectionInfo.data?.pools.find((p) => p.isNative)?.pair
 
   const inventoryResult = useSnfPoolInventory(pair, { enabled: props.side === 'buy' })
   // Populated buy-side only on the CONTEXT VALUE, even though the hook itself is

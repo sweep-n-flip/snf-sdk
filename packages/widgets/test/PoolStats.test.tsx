@@ -263,3 +263,37 @@ describe('Reserves render raw bigints via .toString() only, never a division', (
     expect(wnft.textContent).toBe('5000000000000000000 FAKE')
   })
 })
+
+describe('pool selection: the pool the quote prices, not pools[0]', () => {
+  it('reads inventory from the first native-base pool even when an ERC-20-base pool ranks first', async () => {
+    const ERC20_PAIR = hexAddress('2')
+    const native = fakeCollectionInfoWithPool().pools[0]!
+    const collection: CollectionInfo = {
+      ...fakeCollectionInfo(),
+      pools: [
+        {
+          ...native,
+          pair: ERC20_PAIR,
+          baseToken: { address: hexAddress('3'), symbol: 'USDC', decimals: 6, isNative: false },
+          isNative: false,
+        },
+        native,
+      ],
+    }
+    const requested: string[] = []
+    renderPoolStats(
+      <SnfPoolStats.Ceiling />,
+      fakeClient({
+        collection: () => Promise.resolve(collection),
+        poolInventory: (pair) => {
+          requested.push(pair)
+          return Promise.resolve(fakePoolInventoryMismatched())
+        },
+      }),
+    )
+
+    await waitFor(() => expect(screen.getByTestId('ceiling-available-count').textContent).toBe('41'))
+    expect(requested).toContain(PAIR)
+    expect(requested).not.toContain(ERC20_PAIR)
+  })
+})

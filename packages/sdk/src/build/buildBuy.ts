@@ -67,7 +67,7 @@ function encodeDynamic(abi: Abi, functionName: string, args: readonly unknown[])
 
 export async function buildBuy(ctx: SnfClientContext, args: BuildArgs): Promise<ExecutionPlan> {
   const now = Math.floor(Date.now() / 1000)
-  const validated = validateBuildArgs(args, now)
+  const validated = validateBuildArgs(args, now, ctx.config.defaults)
   assertParam(args.quote.side === 'buy', 'buildBuy requires a buy Quote', { field: 'quote.side' })
   assertParam(args.quote.collection !== undefined, 'buildBuy requires a Quote with a collection', {
     field: 'quote.collection',

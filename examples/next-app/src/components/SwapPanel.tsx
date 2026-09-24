@@ -282,7 +282,8 @@ export function SwapPanel() {
 
   const validCollection = isAddress(collectionInput) ? (collectionInput as `0x${string}`) : undefined
   const collection = useSnfCollection(validCollection)
-  const pair = collection.data?.pools[0]?.pair
+  // The pool useSnfQuoteBuy prices (no payToken): the first native-base pool.
+  const pair = collection.data?.pools.find((p) => p.isNative)?.pair
   const quote = useSnfQuoteBuy(validCollection ? { collection: validCollection, count } : undefined)
 
   return (

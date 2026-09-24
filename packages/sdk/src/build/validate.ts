@@ -2,6 +2,7 @@ import { getAddress } from 'viem'
 
 import { assertParam, SnfError } from '../errors'
 import type { BuildArgs } from '../types/plan.types'
+import type { SnfClientConfig } from '../types/client.types'
 
 /**
  * `validateBuildArgs` — the SPEC's hard caps on every `build*` call, enforced BEFORE
@@ -110,10 +111,20 @@ function validateDeadline(deadlineSeconds: number, now: number): bigint {
  * rather than read from `Date.now()` internally, so the whole function stays pure and
  * trivially testable at any literal boundary (`now`, `now + 3600`, `now + 3601`, …).
  */
-export function validateBuildArgs(args: BuildArgs, now: number): ValidatedBuildArgs {
+export function validateBuildArgs(
+  args: BuildArgs,
+  now: number,
+  defaults?: SnfClientConfig['defaults'],
+): ValidatedBuildArgs {
   const recipient = validateRecipient(args.recipient)
   const tokenIds = validateTokenIds(args.quote.tokenIds ?? [])
-  const slippageBps = validateSlippageBps(args.slippageBps ?? DEFAULT_SLIPPAGE_BPS)
-  const deadline = validateDeadline(args.deadline ?? now + DEFAULT_DEADLINE_SECONDS, now)
+  // Precedence: the per-call argument, then the client's `config.defaults`, then the
+  // SDK constant. `defaults.deadlineSeconds` is a duration from now; `args.deadline`
+  // is an absolute unix timestamp.
+  const slippageBps = validateSlippageBps(args.slippageBps ?? defaults?.slippageBps ?? DEFAULT_SLIPPAGE_BPS)
+  const deadline = validateDeadline(
+    args.deadline ?? now + (defaults?.deadlineSeconds ?? DEFAULT_DEADLINE_SECONDS),
+    now,
+  )
   return { recipient, tokenIds, slippageBps, deadline }
 }

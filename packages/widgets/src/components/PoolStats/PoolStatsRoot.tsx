@@ -34,9 +34,9 @@ import type { PoolStatsContextValue, SnfPoolStatsRootProps } from './PoolStats.t
  */
 export function PoolStatsRoot(props: SnfPoolStatsRootProps): ReactNode {
   const collectionInfo = useSnfCollection(props.collection)
-  // `noUncheckedIndexedAccess` already types `pools[0]` as `PoolRef | undefined` — a
-  // collection with no pool yet is a valid, honest state, never an error.
-  const pool = collectionInfo.data?.pools[0]
+  // The same pool SnfTradeCard and the quote hooks price: the first native-base pool,
+  // not necessarily pools[0]. No native pool yet is a valid, honest state.
+  const pool = collectionInfo.data?.pools.find((p) => p.isNative)
 
   // Unconditional call — the hook's own `enabled` option (gated on `pair !==
   // undefined` internally) already handles the "no pool yet" case. PoolStats only

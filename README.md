@@ -41,7 +41,10 @@ const publicClient = createPublicClient({ chain: base, transport: http(RPC) })
 const snf = createSnfClient({ chainId: 8453, publicClient })
 
 const col = await snf.collection(DEMON_COLLECTION)
-const inv = await snf.poolInventory(col.pools[0].pair)
+// The pool quoteBuy prices when no payToken is given: the first native-base pool.
+const pool = col.pools.find((p) => p.isNative)
+if (!pool) throw new Error('no native-base pool for this collection')
+const inv = await snf.poolInventory(pool.pair)
 const q = await snf.quoteBuy({ collection: col.address, tokenIds: inv.tokenIds.slice(0, 3) })
 
 const plan = await snf.buildBuy({ quote: q, recipient, slippageBps: 100 })
