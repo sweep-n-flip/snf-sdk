@@ -59,12 +59,14 @@ try {
   // computes unsigned calldata, `preflight()` is one Multicall3 read (ownership,
   // pool-holds, wrapper identity, balance, chain) — neither needs a private key or a
   // signer. This is why this script can demonstrate the full sequence up to (but
-  // never including) the actual send. `recipient` defaults to the well-known Base
-  // burn address purely as a stand-in for "some real, on-chain address" — this
-  // example never holds a key, so it cannot itself sign the last step regardless of
-  // what `recipient` is set to. Set RECIPIENT_ADDRESS to your own address to preflight
-  // against your own balance instead.
-  const recipient = process.env.RECIPIENT_ADDRESS ?? '0x000000000000000000000000000000000000dEaD'
+  // never including) the actual send. `recipient` is the wallet that will sign AND
+  // pay: pre-flight checks its balance and gas is simulated from it, so it must be a
+  // real wallet you control — never a placeholder address.
+  const recipient = process.env.RECIPIENT_ADDRESS
+  if (!recipient) {
+    console.log('\nset RECIPIENT_ADDRESS to the wallet that will sign and pay, to build and pre-flight the plan')
+    process.exit(0)
+  }
   try {
     const plan = await snf.buildBuy({ quote: q, recipient, slippageBps: 100 })
     await plan.preflight()
@@ -73,7 +75,7 @@ try {
   } catch (e) {
     const described = describeError(e)
     console.log(`\nbuildBuy/preflight demo (recipient ${recipient}): [${described.code}] ${described.message}`)
-    console.log('set RECIPIENT_ADDRESS to a funded address to see a successful pre-flight')
+    console.log('RECIPIENT_ADDRESS needs enough balance for the purchase to pass pre-flight')
   }
 } catch (e) {
   const described = describeError(e)

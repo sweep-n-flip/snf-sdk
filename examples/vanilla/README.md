@@ -21,9 +21,9 @@ drifted apart.
 `buildBuy` and `plan.preflight()` are BOTH read-only — `buildBuy` re-quotes on-chain
 and computes unsigned calldata, `preflight()` is one Multicall3 read — neither needs a
 private key or a signer, which is why this script can demonstrate the full sequence up
-to (but never including) the actual send. `RECIPIENT_ADDRESS` defaults to the
-well-known Base burn address as a stand-in "some real address"; set your own to
-pre-flight against your own balance.
+to (but never including) the actual send. Set `RECIPIENT_ADDRESS` to the wallet that
+will sign and pay: it is the payer, the signer and the receiver at once, so pre-flight
+checks its balance. Without it the script stops after the quote.
 
 ## How to run it
 
