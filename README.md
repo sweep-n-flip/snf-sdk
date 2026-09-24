@@ -69,6 +69,10 @@ const checkout = useSnfCheckout(plan)
 See [`examples/next-app`](./examples/next-app) for the full, running version: discovery
 → inventory → quote → checkout on one screen, wired to a real wallet via wagmi.
 
+Prefer a prebuilt surface? [`packages/widgets`](./packages/widgets) holds `SnfTradeCard`
+and `SnfPoolStats`, a headless kit you copy into your app as source and style freely —
+see its README.
+
 ## Supported chains
 
 All 14 chains SnF is live on, generated from `SNF_CHAINS` (`@sweepnflip/sdk`) — 18
@@ -139,9 +143,7 @@ frame-of-signature pre-flight, a user-driven checkout state machine, and the Rea
 adapter.
 
 **Explicitly deferred:** liquidity (add/remove/create pool). Portfolio/LP
-position reads. A styled widget/UI kit (`@sweepnflip/widgets`) is under active
-construction — see that package's own README for status.
-A generated docs site is also planned.
+position reads.
 Marketplace aggregation, third-party marketplace integrations,
 sell-into-bids, and any atomic multi-step NFT×NFT execution
 contract are out of scope for this SDK entirely for now.
@@ -161,6 +163,7 @@ pnpm release:gate    # stubs, ABI inventory, secrets, bundle, version — one co
 
 ## More documentation
 
+- Full docs site: https://app.sweepnflip.io/docs/sdk (plain-text index for AI agents: https://app.sweepnflip.io/llms.txt)
 - Permissionless parity checklist: [`PARITY.md`](./PARITY.md)
 - Security posture: [`SECURITY.md`](./SECURITY.md)
 - Release history: [`CHANGELOG.md`](./CHANGELOG.md)
