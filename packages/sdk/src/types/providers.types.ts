@@ -1,6 +1,5 @@
-import type { PublicClient } from 'viem'
-
 import type { SnfChainConfig } from '../chains/chains.types'
+import type { SnfPublicClient } from './client.types'
 import type { PoolInventory } from './inventory.types'
 
 /**
@@ -37,7 +36,7 @@ import type { PoolInventory } from './inventory.types'
  * context: a provider must never reach the transport cache or the invalidation
  * counter. */
 export interface ImagesProviderContext {
-  readonly publicClient: PublicClient
+  readonly publicClient: SnfPublicClient
   readonly chain: SnfChainConfig
 }
 

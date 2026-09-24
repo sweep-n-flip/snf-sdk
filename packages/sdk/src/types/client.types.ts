@@ -19,6 +19,43 @@ import type { Quote, QuoteBuyArgs, QuoteNftToNftArgs, QuoteSellArgs, QuoteSwapAr
 export type { SubgraphTransport }
 
 /**
+ * The structural subset of viem's `PublicClient` this package actually calls: reads
+ * only — `readContract`, `multicall`, `simulateContract`, `estimateContractGas`,
+ * `getBlockNumber`, `getBalance` — plus the `chain` property `runPreflight` compares
+ * against `ctx.chain.chainId` to catch a wallet on the wrong network before any read.
+ * (Grep `publicClient\.[a-zA-Z]+` across `src/` for the exhaustive, verified list this
+ * `Pick` is built from — plan snf-102-08.)
+ *
+ * viem's bare, non-chain-parameterized `PublicClient` (`PublicClient<Transport, Chain
+ * | undefined>`, the type this field held before) is NOT assignable from a client
+ * built for a chain with custom `formatters` — Base is OP-Stack, and its formatters
+ * add a `"deposit"` transaction variant to `getBlock()`'s inferred return type that
+ * the un-parameterized type does not declare. TypeScript's return-type covariance
+ * check (always on, independent of `strict`) then rejects the assignment with TS2719
+ * — even though this package never calls `getBlock` anywhere. Three narrower type
+ * forms that keep the field pinned to some instantiation of `PublicClient` itself
+ * (chain generic fixed to `undefined`, to the bare `Chain` interface, or left at the
+ * two-argument default) were tried first and proven, by the compiler, to fail
+ * identically — the incompatibility lives in `getBlock`, a member this `Pick`
+ * excludes entirely, not in the chain generic. A client built for ANY chain — Base
+ * included — satisfies this shape, because it was never asked to promise anything
+ * about `getBlock` in the first place.
+ *
+ * Still nothing here can carry a key, a mnemonic or a signer (T-54-17) — narrowing
+ * which READS are required only shrinks the surface, it does not add one.
+ */
+export type SnfPublicClient = Pick<
+  PublicClient,
+  | 'readContract'
+  | 'multicall'
+  | 'simulateContract'
+  | 'estimateContractGas'
+  | 'getBlockNumber'
+  | 'getBalance'
+  | 'chain'
+>
+
+/**
  * `createSnfClient` config and the client object shapes (D-01–D-04; 54-SPEC.md R3).
  *
  * `publicClient` is the partner's own — the SDK never constructs a transport, never
@@ -31,7 +68,7 @@ export type { SubgraphTransport }
  */
 export interface SnfClientConfig {
   readonly chainId: SnfChainId
-  readonly publicClient: PublicClient
+  readonly publicClient: SnfPublicClient
   readonly providers?: DataProviders
   readonly subgraph?: {
     readonly ttlMs?: number
@@ -55,7 +92,7 @@ export interface SnfClientConfig {
 export interface SnfClientContext {
   readonly config: SnfClientConfig
   readonly chain: SnfChainConfig
-  readonly publicClient: PublicClient
+  readonly publicClient: SnfPublicClient
   readonly providers: DataProviders
   readonly transport: SubgraphTransport
   nextTxInvalidationVersion(): number

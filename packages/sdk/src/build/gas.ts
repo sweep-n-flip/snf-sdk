@@ -1,5 +1,7 @@
-import type { Abi, Address, PublicClient } from 'viem'
+import type { Abi, Address } from 'viem'
 import { BaseError, ContractFunctionRevertedError } from 'viem'
+
+import type { SnfPublicClient } from '../types/client.types'
 
 /**
  * Dynamic gas estimation for NFT-batch Router writes (R13; 54-SPEC.md). Ported in
@@ -34,7 +36,7 @@ export function isSimulationRevertError(error: unknown): boolean {
 }
 
 export interface EstimateGasWithBufferArgs {
-  readonly publicClient: PublicClient
+  readonly publicClient: SnfPublicClient
   readonly address: Address
   readonly abi: Abi
   readonly functionName: string
