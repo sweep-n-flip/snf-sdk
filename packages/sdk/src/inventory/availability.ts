@@ -14,7 +14,7 @@ const MAX_SAFE_BIGINT = BigInt(Number.MAX_SAFE_INTEGER)
  * `max(0, floor(reserveWnft / 10**wrapperDecimals) − 1)` — a constant-product pool can
  * never sell its last unit (the curve asymptotes as the reserve approaches zero), so
  * the buyable ceiling is `floor(reserve) − 1`, never `floor(reserve)` (root
- * `CLAUDE.md`: "Teto comprável `floor(reserveWnft) − 1`"). The floor happens BEFORE
+ * `CLAUDE.md`: "Buyable ceiling `floor(reserveWnft) − 1`"). The floor happens BEFORE
  * the minus one — `2e18 − 1` wei still floors to `1` whole unit, then `0` available,
  * never a negative-then-clamped `0`.
  *

@@ -4,7 +4,8 @@ import local from './eslint-rules/index.js'
 
 // Flat ESLint 9 config. `local` is a virtual, repo-only plugin (no publish step —
 // see https://eslint.org/docs/latest/use/configure/plugins#virtual-plugins) exposing
-// the three rules that make SPEC prohibitions #1 and #5 machine-checkable.
+// the three rules that make the SDK's signing/custody and backend-access
+// prohibitions machine-checkable.
 export default tseslint.config(
   {
     ignores: ['**/dist/**', '**/node_modules/**', 'examples/next-app/.next/**'],
@@ -30,7 +31,7 @@ export default tseslint.config(
     },
   },
 
-  // SPEC prohibition #1 — core only: no signing surfaces, no module-global state.
+  // Core only: no signing surfaces, no module-global state.
   {
     files: ['packages/sdk/src/**/*.ts'],
     plugins: { local },
@@ -40,7 +41,7 @@ export default tseslint.config(
     },
   },
 
-  // SPEC prohibition #5 — both packages: no SnF backend calls, no third-party
+  // Both packages: no SnF backend calls, no third-party
   // keys, no process.env reads, no import outside the allowed surface.
   {
     files: ['packages/*/src/**/*.ts', 'packages/*/src/**/*.tsx'],
@@ -65,7 +66,7 @@ export default tseslint.config(
 
   // Widgets only: the five mechanical guards keeping
   // trading logic out of the kit. no-signing-imports is the repository's existing
-  // rule (SPEC prohibition #1), switched ON here rather than rewritten — neither the
+  // rule (the signing/custody ban), switched ON here rather than rewritten — neither the
   // sdk-only ON block above nor the sdk-react OFF block reaches this package's source,
   // so without this explicit ON the rule would simply never run against the widgets
   // glob below at all. The other four are new, widgets-specific rules: no direct

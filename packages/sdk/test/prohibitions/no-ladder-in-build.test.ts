@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest'
 import { estimateLadder } from '../../src/math/nftPricing'
 
 /**
- * this rule's static acceptance: "teste estático (grep/AST) garante que
- * nenhum builder importa `estimateLadder`" — the offline, staleness-labelled estimate
+ * this rule's static acceptance: a static test (grep/AST) guarantees that no
+ * builder imports `estimateLadder` — the offline, staleness-labelled estimate
  * layer must never be able to feed a transaction bound. This test reads every file
  * under `src/build/` AT TEST TIME (not a fixed snapshot), so the rule covers any
  * builder written later too.

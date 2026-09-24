@@ -1,10 +1,10 @@
 /**
  * local/no-amount-arithmetic
  *
- * The documented prohibition #2 (amended 2026-09-23 list): "performs arithmetic on a
- * money value." Every number the widgets kit shows comes from the SDK's `Amount` as
- * given — `formatted`/`symbol` for display, never a recomputation of `value`. Target:
- * packages/widgets/src only (see eslint.config.js).
+ * Widgets never perform arithmetic on a money value. Every number the widgets
+ * kit shows comes from the SDK's `Amount` as given — `formatted`/`symbol` for
+ * display, never a recomputation of `value`. Target: packages/widgets/src only
+ * (see eslint.config.js).
  *
  * This is a syntactic heuristic keyed on the SDK's own `Amount.value` field name, not a
  * type-checked rule — it cannot see through an alias that renames the field (e.g.

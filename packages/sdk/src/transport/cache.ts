@@ -1,6 +1,6 @@
 /**
  * `TtlCache` — TTL + stale-while-revalidate + single-flight in-flight dedupe, entirely
- * instance-scoped ("nenhum `let`/`Map` mutável no escopo de módulo" — this class
+ * instance-scoped (no mutable `let`/`Map` at module scope — this class
  * IS the state that rule requires to live inside `createSnfClient`, never at module scope).
  * `local/no-module-global-state` only bans mutable state at Program (module top-level)
  * scope, so these `Map`s as private class fields — constructed fresh per

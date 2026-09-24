@@ -3,8 +3,8 @@
  */
 
 /**
- * Candidate tokenIds a pool currently holds, plus the teto comprável ("buyable
- * ceiling") and freshness. Fast path: `ERC721Enumerable`. Fallback: subgraph
+ * Candidate tokenIds a pool currently holds, plus the buyable
+ * ceiling and freshness. Fast path: `ERC721Enumerable`. Fallback: subgraph
  * `Currency.tokenIds` gated by `_meta.block`.
  *
  * `truncated`/`warnings` added later (not the original shape): the

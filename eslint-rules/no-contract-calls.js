@@ -1,9 +1,9 @@
 /**
  * local/no-contract-calls
  *
- * The documented prohibition #1 (amended 2026-09-23 list): "imports a contract ABI or
- * calls a Router method." The widgets kit renders the SDK; it never talks to a contract
- * directly. Target: packages/widgets/src only (see eslint.config.js).
+ * Widgets never import a contract ABI or call a Router method directly. The
+ * widgets kit renders the SDK; it never talks to a contract directly. Target:
+ * packages/widgets/src only (see eslint.config.js).
  *
  * Three surfaces are banned:
  * - importing the `abis` namespace from `@sweepnflip/sdk` (packages/sdk/src/index.ts

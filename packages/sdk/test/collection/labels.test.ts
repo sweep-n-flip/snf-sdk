@@ -8,7 +8,7 @@ import {
 } from '../../src/collection/labels'
 
 /**
- * `getCollectionLabels` — an address is never a name (prohibition #6).
+ * `getCollectionLabels` — an address is never a name.
  */
 
 const ADDRESS = '0x7c479938ba2a3edb0a744c3743cf6db4b7e70ebc' as `0x${string}`

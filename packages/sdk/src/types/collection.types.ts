@@ -35,8 +35,8 @@ export interface CollectionLabelsInput {
  * EIP-2981 royalty for a collection, reconstructed the same way the Router itself
  * computes it (`RoyaltyHelper.sol`). `capBps === 0` means the Router's on-chain
  * royalty cap is unset, which zeroes the royalty entirely if `capRoyaltyFee=true` were
- * ever requested — the SDK pins `capRoyaltyFee=false` everywhere (SPEC Constraint,
- * prohibition #6), but `effectiveBpsWhenCapped` still reports what a capped read WOULD
+ * ever requested — the SDK pins `capRoyaltyFee=false` everywhere, but
+ * `effectiveBpsWhenCapped` still reports what a capped read WOULD
  * yield, with `warnings` explaining why: `capBps === 0` ⇒
  * `effectiveBpsWhenCapped === 0` with a warning.
  */

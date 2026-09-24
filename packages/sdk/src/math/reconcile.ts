@@ -1,8 +1,8 @@
 import { SnfError } from '../errors'
 
 /**
- * `===`-only reconciliation — the mechanical form of SPEC prohibition #3 ("MUST NOT
- * silently adjust a quote when reconciliation diverges"). Every function in this file
+ * `===`-only reconciliation — the mechanical form of the SDK's no-silent-reconciliation
+ * rule: it must never silently adjust a quote when reconciliation diverges. Every function in this file
  * has exactly two outcomes: `void` (the reconstruction matches the Router's own
  * on-chain answer to the wei) or `throw new SnfError('QUOTE_RECONCILIATION_FAILED')`.
  * There is no third outcome, no tolerance, no `Math.abs`, no `<= epsilon`, no

@@ -4,7 +4,7 @@ import type { Bounds } from '../types/plan.types'
 /**
  * `deriveBounds` — protective bigint slippage rounding, pool axis only.
  *
- * SPEC prohibition #2: the SDK must never use caller-supplied prices to derive
+ * The SDK must never use caller-supplied prices to derive
  * `bounds`/`value`/`amountOutMin` — always re-derive on-chain inside `build()`. This
  * module makes that structural rather than a convention someone could forget:
  * `deriveBounds`'s only numeric input is `total: bigint`, a freshly re-read amount a
@@ -65,7 +65,7 @@ export function applySlippageDown(total: bigint, slippageBps: number): bigint {
 export interface DeriveBoundsArgs {
   readonly side: 'buy' | 'sell'
   /** The freshly re-derived on-chain total this bound protects — pool-axis units,
-   * NEVER a field lifted from the caller's own priced payload (SPEC prohibition #2). */
+   * NEVER a field lifted from the caller's own priced payload. */
   readonly total: bigint
   readonly slippageBps: number
   /** Absolute unix-seconds deadline, already validated/defaulted by

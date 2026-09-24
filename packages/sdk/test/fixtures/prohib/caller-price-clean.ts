@@ -1,6 +1,6 @@
 /**
- * `caller-price-clean.ts` — the compliant reference for SPEC prohibition #2 (no
- * caller-supplied price may ever reach `bounds`/`value`/`amountOutMin`).
+ * `caller-price-clean.ts` — the compliant reference for the rule that no
+ * caller-supplied price may ever reach `bounds`/`value`/`amountOutMin`.
  *
  * This literally RE-EXPORTS the real `deriveBounds` (`src/build/bounds.ts`) rather
  * than re-implementing it — the real function already structurally ignores any

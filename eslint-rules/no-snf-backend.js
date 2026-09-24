@@ -1,10 +1,11 @@
 /**
  * local/no-snf-backend
  *
- * SPEC prohibition #5: "O SDK MUST NOT chamar `app.sweepnflip.io/api/*`,
- * embutir chaves de terceiros (Alchemy/OpenSea/CoinGecko) nem ler `process.env` em
- * runtime — o parceiro traz o provider." Target: packages/*\/src. This is the lint-time
- * half; scripts/grep-gate.mjs (Task 3) is the CI-time half that also covers `dist`.
+ * This SDK never calls `app.sweepnflip.io/api/*`, never embeds third-party
+ * keys (Alchemy/OpenSea/CoinGecko), and never reads `process.env` at runtime —
+ * the partner brings the provider. Target: packages/*\/src. This is the
+ * lint-time half; scripts/grep-gate.mjs (Task 3) is the CI-time half that also
+ * covers `dist`.
  */
 
 const BANNED_STRING_PATTERNS = [

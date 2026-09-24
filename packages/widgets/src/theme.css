@@ -11,7 +11,7 @@
  * `toDataAttrs` (see `src/internal/dataState.ts`) — this file adds no attribute, no
  * className hook, and requires no change to any component file.
  *
- * **Opt-in scoping (amended 2026-09-23).** Importing this file alone styles
+ * **Opt-in scoping.** Importing this file alone styles
  * NOTHING — every component rule below is nested under the single ancestor selector
  * `[data-snf-theme]`. A partner must ALSO put a `data-snf-theme` attribute on some
  * ancestor element for any rule to match: a wrapper `<div data-snf-theme>` around one
@@ -19,9 +19,9 @@
  * what makes the SnF look genuinely optional per-instance, not a page-wide hijack —
  * a partner can render one `SnfTradeCard` inside a `data-snf-theme` wrapper (SnF
  * look) and a second, completely independent instance outside it (their own skin,
- * or none), on the very same page, importing this one file once. Before this
- * amendment, every rule below matched bare `[data-part="..."]` with no ancestor
- * gate, so importing the theme anywhere styled every instance on the page — the
+ * or none), on the very same page, importing this one file once. Without this
+ * ancestor gate, every rule below would instead match bare `[data-part="..."]`,
+ * so importing the theme anywhere would style every instance on the page — the
  * opposite of "optional per surface."
  *
  * The `:root` custom-property block below is deliberately left UNSCOPED (not nested

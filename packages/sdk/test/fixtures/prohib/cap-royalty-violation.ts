@@ -1,6 +1,6 @@
 /**
- * `cap-royalty-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #7
- * forbids, kept ONLY as a test subject for
+ * `cap-royalty-violation.ts` — the DELIBERATE anti-pattern the
+ * cap-royalty-pinned rule forbids, kept ONLY as a test subject for
  * `test/prohibitions/cap-royalty-pinned.test.ts` (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER
  * be imported by `src/` (see `caller-price-violation.ts`'s identical header note).
  *

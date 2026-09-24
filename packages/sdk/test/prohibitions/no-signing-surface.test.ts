@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
- * SPEC prohibition #1 (`check_kind: lint-rule`, `check_rule:
+ * This rule (`check_kind: lint-rule`, `check_rule:
  * local/no-signing-imports`) — THE BELT TO THE LINT RULE'S BRACES. This test
  * deliberately duplicates `local/no-signing-imports`: a lint rule is one
  * `eslint.config.js` edit or one inline `eslint-disable` comment away from being off.

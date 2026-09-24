@@ -26,7 +26,7 @@ import type { BuildArgs } from '../../src/types/plan.types'
 import type { FeeBreakdown, Quote, QuoteLeg } from '../../src/types/quote.types'
 
 /**
- * SPEC prohibition #7: the SDK MUST NOT send `capRoyaltyFee=true` in v1
+ * This rule: the SDK MUST NOT send `capRoyaltyFee=true` in v1
  * (with `royaltyFeeCap` unset, `true` zeroes the creator's royalty) NOR expose a
  * public flag a partner could flip to request it — even if the flag defaulted to
  * `false`, offering the switch at all is the prohibited surface.
@@ -199,7 +199,7 @@ beforeEach(() => {
   mockedQuoteNftToNft.mockReset()
 })
 
-describe('cap-royalty-pinned — decoded REAL calldata across every builder path (SPEC prohibition #7)', () => {
+describe('cap-royalty-pinned — decoded REAL calldata across every builder path', () => {
   it('buildBuy (Base, native): capRoyaltyFee decodes to the literal false', async () => {
     mockedQuoteBuy.mockResolvedValue(buyQuote(8453, true))
     const ctx = buildCtx(8453)

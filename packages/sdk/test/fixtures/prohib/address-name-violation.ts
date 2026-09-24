@@ -1,6 +1,6 @@
 /**
- * `address-name-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #6
- * forbids, kept ONLY as a test subject for
+ * `address-name-violation.ts` — the DELIBERATE anti-pattern the address-as-name
+ * rule forbids, kept ONLY as a test subject for
  * `test/prohibitions/no-address-as-name.test.ts` (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER
  * be imported by `src/` (see `caller-price-violation.ts`'s identical header note).
  *

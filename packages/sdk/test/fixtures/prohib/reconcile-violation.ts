@@ -1,6 +1,6 @@
 /**
- * `reconcile-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #3
- * forbids, kept ONLY as a test subject for
+ * `reconcile-violation.ts` — the DELIBERATE anti-pattern the no-silent-reconcile
+ * rule forbids, kept ONLY as a test subject for
  * `test/prohibitions/no-silent-reconcile.test.ts` (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER
  * be imported by `src/` — see `caller-price-violation.ts`'s identical header note;
  * the same `grep -rn "fixtures/prohib" src` check covers this file too.

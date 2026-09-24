@@ -69,8 +69,8 @@ export type RouteBlockReason = (typeof ROUTE_BLOCK_REASONS)[number]
 
 /**
  * Result of `evaluateDirectOnly` (`directOnlyRouting.ts`) — `viablePayTokens` is
- * non-empty whenever at least one candidate pool exists (prohibition #9: a blocked
- * route is an explicit typed failure with an alternative, never a silently empty
+ * non-empty whenever at least one candidate pool exists (a blocked
+ * route is always an explicit typed failure with an alternative, never a silently empty
  * quote).
  */
 export interface DirectOnlyResult {

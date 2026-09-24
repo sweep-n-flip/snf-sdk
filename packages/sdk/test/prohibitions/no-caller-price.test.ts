@@ -25,7 +25,7 @@ import type { BuildArgs } from '../../src/types/plan.types'
 import type { FeeBreakdown, Quote, QuoteLeg } from '../../src/types/quote.types'
 
 /**
- * SPEC prohibition #2: the SDK MUST NOT use caller-supplied prices to
+ * This rule: the SDK MUST NOT use caller-supplied prices to
  * derive `bounds`/`value`/`amountOutMin` — `build()` always re-quotes on-chain
  * itself. This is the STANDING gate: it survives independently of any one builder's
  * own test file (this module's `test/build/{buildBuy,buildSell,buildNftToNft}.test.ts`
@@ -213,7 +213,7 @@ beforeEach(() => {
   mockedQuoteNftToNft.mockReset()
 })
 
-describe('no-caller-price — buildBuy/buildSell/buildNftToNft ignore a tampered caller Quote (SPEC prohibition #2)', () => {
+describe('no-caller-price — buildBuy/buildSell/buildNftToNft ignore a tampered caller Quote', () => {
   it('buildBuy: doubled totalCost + zeroed royalty produces byte-identical bounds/tx to the untampered quote', async () => {
     mockedQuoteBuy.mockResolvedValue(buyQuote(500_000n))
     const ctx = buildCtx()

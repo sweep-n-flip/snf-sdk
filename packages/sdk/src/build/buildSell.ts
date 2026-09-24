@@ -89,7 +89,7 @@ export async function buildSell(ctx: SnfClientContext, args: BuildArgs): Promise
   const routerAbi = ctx.chain.routerVariant === 'native-erc20' ? ROUTER_NATIVE_ERC20_ABI : ROUTER02_COLLECTION_ABI
   const functionName = isNative ? 'swapExactTokensForETHCollection' : 'swapExactTokensForTokensCollection'
   const tokenIdsBig = tokenIds.map((id) => BigInt(id))
-  // capRoyaltyFee is the literal `false` — SPEC prohibition #6.
+  // capRoyaltyFee is the literal `false` — pinned, never partner-configurable.
   const callArgs = [tokenIdsBig, amountOutMin, leg.path, false, validated.recipient, bounds.deadline] as const
   const data = encodeDynamic(routerAbi, functionName, callArgs)
 

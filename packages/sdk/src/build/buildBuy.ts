@@ -21,8 +21,8 @@ import type { QuoteLeg } from '../types/quote.types'
  * itself — `args.quote` is read only for IDENTITY (`collection`, `tokenIds`, which
  * pool/base token was quoted), never for its priced fields (`totalCost`, `fees`). A
  * caller who doubles `args.quote.totalCost.value` before calling gets byte-identical
- * `bounds`/`tx` back (SPEC prohibition #2 — `test/build/buildBuy.test.ts`'s
- * tampered-quote case is the proof). `capRoyaltyFee` is the literal `false` at the one
+ * `bounds`/`tx` back (this SDK never trusts a caller-supplied price for bounds —
+ * `test/build/buildBuy.test.ts`'s tampered-quote case is the proof). `capRoyaltyFee` is the literal `false` at the one
  * encode call below, matching every other `*Collection` call site in this package.
  *
  * Native buy needs NO approval at all (ETH moves via `tx.value`, no NFTs come FROM
@@ -100,7 +100,7 @@ export async function buildBuy(ctx: SnfClientContext, args: BuildArgs): Promise<
   const routerAbi = ctx.chain.routerVariant === 'native-erc20' ? ROUTER_NATIVE_ERC20_ABI : ROUTER02_COLLECTION_ABI
   const functionName = isNative ? 'swapETHForExactTokensCollection' : 'swapTokensForExactTokensCollection'
   const tokenIdsBig = tokenIds.map((id) => BigInt(id))
-  // capRoyaltyFee is the literal `false` — SPEC prohibition #6.
+  // capRoyaltyFee is the literal `false` — pinned, never partner-configurable.
   const callArgs = isNative
     ? ([tokenIdsBig, leg.path, false, validated.recipient, bounds.deadline] as const)
     : ([tokenIdsBig, amountInMax, leg.path, false, validated.recipient, bounds.deadline] as const)

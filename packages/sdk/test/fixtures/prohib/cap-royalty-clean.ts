@@ -1,7 +1,7 @@
 /**
- * `cap-royalty-clean.ts` — the compliant reference for SPEC prohibition #7
- * (`capRoyaltyFee` is pinned `false` in v1; no public API may expose a flag that
- * could flip it).
+ * `cap-royalty-clean.ts` — the compliant reference for the rule that
+ * `capRoyaltyFee` is pinned `false` in v1; no public API may expose a flag that
+ * could flip it.
  *
  * Unlike the other four fixture-backed prohibitions, this one has NO standalone
  * exported "decision function" to re-export from `src/` — `capRoyaltyFee` is pinned

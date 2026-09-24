@@ -8,7 +8,7 @@ import { buildQuoteEnv, ZERO_ADDRESS } from '../quote/testHelpers'
 import { resolveSubject } from './_subject'
 
 /**
- * SPEC prohibition #3: the SDK MUST NOT silently adjust a quote when the
+ * This rule: the SDK MUST NOT silently adjust a quote when the
  * on-chain reconciliation diverges (absorbing the delta into royalty or pool) — it
  * MUST throw `QUOTE_RECONCILIATION_FAILED` and return no `Quote` at all.
  *
@@ -41,7 +41,7 @@ function reconciledFixture(deltaWei: bigint) {
   })
 }
 
-describe('no-silent-reconcile — quoteBuy end to end (SPEC prohibition #3)', () => {
+describe('no-silent-reconcile — quoteBuy end to end', () => {
   it('a 1-wei-ABOVE divergence rejects with QUOTE_RECONCILIATION_FAILED and no Quote is returned', async () => {
     const { ctx } = reconciledFixture(1n)
     await expect(

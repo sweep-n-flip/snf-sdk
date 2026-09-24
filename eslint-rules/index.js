@@ -7,9 +7,9 @@ import noSigningImports from './no-signing-imports.js'
 import noSnfBackend from './no-snf-backend.js'
 
 // Repo-local virtual ESLint plugin, registered as `local` in eslint.config.js.
-// Exposes the three rules that make SPEC prohibitions #1 and #5
-// machine-checkable, plus the four rules that make widgets' own five-guard
-// prohibition list machine-checkable.
+// Exposes the three rules that make the SDK's signing/custody and
+// backend-access prohibitions machine-checkable, plus the four rules that
+// make widgets' own five-guard prohibition list machine-checkable.
 export default {
   rules: {
     'no-signing-imports': noSigningImports,

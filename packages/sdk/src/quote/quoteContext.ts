@@ -25,7 +25,7 @@ import type { SnfClientContext } from '../types/client.types'
  * consistent block despite the two round trips.
  *
  * `capRoyaltyFee` is the literal `false` at both `getAmountsInCollection`/
- * `getAmountsOutCollection` call sites below (SPEC prohibition #7): with
+ * `getAmountsOutCollection` call sites below: with
  * `royaltyFeeCap()` unset (0 = no cap on-chain), passing `true` would silently pay
  * the creator nothing. This function never sends `true`.
  *
@@ -156,14 +156,14 @@ export async function loadQuoteContext(
           address: ctx.chain.router02,
           abi: routerAbi,
           functionName: 'getAmountsInCollection',
-          // capRoyaltyFee pinned false (SPEC prohibition #7).
+          // capRoyaltyFee pinned false — never partner-configurable.
           args: [tokenIdsBig, [base, collection], false],
         }
       : {
           address: ctx.chain.router02,
           abi: routerAbi,
           functionName: 'getAmountsOutCollection',
-          // capRoyaltyFee pinned false (SPEC prohibition #7).
+          // capRoyaltyFee pinned false — never partner-configurable.
           args: [tokenIdsBig, [collection, base], false],
         },
     side === 'buy'

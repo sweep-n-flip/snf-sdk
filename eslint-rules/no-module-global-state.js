@@ -1,8 +1,8 @@
 /**
  * local/no-module-global-state
  *
- * "Instância explícita, sem estado global de módulo... nenhum
- * `let`/`Map` mutável no escopo de módulo." Target: packages/sdk/src. Two clients on
+ * Explicit instance, no module-global state — no mutable `let`/`Map` at
+ * module scope. Target: packages/sdk/src. Two clients on
  * the same page (Base + Arbitrum) must never share cache or breaker state — this rule
  * is the mechanical half; the behavioural half is this module's cross-talk test.
  *

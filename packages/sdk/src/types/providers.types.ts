@@ -5,8 +5,8 @@ import type { PoolInventory } from './inventory.types'
 /**
  * Optional partner-supplied data sources. An absent provider ⇒
  * the corresponding result field is `undefined` — NEVER a hidden fetch and NEVER a
- * silent empty list (SPEC prohibition: "MUST NOT degradar silenciosamente para lista
- * vazia quando um provider está ausente — o estado deve ser explícito"). `ImagesProvider`
+ * silent empty list: a provider must never silently degrade to an empty list
+ * when it is absent — the state must be explicit. `ImagesProvider`
  * is the one field with a keyless on-chain default (`tokenURI` via Multicall3,
  * `enrichListingsWithOnChainTokenURI` pattern); the other three have none.
  *

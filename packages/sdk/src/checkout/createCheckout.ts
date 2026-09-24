@@ -13,7 +13,7 @@ import { SnfError } from '../errors'
  * `onRejected` are watcher-only entry points — a caller wires them to whatever
  * receipt/rejection signal their OWN wallet library produces (wagmi's
  * `useWaitForTransactionReceipt`, a raw `publicClient.waitForTransactionReceipt`,
- * etc.); this module never touches a wallet client itself (prohibition #1).
+ * etc.); this module never touches a wallet client itself (the SDK core never signs or custodies).
  * The React adapter (`useSnfCheckout`) is the one place `sendTransaction`/
  * `writeContract` is actually called — this file only ever hands back the `Step` to
  * send and reads back what happened.

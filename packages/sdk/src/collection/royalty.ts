@@ -10,7 +10,7 @@ import type { SnfClientContext } from '../types/client.types'
 /**
  * Reconstructs EIP-2981 royalty exactly the way the Router computes it
  * (`RoyaltyHelper.sol`), including the `capBps === 0` ⇒ zero-royalty footgun and the
- * `capRoyaltyFee=false` pin (SPEC prohibition #6 — this function never sends
+ * `capRoyaltyFee=false` pin (this function never sends
  * `capRoyaltyFee=true` anywhere; every mention of that flag below is a comment or a
  * warning string). Ported from the production AMM client's own royalty-resolution
  * hooks.

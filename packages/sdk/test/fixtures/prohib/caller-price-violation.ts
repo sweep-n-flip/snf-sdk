@@ -1,6 +1,6 @@
 /**
- * `caller-price-violation.ts` — the DELIBERATE anti-pattern SPEC prohibition #2
- * forbids, kept ONLY as a test subject for `test/prohibitions/no-caller-price.test.ts`
+ * `caller-price-violation.ts` — the DELIBERATE anti-pattern the no-caller-price
+ * rule forbids, kept ONLY as a test subject for `test/prohibitions/no-caller-price.test.ts`
  * (`SNF_SDK_PROHIB_SUBJECT`). MUST NEVER be imported by `src/` — `test/prohibitions/
  * no-caller-price.test.ts`'s own `grep -rn "fixtures/prohib" src` acceptance check
  * (and `pnpm grep:gate`, which does not scan `test/`) exist to make that
@@ -52,7 +52,7 @@ function applyDown(total: bigint, slippageBps: number): bigint {
 
 export function deriveBounds(args: DeriveBoundsLikeArgs): BoundsLike {
   // THE VIOLATION: prefers the caller's own priced field over the fresh `total` this
-  // function was actually handed — exactly SPEC prohibition #2.
+  // function was actually handed — exactly the bug the no-caller-price rule forbids.
   const effectiveTotal = args.callerQuote?.totalCost?.value ?? args.total
   if (args.side === 'buy') {
     return { amountInMax: applyUp(effectiveTotal, args.slippageBps), slippageBps: args.slippageBps, deadline: args.deadline }

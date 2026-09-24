@@ -32,7 +32,7 @@ export function orderSteps(rawSteps: readonly Step[]): readonly Step[] {
 /**
  * Assembles the final `ExecutionPlan`. `chainId` is stamped into EVERY step's `tx`
  * from `ctx.chain.chainId` — never inherited implicitly from whatever the caller's
- * `step.tx.chainId` already said (SPEC Constraint: "chainId explícito em toda tx").
+ * `step.tx.chainId` already said (SPEC Constraint: "chainId explicit on every tx").
  * `label` is likewise always overwritten via `buildConfirmLabel`, keyed by
  * `NEXT_READY_BY_KIND[step.kind]` — the exact same lookup `checkout/reducer.ts` uses
  * to pick the next `ready-*` state, so a partner's button copy and the checkout
