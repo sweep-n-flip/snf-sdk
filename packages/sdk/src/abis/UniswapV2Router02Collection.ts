@@ -3,11 +3,10 @@
  *
  * This file is a GENERATED DATA ARTIFACT, not hand-written logic: it is copied
  * byte-for-byte (only the exported const name changed) from
- * `snf-client/src/abis/UniswapV2Router02.ts` at commit `9e6c70aa466b62e68854cf781d723fd5cc08c1e8`
- * (snf-client HEAD `3863f69` at copy time). CLAUDE.md's "files should not exceed ~400
+ * the production AMM client's own ABI. CLAUDE.md's "files should not exceed ~400
  * lines" rule targets hand-written logic that a maintainer edits line by line — an ABI
  * array has no such maintenance surface, so the line count is expected and acceptable
- * here (R21). Do not hand-trim entries to shrink it: `sideEffects: false` plus this
+ * here. Do not hand-trim entries to shrink it: `sideEffects: false` plus this
  * package's per-file exports already let a bundler drop an unimported ABI, and a
  * trimmed ABI is a silent wrong-decode risk against the real deployed bytecode.
  *
@@ -18,16 +17,16 @@
  * `NATIVE_SCALE()` on top of it — see `UniswapV2Router01CollectionNativeERC20.ts`).
  *
  * Extends standard Uniswap V2 with NFT Collection functions:
- *   swapETHForExactTokensCollection     — buy specific NFTs with ETH
- *   swapExactTokensForETHCollection     — sell specific NFTs for ETH
- *   swapExactTokensForTokensCollection  — swap NFTs for tokens
- *   swapTokensForExactTokensCollection  — buy NFTs with tokens
- *   addLiquidityETHCollection           — add ETH + NFTs to pool
- *   addLiquidityCollection              — add token + NFTs to pool
- *   removeLiquidityETHCollection        — remove ETH + NFTs from pool (returns specific tokenIds + fractional wNFT)
- *   removeLiquidityCollection           — remove token + NFTs from pool
- *   getAmountsInCollection              — quote: ETH/token cost for exact NFT output
- *   getAmountsOutCollection             — quote: ETH/token output for exact NFT input
+ * swapETHForExactTokensCollection — buy specific NFTs with ETH
+ * swapExactTokensForETHCollection — sell specific NFTs for ETH
+ * swapExactTokensForTokensCollection — swap NFTs for tokens
+ * swapTokensForExactTokensCollection — buy NFTs with tokens
+ * addLiquidityETHCollection — add ETH + NFTs to pool
+ * addLiquidityCollection — add token + NFTs to pool
+ * removeLiquidityETHCollection — remove ETH + NFTs from pool (returns specific tokenIds + fractional wNFT)
+ * removeLiquidityCollection — remove token + NFTs from pool
+ * getAmountsInCollection — quote: ETH/token cost for exact NFT output
+ * getAmountsOutCollection — quote: ETH/token output for exact NFT input
  *
  * All Collection functions take tokenIds[] directly; the Router handles
  * ERC-721 → WERC721 wrapping/unwrapping internally via Factory.getWrapper().

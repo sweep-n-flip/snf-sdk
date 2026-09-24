@@ -4,9 +4,9 @@ import { evaluateDirectOnly, filterViablePayTokens, isDirectOnly } from '../../s
 import type { PoolRef } from '../../src/routing/routing.types'
 
 /**
- * Parity port of `snf-client/src/lib/swap/__tests__/directOnlyRouting.test.ts`
+ * Parity port of the production AMM client's own direct-only routing test suite
  * (Gate 69.5), adapted to this SDK's path-based `isDirectOnly`/`filterViablePayTokens`
- * shape — see `snf-54-07-SUMMARY.md` for the rename table.
+ * shape.
  */
 
 const COLLECTION = '0x1111111111111111111111111111111111111a'

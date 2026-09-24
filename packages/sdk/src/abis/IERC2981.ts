@@ -1,7 +1,6 @@
 /**
  * EIP-2981 NFT Royalty Standard — minimal ABI. Verbatim copy from
- * `snf-client/src/abis/IERC2981.ts` (commit `efb8f4ebff495a4a45c8c9151dab437ea6bb0aa9`),
- * only the exported const renamed.
+ * the production AMM client's own ABI, only the exported const renamed.
  *
  * https://eips.ethereum.org/EIPS/eip-2981
  *

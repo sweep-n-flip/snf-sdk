@@ -4,13 +4,13 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
- * SPEC prohibition #1 (54-SPEC.md, `check_kind: lint-rule`, `check_rule:
- * local/no-signing-imports`, plan 02) — THE BELT TO THE LINT RULE'S BRACES. This test
+ * SPEC prohibition #1 (`check_kind: lint-rule`, `check_rule:
+ * local/no-signing-imports`) — THE BELT TO THE LINT RULE'S BRACES. This test
  * deliberately duplicates `local/no-signing-imports`: a lint rule is one
  * `eslint.config.js` edit or one inline `eslint-disable` comment away from being off.
  * This test cannot be silenced that way, and it ALSO covers `dist` — a re-export
  * cannot smuggle a signing symbol past a source-only scan. Two independent lines for
- * the prohibition the whole product's trust rests on (D-04).
+ * the prohibition the whole product's trust rests on.
  */
 
 const BANNED_TOKENS: readonly string[] = [

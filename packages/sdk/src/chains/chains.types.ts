@@ -1,5 +1,5 @@
 /**
- * Type definitions for the SDK's chain registry (R2, R21; 54-SPEC.md).
+ * Type definitions for the SDK's chain registry.
  *
  * See `registry.ts` for the 14-chain, latest-only data this shape describes, and
  * `units.ts` for the two-unit-axes conversions that consume `quoteDecimals`.
@@ -39,8 +39,8 @@ export type SnfChainId =
 /**
  * Full configuration for one supported chain. Every field is spelled out explicitly
  * on every entry in `registry.ts` — no optional field defaults silently, because a
- * silently-defaulted address or decimals count is exactly the class of bug R2 and
- * R11 exist to prevent.
+ * silently-defaulted address or decimals count is exactly the class of bug this
+ * package's own rules exist to prevent.
  */
 export interface SnfChainConfig {
   chainId: SnfChainId
@@ -67,7 +67,7 @@ export interface SnfChainConfig {
   /**
    * `DELEGATE_NET_FEE` out of 10000 from this chain's own `Delegation.sol` /
    * `scripts/delegate-configs.ts` entry — verified per chain, not assumed to be a
-   * single global constant (RESEARCH Assumption A2). See `registry.ts` for the
+   * single global constant. See `registry.ts` for the
    * per-chain source of each value.
    */
   delegateNetFee: number

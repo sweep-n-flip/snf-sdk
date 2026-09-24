@@ -1,5 +1,5 @@
 /**
- * The checkout surface (R15, INV-17). Re-exported (not just internally used) so a
+ * The checkout surface (INV-17). Re-exported (not just internally used) so a
  * later plan/barrel can do `export * from './checkout'` without reaching into each
  * file individually.
  */

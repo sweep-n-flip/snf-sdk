@@ -3,9 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { countFromWnftUnits, scaleWnftAmount, wnftUnitsFromCount } from '../../src/routing/wnftPathScale'
 
 /**
- * Parity port of `snf-client/src/lib/swap/__tests__/wnftPathScale.test.ts`, adapted
- * to this SDK's exact-`bigint` count<->units scaling (see this plan's SUMMARY for
- * the rename table: `snf-client`'s decimal-axis scaler `wnftPathDecimals` is a
+ * Parity port of the production AMM client's own scaling test suite, adapted
+ * to this SDK's exact-`bigint` count<->units scaling (that
+ * client's decimal-axis scaler `wnftPathDecimals` is a
  * different, display-`number`-oriented concern this SDK's `chains/units.ts`
  * (`getQuoteDecimals`) already owns; this module is the wrapper's own fixed
  * count<->1e18-unit axis).

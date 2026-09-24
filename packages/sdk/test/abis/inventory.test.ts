@@ -4,14 +4,19 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import * as abis from '../../src/abis/index'
+import { findForbiddenFingerprintLines } from '../../../../scripts/forbidden-name-fingerprints.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
 /**
- * R21 (54-SPEC.md) inventory gate: exactly the eight audited AMM ABIs plus the Arc
+ * Inventory gate: exactly the eight audited AMM ABIs plus the Arc
  * `UniswapV2Router01CollectionNativeERC20` variant — nine consts, ten files (the nine
- * ABIs plus `index.ts`). Nothing from Advanced Router, Farm, Bridge, MktBids or Vault
- * belongs here. A tenth ABI or a forbidden product name fails this test immediately.
+ * ABIs plus `index.ts`). Nothing outside this SDK's audited AMM surface belongs here.
+ * A tenth ABI or a match against the shared forbidden-name fingerprint set (see
+ * `scripts/forbidden-name-fingerprints.mjs` — the single source of truth, also used by
+ * `scripts/release-gate.mjs`) fails this test immediately. Matching by fingerprint
+ * rather than by a plaintext name list means this test file carries none of the names
+ * it guards against, in plaintext, anywhere.
  */
 
 const ABIS_DIR = resolve(HERE, '../../src/abis')
@@ -29,22 +34,7 @@ const EXPECTED_FILES = [
   'index.ts',
 ]
 
-const FORBIDDEN_PRODUCT_NAMES = [
-  'AdvancedRouter',
-  'SnFRouter',
-  'SnFQuoter',
-  'swapNFTsForNFTs',
-  'Farm',
-  'StakingPool',
-  'Bridge',
-  'Axelar',
-  'MktBids',
-  'Vault',
-  'Seaport',
-  'Conduit',
-]
-
-describe('ABI inventory (R21)', () => {
+describe('ABI inventory', () => {
   it('contains exactly the ten expected files (nine ABIs + index.ts)', () => {
     const files = readdirSync(ABIS_DIR).sort()
     expect(files).toEqual([...EXPECTED_FILES].sort())
@@ -58,9 +48,7 @@ describe('ABI inventory (R21)', () => {
     '%s never contains a forbidden non-AMM product name',
     (file) => {
       const source = readFileSync(resolve(ABIS_DIR, file), 'utf8')
-      for (const name of FORBIDDEN_PRODUCT_NAMES) {
-        expect(source.toLowerCase()).not.toContain(name.toLowerCase())
-      }
+      expect(findForbiddenFingerprintLines(source)).toEqual([])
     },
   )
 

@@ -2,7 +2,7 @@ import type { PoolRef } from '../types/collection.types'
 
 /**
  * `rankPoolsByLiquidity` — orders a collection's pools by liquidity, native base
- * first on a tie (R6 Edge `ordering`). Pure, no I/O: `resolveCollection.ts` supplies
+ * first on a tie (Edge `ordering`). Pure, no I/O: `resolveCollection.ts` supplies
  * whatever `reserveUSD` it managed to read from the subgraph (which may be partial,
  * or absent entirely when the index is degraded — see that module's enrichment
  * step); this function never fetches anything itself.

@@ -1,28 +1,28 @@
 /**
- * VERBATIM copy of `snf-client`'s NFT×NFT quote math, for the R9 parity test
- * (`test/quote/nftToNft.parity.test.ts`). Copied rather than imported directly
- * because `snf-client` is a separate git repository outside this package's
+ * VERBATIM copy of the production AMM client's NFT×NFT quote math, for the parity
+ * test (`test/quote/nftToNft.parity.test.ts`). Copied rather than imported directly
+ * because the production client is a separate git repository outside this package's
  * `tsconfig.json` `rootDir` (`packages/sdk/tsconfig.json`'s `include: ["src",
  * "test"]`) — importing it directly would break `tsc --noEmit` for this package
- * (plan's own fallback clause, `snf-54-13-PLAN.md` Task 2).
+ * (this package's own documented fallback for that case, Task 2).
  *
- * Source: `snf-client/src/features/swap/hooks/nftToNftMath.ts` (the whole file,
- * `computeNftToNftQuote` + its `ZERO` sentinel) and the four pure helpers it calls
- * from `snf-client/src/lib/nftPricing.ts` (`nftBuyCost`, `nftSellProceeds`,
+ * Source: the production AMM client's own `computeNftToNftQuote` (the whole
+ * function plus its `ZERO` sentinel) and the four pure helpers it calls from that
+ * client's own NFT-pricing module (`nftBuyCost`, `nftSellProceeds`,
  * `applyRoyaltyBuy`, `applyRoyaltySell`, `SNF_NFT_NET_FEE`, `SNF_NFT_FEE_DENOM`),
- * inlined here so this fixture has no dependency on any other `snf-client` file.
+ * inlined here so this fixture has no dependency on any other file from that client.
  *
- * Copied at `snf-client` commit `3863f6917bd316d9a4b7de49e24a9654d48e9ef8` (2026-09-21).
- * If `snf-client`'s `computeNftToNftQuote` changes, this fixture drifts silently
- * until someone re-diffs against that commit — recorded here (and in
- * `snf-54-13-SUMMARY.md`) so a future audit knows exactly what to re-diff against.
+ * Copied at a fixed commit of the production client (2026-09-21).
+ * If the production client's `computeNftToNftQuote` changes, this fixture drifts
+ * silently until someone re-diffs against that commit — recorded here so a future
+ * audit knows exactly what to re-diff against.
  *
  * NOT byte-identical to the SDK's own `quoteNftToNft` philosophy: this reference is
  * FLOAT arithmetic over a point-in-time `reserves` snapshot with a single AVERAGED
  * royalty rate per collection, never reconciled against a live on-chain read. The
  * SDK's `quoteNftToNft` is bigint arithmetic reconciled to the wei against the
  * Router's own on-chain answer, summing RAW per-id royalty reads rather than
- * applying one flat rate (see `snf-54-12-SUMMARY.md`'s rounding-hazard deviation).
+ * applying one flat rate (see this file's rounding-hazard deviation).
  * The parity test therefore compares the two models with `toBeCloseTo` tolerance on
  * a UNIFORM-royalty-rate fixture (every tokenId sharing one rate), where the two
  * models are mathematically equivalent up to floor-vs-float rounding — see that

@@ -8,7 +8,7 @@ import type { Bounds, ExecutionPlan, Step, StepKind, UnsignedTx } from '../../sr
 import type { Quote } from '../../src/types/quote.types'
 
 /**
- * R15 — `createCheckout(plan)`: sessions, subscribers, stale-receipt rejection.
+ * `createCheckout(plan)`: sessions, subscribers, stale-receipt rejection.
  */
 
 function amount(value: bigint): Amount {

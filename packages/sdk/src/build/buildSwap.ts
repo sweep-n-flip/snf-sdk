@@ -15,11 +15,11 @@ import type { SnfClientContext } from '../types/client.types'
 import type { Approval, BuildArgs, ExecutionPlan, Step } from '../types/plan.types'
 
 /**
- * `buildSwap` — the fungible↔fungible builder (R13). Same discipline as the NFT
+ * `buildSwap` — the fungible↔fungible builder. Same discipline as the NFT
  * builders: every number in `tx.data`/`bounds` comes from a FRESH `quoteSwap` call
  * this function performs itself. `args.quote` is read only for IDENTITY — which
  * tokens (`legs[0].path`) and which side the caller pinned exactly
- * (`amountSpecified`, plan 15's own `Quote` addition) — never for the price the
+ * (`amountSpecified`, this module's own `Quote` addition) — never for the price the
  * OTHER side quoted.
  */
 
@@ -37,14 +37,14 @@ function encodeDynamic(abi: Abi, functionName: string, args: readonly unknown[])
  * The six-entry Router-function table this file encodes against, reviewable at a
  * glance rather than buried in nested ternaries:
  *
- * | exactSide | isNativeIn | isNativeOut | function                  |
+ * | exactSide | isNativeIn | isNativeOut | function |
  * |-----------|------------|-------------|----------------------------|
- * | 'in'      | true       | —           | swapExactETHForTokens     |
- * | 'in'      | false      | true        | swapExactTokensForETH     |
- * | 'in'      | false      | false       | swapExactTokensForTokens  |
- * | 'out'     | true       | —           | swapETHForExactTokens     |
- * | 'out'     | false      | true        | swapTokensForExactETH     |
- * | 'out'     | false      | false       | swapTokensForExactTokens  |
+ * | 'in' | true | — | swapExactETHForTokens |
+ * | 'in' | false | true | swapExactTokensForETH |
+ * | 'in' | false | false | swapExactTokensForTokens |
+ * | 'out' | true | — | swapETHForExactTokens |
+ * | 'out' | false | true | swapTokensForExactETH |
+ * | 'out' | false | false | swapTokensForExactTokens |
  */
 export function selectFungibleEntryPoint(args: {
   readonly isNativeIn: boolean
@@ -137,7 +137,7 @@ export async function buildSwap(ctx: SnfClientContext, args: BuildArgs): Promise
   // `hasPendingApproval`: this step's own swap simulation is guaranteed to revert
   // against current state while the ERC-20 allowance above is still missing — skip
   // the live estimate entirely rather than throwing before the caller ever receives
-  // this very approval step (Finding 2, snf-54-18F — the finding's own primary
+  // this very approval step (Finding 2, — the finding's own primary
   // example, first traced on this function).
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,

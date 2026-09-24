@@ -1,7 +1,7 @@
 /**
- * D-03's core: every monetary value in the public API is this two-field shape — a
- * partner never has to know a token's decimals to use the SDK (54-CONTEXT.md D-03,
- * mirroring DATASHEET's `amount` + `formatted` convention).
+ * Every monetary value in the public API is this two-field shape — a
+ * partner never has to know a token's decimals to use the SDK (mirroring DATASHEET's
+ * `amount` + `formatted` convention).
  */
 
 /**

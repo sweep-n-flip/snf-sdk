@@ -6,7 +6,7 @@ import { buildQuoteEnv, ZERO_ADDRESS } from './testHelpers'
 
 /**
  * `quoteBuy` — gross from the Router, reconstructed additively, reconciled with
- * `===` (Task 2, REQ-SDK-12, R8; 54-SPEC.md). Every `<behavior>` bullet is one `it`
+ * `===` (Task 2). Every `<behavior>` bullet is one `it`
  * below.
  */
 
@@ -38,7 +38,7 @@ function demonEnv(overrides: Partial<Parameters<typeof buildQuoteEnv>[0]> = {}) 
   })
 }
 
-describe('quoteBuy (Task 2, R8)', () => {
+describe('quoteBuy (Task 2)', () => {
   it('reproduces the Base DEMON fixture to the wei: pool 121625659884654, marketplace 3040641497116, royalty 6081282994232, gross 130747584376002', async () => {
     const { ctx } = demonEnv()
     const quote = await quoteBuy(ctx, { chainId: 8453, collection: COLLECTION, tokenIds: ['245830'] })
@@ -248,7 +248,7 @@ describe('quoteBuy (Task 2, R8)', () => {
     ).rejects.toMatchObject({ code: 'INVALID_PARAMS' })
   })
 
-  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted', async () => {
     const { ctx: ctxMatching } = demonEnv()
     const quoteMatching = await quoteBuy(ctxMatching, { chainId: 8453, collection: COLLECTION, tokenIds: ['245830'] })
     const { ctx: ctxOmitted } = demonEnv()
@@ -263,7 +263,7 @@ describe('quoteBuy (Task 2, R8)', () => {
     expect(typeof expiresAtOmitted).toBe('string')
   })
 
-  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read', async () => {
     const { ctx, multicall } = demonEnv()
     await expect(
       quoteBuy(ctx, { chainId: 1, collection: COLLECTION, tokenIds: ['245830'] }),

@@ -1,20 +1,19 @@
 /**
  * The Router's own curve and `RoyaltyHelper`, reproduced in `bigint` — byte for byte.
  *
- * `UniswapV2Library.getAmountOut`/`getAmountIn` (`snf-contracts/contracts/periphery/
- * libraries/UniswapV2Library.sol:94-116`) and `RoyaltyHelper.getRoyaltyInfo`
- * (`snf-contracts/contracts/periphery/libraries/RoyaltyHelper.sol`), ported from
- * `snf-drops-registration/src/features/mint-details/genesis/swap/swapQuoteMath.ts`
- * (the existing byte-exact BigInt reference) and extended with the multi-hop chain
+ * `UniswapV2Library.getAmountOut`/`getAmountIn` and `RoyaltyHelper.getRoyaltyInfo`,
+ * both ported from the deployed Solidity libraries they mirror, plus a sibling SnF
+ * product's own byte-exact BigInt reference for the royalty math, and extended with
+ * the multi-hop chain
  * helpers this SDK needs. There is no `number` arithmetic anywhere in this file except
- * array indices — R8's `===` reconciliation (`math/reconcile.ts`) only holds if this
+ * array indices — this rule's `===` reconciliation (`math/reconcile.ts`) only holds if this
  * reproduces the Solidity exactly.
  *
  * Native SnF NFT pools charge `SNF_NFT_NET_FEE` (2%) over `SNF_NFT_FEE_DENOM` — never
  * the plain-Uniswap-V2 0.3% pair constants. A delegated hop's `netFee` (a different,
  * chain-specific delegate constant on most chains) is a **per-hop parameter**, read
- * from the chain registry's `delegateNetFee` — it is never a literal in this file
- * (RESEARCH Assumption A2: each chain's own `Delegation.sol` sets its own value).
+ * from the chain registry's `delegateNetFee` — it is never a literal in this file:
+ * each chain's own `Delegation.sol` sets its own value.
  */
 
 /** Native SnF NFT pool fee numerator — `UniswapV2Library.sol`'s non-delegate branch
@@ -165,9 +164,9 @@ export interface ReconstructRoyaltyResult {
   readonly marketplace: bigint
   /** Sum of `perId` amounts whose receiver is the zero address — Arc's Router variant
    * drops these from what's charged on a buy / returns them to the seller on a sell
-   * (`_unpayableRoyalties`, RESEARCH § "The Arc NativeERC20 variant"). `total` still
+   * (`_unpayableRoyalties`). `total` still
    * includes them, matching `RoyaltyHelper.sol` exactly — the Arc-specific adjustment
-   * is a Router-variant concern for a later plan's `build/` module, not this one. */
+   * is a Router-variant concern for the `build/` module, not this one. */
   readonly unpayable: bigint
 }
 
@@ -176,19 +175,19 @@ const ZERO_ADDRESS_RE = /^0x0+$/i
 /**
  * `RoyaltyHelper.getRoyaltyInfo`'s IERC2981 branch (`RoyaltyHelper.sol:32-53`),
  * reproduced exactly:
- *   1. `salePrice = totalAmount / itemCount` is integer truncation, computed ONCE and
- *      reused for every per-id application (`RoyaltyHelper.sol:33`).
- *   2. Each `amount_i = salePrice * rate_i / 1e18` is applied PER ID, never as one
- *      multiplication over `totalAmount` (`RoyaltyHelper.sol:35`) — a flat-rate
- *      shortcut is algebraically valid ONLY when every id shares one rate; for a fresh
- *      quote always sum the true per-id reads (RESEARCH Pitfall 3).
- *   3. When the summed royalty exceeds `maxRoyaltyAmount = totalAmount * capE18 /
- *      1e18`, `scale = 1e18 * maxRoyaltyAmount / totalRoyaltyAmount` is integer, and
- *      every `amount_i` is re-floored through it (`RoyaltyHelper.sol:40-47`); the
- *      post-cap total is the SUM of the re-floored amounts, which can land up to
- *      `itemCount - 1` wei below `maxRoyaltyAmount` — two independent floors, not one.
- *   4. The marketplace row is appended AFTER the cap and is never scaled by it
- *      (`RoyaltyHelper.sol:50-53`).
+ * 1. `salePrice = totalAmount / itemCount` is integer truncation, computed ONCE and
+ * reused for every per-id application (`RoyaltyHelper.sol:33`).
+ * 2. Each `amount_i = salePrice * rate_i / 1e18` is applied PER ID, never as one
+ * multiplication over `totalAmount` (`RoyaltyHelper.sol:35`) — a flat-rate
+ * shortcut is algebraically valid ONLY when every id shares one rate; for a fresh
+ * quote always sum the true per-id reads (a known pricing pitfall).
+ * 3. When the summed royalty exceeds `maxRoyaltyAmount = totalAmount * capE18 /
+ * 1e18`, `scale = 1e18 * maxRoyaltyAmount / totalRoyaltyAmount` is integer, and
+ * every `amount_i` is re-floored through it (`RoyaltyHelper.sol:40-47`); the
+ * post-cap total is the SUM of the re-floored amounts, which can land up to
+ * `itemCount - 1` wei below `maxRoyaltyAmount` — two independent floors, not one.
+ * 4. The marketplace row is appended AFTER the cap and is never scaled by it
+ * (`RoyaltyHelper.sol:50-53`).
  *
  * This function assumes the collection DOES implement IERC2981 (the caller already
  * probed `supportsInterface` — that network read lives in `collection/royalty.ts`,

@@ -2,16 +2,15 @@ import { evaluateDirectOnly } from './directOnlyRouting'
 import type { EvaluateRouteBlockArgs, RouteBlockCodeMap, RouteBlockResult } from './routing.types'
 
 /**
- * `evaluateRouteBlock` — the typed reason a route is unavailable (REQ-SDK-14, R10;
- * 54-SPEC.md). Ported from `snf-client/src/lib/swap/routeBlock.ts` — see
- * `snf-54-07-SUMMARY.md` for the rename table. `snf-client`'s version only ever
- * distinguishes the two Gate-69.5 reasons (`token-not-routable`/`path-not-routable`);
- * this SDK-level reduction generalises to the full `RouteBlockReason` union R9/R10
- * need (`different-base` for NFT×NFT, `no-pair`/`no-liquidity` for an absent quote).
+ * `evaluateRouteBlock` — the typed reason a route is unavailable. Ported from the
+ * production AMM client's routing-block logic. The production client's version only
+ * ever distinguishes the two Gate-69.5 reasons (`token-not-routable`/`path-not-routable`);
+ * this SDK-level reduction generalises to the full `RouteBlockReason` union both quote
+ * paths need (`different-base` for NFT×NFT, `no-pair`/`no-liquidity` for an absent quote).
  *
- * CR-03's lesson (the reason this is a first-class return value, not `undefined`):
+ * The lesson behind why this is a first-class return value, not `undefined`:
  * an absent path is ambiguous between "take the default route" and "there is no
- * transaction to send" — two `snf-client` consumers read `undefined` as the former
+ * transaction to send" — production consumers once read `undefined` as the former
  * and shipped a wrong-token dispatch. `evaluateRouteBlock` always returns an
  * explicit `blocked` boolean so a caller can never make that mistake.
  */
@@ -35,13 +34,13 @@ export const ROUTE_BLOCK_CODE: RouteBlockCodeMap = {
 /**
  * Resolves the single most specific reason the requested route is blocked, or
  * `blocked: false` when it is routable. Order (most specific first):
- *   1. `unsupportedToken` — the caller already flagged an invalid token param.
- *   2. NFT×NFT `different-base` — the sell and buy legs price in different bases
- *      (54-SPEC.md R9: "pools com base diferente ⇒ NO_ROUTE").
- *   3. `no-pair` — no candidate pool exists for the collection at all.
- *   4. `noLiquidity` — a candidate pool exists but is empty.
- *   5. `direct-only` — the resolved `path` composes a direct-only base into a
- *      fungible leg (Gate 69.5, `directOnlyRouting.ts`).
+ * 1. `unsupportedToken` — the caller already flagged an invalid token param.
+ * 2. NFT×NFT `different-base` — the sell and buy legs price in different bases
+ * (pools with different bases mean no route).
+ * 3. `no-pair` — no candidate pool exists for the collection at all.
+ * 4. `noLiquidity` — a candidate pool exists but is empty.
+ * 5. `direct-only` — the resolved `path` composes a direct-only base into a
+ * fungible leg (Gate 69.5, `directOnlyRouting.ts`).
  * `viablePayTokens` is always populated from `candidates` (never empty when a
  * candidate exists), whether or not the route ends up blocked — a caller building a
  * `SnfError('NO_ROUTE').details.viablePayTokens` never has to re-derive it.

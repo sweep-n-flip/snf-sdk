@@ -5,7 +5,7 @@ import type { BuildArgs } from '../types/plan.types'
 
 /**
  * `validateBuildArgs` — the SPEC's hard caps on every `build*` call, enforced BEFORE
- * any on-chain work (R13; 54-SPEC.md).
+ * any on-chain work.
  *
  * These are hard caps that THROW rather than clamp, on purpose. Every one of the
  * values checked here ends up inside calldata a user signs — a "reasonable default"

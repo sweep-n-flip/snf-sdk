@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitest/config'
 
-// The separate fork-lane project (plan 18, R20). `test/fork/**` is EXCLUDED from the
+// The separate fork-lane project. `test/fork/**` is EXCLUDED from the
 // default `vitest.config.ts` — this config exists so `pnpm test:fork` is the only
 // invocation that ever spawns anvil. Longer timeouts (anvil startup + a real fork
 // RPC round trip is slower than the mocked unit suite); `pool: 'forks'` with

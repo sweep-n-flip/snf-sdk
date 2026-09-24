@@ -8,7 +8,7 @@ import type { SnfClientContext } from '../types/client.types'
 import type { ExecutionPlan, PreflightResult, StepPreflightRefs } from '../types/plan.types'
 
 /**
- * `runPreflight` — the frame-of-signature pre-flight (R14; 54-SPEC.md). Every claim a
+ * `runPreflight` — the frame-of-signature pre-flight. Every claim a
  * plan depends on is re-verified against the chain in ONE Multicall3 call at ONE
  * `blockNumber`, immediately before a caller would sign anything. `batchSize: 0`
  * disables viem's own calldata chunking so every read genuinely lands in that one
@@ -56,8 +56,8 @@ function ownershipChecks(refs: readonly StepPreflightRefs[]): readonly Ownership
     // WERC721 WRAPPER does (`WERC721.mint` pulls the NFT into the wrapper contract on
     // deposit; the Pair only ever holds the fungible wrapper-token balance). Comparing
     // against `r.pair` here made every genuinely-available buy tokenId look
-    // unavailable (Finding 1, snf-54-18-SUMMARY.md; fixed in snf-54-18F) — confirmed
-    // live against both the Base and Arc pools in plan 18's fork lanes.
+    // unavailable (Finding 1, fixed in) — confirmed
+    // live against both the Base and Arc pools later's fork lanes.
     for (const id of r.buyTokenIds ?? []) checks.push({ tokenId: id, collection: r.collection, expectedOwner: r.wrapper })
   }
   return checks

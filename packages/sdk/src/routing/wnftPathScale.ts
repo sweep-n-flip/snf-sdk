@@ -2,13 +2,11 @@ import { ONE_E18 } from '../math/quoteMath'
 import type { WnftScaleResult } from './routing.types'
 
 /**
- * wNFT fractional-amount path scaling (REQ-SDK-14, R10; 54-SPEC.md). Ported from
- * `snf-client/src/lib/swap/wnftPathScale.ts` — see `snf-54-07-SUMMARY.md` for the
- * rename table. `snf-client`'s version scales a `number` display amount by whichever
+ * wNFT fractional-amount path scaling. Ported from the production AMM client's own
+ * scaling logic, which scales a `number` display amount by whichever
  * decimal axis applies to each side of a path (`wnftPathDecimals`); this SDK layer
  * is the exact-`bigint` counterpart that turns a whole-NFT count into wrapper units
- * and back, since every SDK-internal amount is a `bigint`, never a display `number`
- * (D-03).
+ * and back, since every SDK-internal amount is a `bigint`, never a display `number`.
  *
  * 1 NFT = 1e18 wrapper units (`10n ** 18n`, the same `ONE_E18` from
  * `math/quoteMath.ts`) — on EVERY chain, including Arc. This is the wrapper

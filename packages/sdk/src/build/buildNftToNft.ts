@@ -18,7 +18,7 @@ import type { QuoteLeg } from '../types/quote.types'
 
 /**
  * `buildNftToNft` — the two-or-three-step, USER-DRIVEN `ExecutionPlan` for an NFT×NFT
- * swap (R13, R15, INV-17). This is TWO OR THREE SEPARATE TRANSACTIONS the user
+ * swap (INV-17). This is TWO OR THREE SEPARATE TRANSACTIONS the user
  * initiates, never one flow the SDK drives: `[approval(sell)?, swap-sell, swap-buy,
  * swap-buy-wnft?]`. Each on-chain transaction maps to a discrete `ready-*` checkpoint
  * in `createCheckout` (`checkout/reducer.ts`'s `NEXT_READY_BY_KIND`) and requires its
@@ -110,7 +110,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
 
   // ── Approvals — the sell collection's setApprovalForAll ONLY (the buy leg receives
   // NFTs, it needs no approval of its own). Computed BEFORE any gas estimation
-  // (Finding 2, snf-54-18F): the sell step's own swap simulation is guaranteed to
+  // (Finding 2): the sell step's own swap simulation is guaranteed to
   // revert against current state while this approval is still missing — estimating
   // it live in that case would throw before the caller ever receives the very
   // approval step (below) that fixes it.

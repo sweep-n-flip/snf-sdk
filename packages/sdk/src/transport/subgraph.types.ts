@@ -1,5 +1,5 @@
 /**
- * Types for the subgraph transport (R4; 54-SPEC.md). See `cache.ts`/`breaker.ts` for
+ * Types for the subgraph transport. See `cache.ts`/`breaker.ts` for
  * the instance-scoped primitives these shapes feed, `queries.ts` for the GraphQL
  * documents that produce the raw response shapes below, and `subgraph.ts` for
  * `createSubgraphTransport`, the sole module that assembles all of it into a
@@ -7,10 +7,9 @@
  */
 
 /**
- * The six numbers behind `SnfClientConfig.subgraph` (R4). Defaults mirror the SPEC's
- * own acceptance numbers (60 s / 30 s TTL, 300 s / 900 s lag, 3 failures / 60 s
- * breaker) — `54-CONTEXT.md`'s "Claude's Discretion" note allows adjusting them with a
- * documented reason; none were changed while implementing this plan.
+ * The six numbers behind `SnfClientConfig.subgraph`. Defaults mirror the documented
+ * acceptance numbers (60 s / 30 s TTL, 300 s / 900 s lag, 3 failures / 60 s
+ * breaker) — adjustable with a documented reason; none were changed here.
  */
 export interface SubgraphTransportOptions {
   /** Pool-query TTL, ms. Default 60_000. */
@@ -28,7 +27,7 @@ export interface SubgraphTransportOptions {
 }
 
 /**
- * A transport result, always carrying the freshness that certifies it (R4/R7's "never
+ * A transport result, always carrying the freshness that certifies it (the "never
  * silently OK" rule) — a caller can never receive `data` without also receiving the
  * block it was read `asOfBlock`, its `lagSeconds`, and whether it's `stale`.
  */
@@ -43,7 +42,7 @@ export interface CachedResult<T> {
 }
 
 /** The raw envelope every Goldsky response is parsed into. `subgraph.ts`'s `execute()`
- * checks `.errors` strictly BEFORE `.data` (RESEARCH Pitfall 3, verified live: this
+ * checks `.errors` strictly BEFORE `.data` (a known subgraph pitfall, verified live: this
  * subgraph returns HTTP 200 with an `errors` array and no `data` on a schema
  * mismatch). */
 export interface GraphQLEnvelope<T> {
@@ -52,7 +51,7 @@ export interface GraphQLEnvelope<T> {
 }
 
 /** `_meta.block` — the freshness anchor every query in `queries.ts` selects alongside
- * its data, in the SAME POST (R4's non-negotiable: a freshness line must describe the
+ * its data, in the SAME POST (this rule's non-negotiable: a freshness line must describe the
  * exact data it labels, never a separate request's moment). */
 export interface SubgraphMetaBlock {
   readonly number: number
@@ -84,7 +83,7 @@ export interface SubgraphToken {
   readonly collection?: SubgraphTokenCollection | null
 }
 
-/** One `pairs()`/`pair()` row — mirrors `snf-client/src/lib/queries/pools.ts`'s
+/** One `pairs()`/`pair()` row — mirrors the production AMM client's own
  * `SubgraphPair`, plus the `_meta` this transport always requests alongside it. */
 export interface SubgraphPair {
   readonly id: string
@@ -121,7 +120,7 @@ export interface SubgraphCurrency {
 /**
  * The instance-scoped subgraph transport `createSubgraphTransport` returns — a TTL
  * cache, `_meta.block` freshness gate and circuit breaker, all closed over inside one
- * client instance (R3, R4). `types/client.types.ts`'s `SnfClientContext.transport`
+ * client instance. `types/client.types.ts`'s `SnfClientContext.transport`
  * imports this exact interface rather than re-declaring a narrower one — see this
  * plan's SUMMARY, Deviations, for why.
  */
@@ -134,6 +133,6 @@ export interface SubgraphTransport {
   inventory(wrapper: `0x${string}`): Promise<CachedResult<SubgraphCurrency | null>>
   /** No cache — a health probe must always be live. Still routed through the breaker. */
   meta(): Promise<CachedResult<SubgraphMeta>>
-  /** Clears this instance's cache — used by `txInvalidationVersion` bumps (R15/16). */
+  /** Clears this instance's cache — used by `txInvalidationVersion` bumps. */
   clear(): void
 }

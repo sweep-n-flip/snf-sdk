@@ -10,7 +10,7 @@ custodies. `viem` is the only peer.
 pnpm add @sweepnflip/sdk viem
 ```
 
-Until Phase 55's first `npm publish` (D-08), consume this package from a local
+Until the first `npm publish`, consume this package from a local
 checkout via `pnpm link` or a tarball (`pnpm pack`).
 
 ## Minimal snippet

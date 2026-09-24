@@ -4,7 +4,7 @@ import { spotPrice } from '../math/nftPricing'
 import type { Reserves } from '../math/nftPricing.types'
 
 /**
- * Cross-pool / single-pool price impact (R9, R10; 54-SPEC.md; docs/NFT_SWAP_RULES.md).
+ * Cross-pool / single-pool price impact (docs/NFT_SWAP_RULES.md).
  *
  * THE NOMINAL BASELINE IS THE SPOT (MID) PRICE — `reserveBase / reserveWnft` per pool,
  * no fees, no curve. The active fee policy (marketplace + royalty, when on) is layered
@@ -12,15 +12,15 @@ import type { Reserves } from '../math/nftPricing.types'
  * toggling the royalty policy moves both sides by the same factor and the reported
  * impact does not change:
  *
- *   priceImpact = clamp[0,100]((1 − actualReceive / nominalReceive) × 100)
+ * priceImpact = clamp[0,100]((1 − actualReceive / nominalReceive) × 100)
  *
  * Two rejected alternatives (docs/NFT_SWAP_RULES.md):
- *   1. "Percentage of pool consumed" — exceeded 1000% on small pools; it measures pool
- *      depth, not price impact, and was never a meaningful number.
- *   2. The atomic-unit curve estimate helpers (`math/nftPricing.ts`) as the nominal —
- *      those already include the pool fee, the 1-unit curve impact, and a rounding
- *      offset that can dominate the ratio on an asymmetric pool. Using either as
- *      "nominal" double-counts the very curve effect this metric measures.
+ * 1. "Percentage of pool consumed" — exceeded 1000% on small pools; it measures pool
+ * depth, not price impact, and was never a meaningful number.
+ * 2. The atomic-unit curve estimate helpers (`math/nftPricing.ts`) as the nominal —
+ * those already include the pool fee, the 1-unit curve impact, and a rounding
+ * offset that can dominate the ratio on an asymmetric pool. Using either as
+ * "nominal" double-counts the very curve effect this metric measures.
  *
  * The clamp is defence-in-depth, not cosmetics: impact cannot exceed 100% by
  * definition (you cannot receive less than nothing), so a value outside [0,100] means

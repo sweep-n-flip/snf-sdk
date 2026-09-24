@@ -14,11 +14,11 @@ import type { PoolInventory } from '../types/inventory.types'
 
 /**
  * `poolInventory(pair)` — candidate tokenIds a pool currently holds, the buyable
- * ceiling, and freshness (R7; 54-SPEC.md). "The index proposes, the chain decides":
+ * ceiling, and freshness. "The index proposes, the chain decides":
  * `availableCount` is ALWAYS recomputed from the live `getReserves` read, never taken
  * from a partner-supplied provider or from the subgraph — a provider can propose ids,
- * it can never raise the ceiling (T-54-56). This module never trusts `tokenIds` as
- * transaction-authoritative either; `plan.preflight()` (plan 14) re-asserts pool
+ * it can never raise the ceiling. This module never trusts `tokenIds` as
+ * transaction-authoritative either; `plan.preflight()` re-asserts pool
  * ownership of the exact ids in the signing frame.
  */
 
@@ -49,7 +49,7 @@ export async function poolInventory(ctx: SnfClientContext, pair: `0x${string}`):
   // whichever of token0/token1 turns out to BE the wrapper, an address this batch's
   // own results are what determine — a genuine sequential dependency, not an
   // oversight (documented deviation from the plan's literal "one multicall" framing,
-  // see snf-54-11-SUMMARY.md).
+  // see).
   const pairContracts: readonly Call[] = [
     { address: pairAddress, abi: PAIR_ABI, functionName: 'token0', args: [] },
     { address: pairAddress, abi: PAIR_ABI, functionName: 'token1', args: [] },
@@ -117,7 +117,7 @@ export async function poolInventory(ctx: SnfClientContext, pair: `0x${string}`):
   const availableCount = availableCountFromReserve(reserveWnft)
 
   // Step 3 — a partner-supplied provider replaces BOTH the enumerable and subgraph
-  // paths below, but never this ceiling (T-54-56).
+  // paths below, but never this ceiling.
   const provider = ctx.providers.poolInventory
   if (provider) {
     const provided = await provider.getPoolInventory(pairAddress, ctx.chain.chainId)

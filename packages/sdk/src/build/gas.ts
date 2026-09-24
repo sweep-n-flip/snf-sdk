@@ -4,8 +4,8 @@ import { BaseError, ContractFunctionRevertedError } from 'viem'
 import type { SnfPublicClient } from '../types/client.types'
 
 /**
- * Dynamic gas estimation for NFT-batch Router writes (R13; 54-SPEC.md). Ported in
- * behaviour, verbatim, from `snf-client/src/hooks/contracts/nftBatchGas.ts` — gas for
+ * Dynamic gas estimation for NFT-batch Router writes. Ported in
+ * behaviour, verbatim, from the production AMM client's own gas-estimation hook — gas for
  * an NFT batch must be ESTIMATED, not a per-chain constant: Arbitrum One measures
  * ~300k/NFT (L1 calldata billing) against Apechain's ~140k/NFT, so a single literal
  * is wrong on at least one side of that gap in both directions (workspace memory
@@ -58,7 +58,7 @@ export async function estimateGasWithBuffer(args: EstimateGasWithBufferArgs): Pr
   try {
     // viem's overload resolution cannot narrow a dynamically-assembled
     // { abi, functionName, args } triple to one specific function signature — the
-    // same cast this package's own source analog (snf-client/nftBatchGas.ts) uses
+    // same cast this package's own source analog (the production client's gas hook) uses
     // for the identical reason.
     const params = {
       address: args.address,
@@ -89,8 +89,8 @@ export interface ResolvedStepGas {
 
 /**
  * `resolveGasForStep` — the missing-approval-aware wrapper every `build*` function
- * calls instead of `estimateGasWithBuffer` directly (Finding 2, snf-54-18-SUMMARY.md;
- * fixed in snf-54-18F). When THIS step's own plan already carries an approval it
+ * calls instead of `estimateGasWithBuffer` directly (Finding 2, ;
+ * fixed in). When THIS step's own plan already carries an approval it
  * depends on (the caller has not granted it on-chain yet), the step's swap
  * simulation is GUARANTEED to revert against CURRENT state — attempting it anyway
  * hits `estimateGasWithBuffer`'s own by-design re-throw ("a genuine simulated revert

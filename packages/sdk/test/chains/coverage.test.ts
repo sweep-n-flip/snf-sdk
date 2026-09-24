@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 import { getChain, isSupportedChain, SNF_CHAIN_IDS, SNF_CHAINS } from '../../src/chains/registry'
 
 /**
- * Registry-vs-`snf-client` diff (R2; 54-SPEC.md). Reads the production config files
+ * Registry-vs-`snf-client` diff. Reads the production config files
  * `snf-client` actually ships **from disk**, at test time — never `import`s them (that
  * would trip `local/no-snf-backend` and pull an unrelated app's dependency graph into
  * this package). If a consumer clones `snf-sdk` standalone (no sibling `snf-client`

@@ -4,21 +4,21 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 /**
- * snf-54-20 (R21, REQ-SDK-01, REQ-SDK-52, T-54-117). Three things this test proves
+ * snf-54-20. Three things this test proves
  * about the PUBLISHED package, not the source:
  *
- *  1. The built `dist/index.js` public surface of both packages is EXACTLY the
- *     inline, sorted list below — an accidental new export (or a removed one) shows
- *     up as a diff on this file, not a silent surface change nobody reviewed.
- *  2. Every domain operation stays a method on the client `createSnfClient` returns —
- *     `quoteBuy`/`buildBuy`/`resolveCollection` are never free-standing exports
- *     (`src/index.ts`'s own header comment explains why: a second, undocumented
- *     entry point this package would then have to keep compatible forever).
- *  3. The root README's `## Quickstart` fenced block is real code an example
- *     ACTUALLY runs — every non-comment line of it must appear, verbatim after
- *     whitespace normalisation, in `examples/vanilla/src/index.mjs` or
- *     `examples/next-app/src/components/SwapPanel.tsx`. A quickstart no example runs
- *     is documentation that will rot (T-54-117).
+ * 1. The built `dist/index.js` public surface of both packages is EXACTLY the
+ * inline, sorted list below — an accidental new export (or a removed one) shows
+ * up as a diff on this file, not a silent surface change nobody reviewed.
+ * 2. Every domain operation stays a method on the client `createSnfClient` returns —
+ * `quoteBuy`/`buildBuy`/`resolveCollection` are never free-standing exports
+ * (`src/index.ts`'s own header comment explains why: a second, undocumented
+ * entry point this package would then have to keep compatible forever).
+ * 3. The root README's `## Quickstart` fenced block is real code an example
+ * ACTUALLY runs — every non-comment line of it must appear, verbatim after
+ * whitespace normalisation, in `examples/vanilla/src/index.mjs` or
+ * `examples/next-app/src/components/SwapPanel.tsx`. A quickstart no example runs
+ * is documentation that will rot.
  *
  * Imports the BUILT `dist/index.js` (not `src/index.ts`) deliberately — a type-only
  * re-export or a tree-shaken-away symbol would still type-check against `src`, but
@@ -74,7 +74,7 @@ const ADAPTER_EXPORTS = [
   'useSnfQuoteSell',
 ]
 
-describe('public surface snapshot (built dist/index.js, R21/REQ-SDK-01)', () => {
+describe('public surface snapshot (built dist/index.js)', () => {
   it('@sweepnflip/sdk exports exactly this sorted list — no more, no fewer', async () => {
     const mod = (await import(pathToFileURL(SDK_DIST).href)) as Record<string, unknown>
     expect(Object.keys(mod).sort()).toEqual([...CORE_EXPORTS].sort())
@@ -121,7 +121,7 @@ describe('public surface snapshot (built dist/index.js, R21/REQ-SDK-01)', () => 
   )
 })
 
-describe('README quickstart drift (T-54-117)', () => {
+describe('README quickstart drift', () => {
   function normalize(s: string): string {
     return s.replace(/\s+/g, ' ').trim()
   }
@@ -166,7 +166,7 @@ describe('README quickstart drift (T-54-117)', () => {
     expect(lines.length).toBeGreaterThan(0)
   })
 
-  it('is at most 20 non-comment, non-blank lines (R1/AC #2)', () => {
+  it('is at most 20 non-comment, non-blank lines (acceptance criterion #2)', () => {
     expect(lines.length).toBeLessThanOrEqual(20)
   })
 

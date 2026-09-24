@@ -81,7 +81,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('createSubgraphTransport — R4 acceptance matrix', () => {
+describe('createSubgraphTransport — acceptance matrix', () => {
   // ── 1. Dedupe ──────────────────────────────────────────────────────────────────────
   it('50 concurrent inventory() calls to the same key produce exactly 1 fetch; all 50 resolve to the same data', async () => {
     const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0)))
@@ -334,7 +334,7 @@ describe('createSubgraphTransport — R4 acceptance matrix', () => {
     expect(body.variables.wrapper).toBe(mixedCase.toLowerCase())
   })
 
-  // ── 16. Instance isolation (R3) ────────────────────────────────────────────────────
+  // ── 16. Instance isolation ────────────────────────────────────────────────────
   it('two transports on two different chains share nothing and hit different URLs', async () => {
     const fetchMock = vi.fn<typeof fetch>(() => Promise.resolve(currencyEnvelope(0)))
     vi.stubGlobal('fetch', fetchMock)

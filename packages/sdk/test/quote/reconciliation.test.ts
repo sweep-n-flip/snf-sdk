@@ -7,7 +7,7 @@ import { buildQuoteEnv, ZERO_ADDRESS } from './testHelpers'
 
 /**
  * `loadQuoteContext` — one pinned block, `capRoyaltyFee=false` provably false, the
- * per-id sale price computed once (Task 1, R8; 54-SPEC.md). Also the shared fixture
+ * per-id sale price computed once (Task 1). Also the shared fixture
  * home for the Base DEMON buy fixture and the synthetic 1-wei divergence, reused in
  * spirit by `quoteBuy.test.ts`/`quoteSell.test.ts`'s own end-to-end assertions.
  */
@@ -30,7 +30,7 @@ const DEMON_MARKETPLACE_1 = 3_040_641_497_116n
 const DEMON_ROYALTY_1 = 6_081_282_994_232n
 const DEMON_GROSS_1 = 130_747_584_376_002n
 
-describe('loadQuoteContext (Task 1, R8)', () => {
+describe('loadQuoteContext (Task 1)', () => {
   it('returns one pinned blockNumber, reserves, wrapperIsToken0, wrapperDecimals, quoteDecimals, marketplaceFeeE18, royaltyCapE18, poolLeg, routerTotal, perIdRoyalty', async () => {
     const { ctx } = buildQuoteEnv({
       pair: PAIR,

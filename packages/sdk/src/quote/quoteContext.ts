@@ -13,14 +13,14 @@ import type { SnfClientContext } from '../types/client.types'
 
 /**
  * `loadQuoteContext` — every on-chain input a `quoteBuy`/`quoteSell` call needs,
- * pinned to ONE block (R8, R11; 54-SPEC.md). Merges the reads spread across
+ * pinned to ONE block. Merges the reads spread across
  * `snf-client`'s `useNFTBuyQuote`/`useNFTSellQuote`/`useRouterFees`/
  * `useRouterRoyaltyCap`/`useReserves` into two multicalls: round 1 (reserves,
  * `token0`/`token1`, wrapper `decimals()`, `marketplaceFee()`, `royaltyFeeCap()`,
  * the Router's own `*Collection` gross/net, and the plain wrapper-leg `poolLeg`) and
  * round 2 (per-id `royaltyInfo` at the REAL sale price, which can only be computed
  * once round 1's `poolLeg` is known — a genuine sequential dependency, not an
- * oversight, exactly like plan 11's `poolInventory` two-batch precedent). Both
+ * oversight, exactly like this module's `poolInventory` two-batch precedent). Both
  * rounds are pinned to the SAME `blockNumber` (read once, BEFORE round 1, then
  * passed explicitly to both multicalls) so the whole context describes one
  * consistent block despite the two round trips.
@@ -32,7 +32,7 @@ import type { SnfClientContext } from '../types/client.types'
  *
  * Everything this function returns is on the POOL axis (`getQuoteDecimals(chainId)`
  * — 6 on Arc, 18 elsewhere) — never an 18-decimal EVM-axis literal; the EVM axis is
- * derived only by `build/` (plan 15) via `toNativeValue`.
+ * derived only by `build/` via `toNativeValue`.
  */
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
@@ -63,7 +63,7 @@ export interface LoadQuoteContextArgs {
 /** One tokenId's on-chain `royaltyInfo` read, ALREADY at the real sale price — the
  * raw amount, never re-derived through a rate (see this module's header: deriving a
  * "rate" from `amount/salePrice` and re-multiplying loses up to 1 wei on some
- * inputs, which would break R8's `===` reconciliation; the raw amount is exact by
+ * inputs, which would break this rule's `===` reconciliation; the raw amount is exact by
  * construction). A read that fails/reverts (the collection does not implement
  * IERC2981 for this id) maps to `amount: 0n` — exactly `RoyaltyHelper.sol`'s own
  * non-IERC2981, marketplace-fee-only branch. */

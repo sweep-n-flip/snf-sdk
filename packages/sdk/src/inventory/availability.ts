@@ -1,7 +1,7 @@
 import { assertParam } from '../errors'
 
 /**
- * The two pure rules behind `poolInventory` (R7; 54-SPEC.md): the buyable ceiling and
+ * The two pure rules behind `poolInventory`: the buyable ceiling and
  * bigint id ordering. No I/O in this file — every input is already a `bigint`/string
  * array, and every comparison here stays `bigint` until the one documented, guarded
  * final narrowing to a plain `Number` at the very end of `availableCountFromReserve`.

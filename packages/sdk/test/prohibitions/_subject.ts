@@ -3,23 +3,22 @@ import path from 'node:path'
 
 /**
  * `resolveSubject` — the `GSD_PROHIB_SUBJECT` convention every prohibition test in
- * this directory uses to select which implementation it exercises (54-SPEC.md
- * §Prohibitions; `gsd-core/references/prohibition-probe.md`'s
+ * this directory uses to select which implementation it exercises (the
  * `check_violation_fixture`/`check_clean_fixture` causation-control contract).
  *
- * `GSD_PROHIB_SUBJECT` accepts exactly the three values the SPEC's own descriptors
- * name, all resolved RELATIVE TO `packages/sdk/` (matching the SPEC's own
+ * `GSD_PROHIB_SUBJECT` accepts exactly the three values the documented prohibition
+ * descriptors name, all resolved RELATIVE TO `packages/sdk/` (matching the same
  * `check_target`/`check_violation_fixture`/`check_clean_fixture` path convention —
  * e.g. `test/fixtures/prohib/caller-price-violation.ts`):
  *
- *   - unset               -> `defaultPath` (the REAL production module this
- *                             prohibition governs — see each test file's own header
- *                             for exactly which export is exercised and why calling
- *                             it with an extra, real-module-ignored field is what
- *                             makes the "default is the real module" claim literal
- *                             rather than aspirational).
- *   - a clean fixture      -> must behave IDENTICALLY to the real module (GREEN).
- *   - a violation fixture  -> must DIVERGE from the real module's guarantee (RED).
+ * - unset -> `defaultPath` (the REAL production module this
+ * prohibition governs — see each test file's own header
+ * for exactly which export is exercised and why calling
+ * it with an extra, real-module-ignored field is what
+ * makes the "default is the real module" claim literal
+ * rather than aspirational).
+ * - a clean fixture -> must behave IDENTICALLY to the real module (GREEN).
+ * - a violation fixture -> must DIVERGE from the real module's guarantee (RED).
  *
  * `import()`ing a `.ts` path directly works here because vitest's own vite transform
  * pipeline compiles any module reachable from a test file's module graph — including
@@ -28,8 +27,8 @@ import path from 'node:path'
  *
  * A runner points this env var at a fixture like so (both shells — no `cross-env`
  * needed since the test itself reads `process.env`, not a shell-substituted CLI arg):
- *   PowerShell : `$env:GSD_PROHIB_SUBJECT = "test/fixtures/prohib/X-violation.ts"; pnpm ... vitest run test/prohibitions/Y.test.ts`
- *   Git Bash   : `GSD_PROHIB_SUBJECT=test/fixtures/prohib/X-violation.ts pnpm ... vitest run test/prohibitions/Y.test.ts`
+ * PowerShell : `$env:GSD_PROHIB_SUBJECT = "test/fixtures/prohib/X-violation.ts"; pnpm ... vitest run test/prohibitions/Y.test.ts`
+ * Git Bash : `GSD_PROHIB_SUBJECT=test/fixtures/prohib/X-violation.ts pnpm ... vitest run test/prohibitions/Y.test.ts`
  */
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')

@@ -12,7 +12,7 @@ import baseDemonFixture from '../fixtures/collections/base-demon.json'
 
 /**
  * `resolveCollection` — on-chain discovery, subgraph enrichment, `wrapperVerified`,
- * `redemptionLocked` (REQ-SDK-10, R6; 54-SPEC.md). Every `<behavior>` bullet of plan
+ * `redemptionLocked`. Every `<behavior>` bullet of plan
  * 10's Task 3 is one `it` below. The two SPEC fixtures (Base DEMON, Arc ARCT) drive
  * the end-to-end cases.
  */
@@ -74,7 +74,7 @@ function fakeCtx(
   } as unknown as SnfClientContext
 }
 
-describe('resolveCollection (R6)', () => {
+describe('resolveCollection', () => {
   it('a collection with a wrapper and one native pair: pools.length===1, baseToken.isNative, real wrapperIsToken0', async () => {
     const chain = getChain(BASE_CHAIN_ID)
     const reserveNative = 1_000_000_000_000_000_000n
@@ -292,7 +292,7 @@ describe('resolveCollection (R6)', () => {
     expect(result.redemptionLocked).toBe(false)
   })
 
-  describe('Base DEMON fixture (RESEARCH Open Question #2, closed)', () => {
+  describe('Base DEMON fixture (a resolved open question)', () => {
     const fixture = baseDemonFixture
     const pair = getAddress(fixture.pair) as `0x${string}`
     const wrapper = getAddress(fixture.wrapper) as `0x${string}`
@@ -356,7 +356,7 @@ describe('resolveCollection (R6)', () => {
   })
 })
 
-describe('rankPoolsByLiquidity (R6 Edge ordering)', () => {
+describe('rankPoolsByLiquidity (Edge ordering)', () => {
   const nativeToken = { address: '0x1' as `0x${string}`, symbol: 'ETH', decimals: 18, isNative: true }
   const usdcToken = { address: '0x2' as `0x${string}`, symbol: 'USDC', decimals: 6, isNative: false }
 

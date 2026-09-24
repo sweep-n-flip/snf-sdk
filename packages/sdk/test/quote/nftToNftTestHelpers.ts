@@ -8,12 +8,12 @@ import type { SnfClientContext } from '../../src/types/client.types'
  * Two-collection fixture builder for `test/quote/{quoteNftToNft,nftToNft.parity}.test.ts`
  * — `quoteNftToNft` resolves TWO independent collections (via `resolveCollection` +,
  * for the buy leg, `poolInventory`) against the SAME `ctx`, so `test/quote/testHelpers.
- * ts`'s single-collection, batch-SHAPE-keyed dispatcher (plan 12) cannot distinguish
+ * ts`'s single-collection, batch-SHAPE-keyed dispatcher cannot distinguish
  * "the sell collection's `name()`" from "the buy collection's `name()`" — both calls
  * have the identical shape. This dispatcher resolves every multicall entry ONE AT A
  * TIME by its `address`/`args`, which naturally disambiguates the two collections (not
  * itself a `*.test.ts` — same non-test-file convention as `testHelpers.ts`, see
- * `snf-54-13-SUMMARY.md`, Deviations).
+ * , Deviations).
  */
 
 export type ReadResult = { readonly status: 'success' | 'failure'; readonly result?: unknown }

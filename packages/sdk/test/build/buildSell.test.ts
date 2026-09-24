@@ -111,7 +111,7 @@ beforeEach(() => {
   mockedQuoteSell.mockReset()
 })
 
-describe('buildSell — fresh re-quote, never the caller\'s numbers (R13, T-54-81)', () => {
+describe('buildSell — fresh re-quote, never the caller\'s numbers', () => {
   it('calls quoteSell again internally with the args\' selection, not the caller\'s totals', async () => {
     const reQuote = fixtureQuote({ totalProceeds: 3_000_000n })
     mockedQuoteSell.mockResolvedValue(reQuote)
@@ -186,7 +186,7 @@ describe('buildSell — approvals (setApprovalForAll always checked, native or E
     expect(calls[0]).toHaveLength(1) // only the erc721 isApprovedForAll read
   })
 
-  // Finding 2, snf-54-18-SUMMARY.md (fixed in snf-54-18F): a missing setApprovalForAll
+  // Finding 2, (fixed in): a missing setApprovalForAll
   // used to make buildSell THROW (the swap step's live gas estimate reverted before
   // assemblePlan ever ran). `estimateContractGasImpl` is wired to throw a GENUINE
   // simulated revert if it is EVER called, proving the fix works because the live
@@ -289,7 +289,7 @@ describe('buildSell — encoding (native vs ERC-20 entry point, capRoyaltyFee pi
   })
 })
 
-describe('buildSell — validation (R13 hard caps)', () => {
+describe('buildSell — validation (Hard caps)', () => {
   it('deadline = now + 3601 throws INVALID_PARAMS', async () => {
     const ctx = buildCtx({})
     const now = Math.floor(Date.now() / 1000)

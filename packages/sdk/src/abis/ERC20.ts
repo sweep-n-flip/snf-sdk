@@ -1,7 +1,7 @@
 /**
  * Minimal ERC-20 ABI covering balance, allowance, approve, transfer and metadata reads.
- * Verbatim copy from `snf-client/src/abis/ERC20.ts`
- * (commit `9e6c70aa466b62e68854cf781d723fd5cc08c1e8`), only the exported const renamed.
+ * Verbatim copy from the production AMM client's own ABI, only the exported const
+ * renamed.
  */
 export const ERC20_ABI = [
   {

@@ -7,22 +7,22 @@ import { buildTwoLegEnv, ZERO_ADDRESS, type LegConfig, type TwoLegConfig } from 
 import { computeNftToNftQuote } from '../parity/computeNftToNftQuote.reference'
 
 /**
- * R9 parity: the SDK's `quoteNftToNft` vs `snf-client`'s `computeNftToNftQuote`
- * (copied at commit `3863f6917bd316d9a4b7de49e24a9654d48e9ef8`, see
+ * Parity: the SDK's `quoteNftToNft` vs the production AMM client's own
+ * `computeNftToNftQuote` (see
  * `test/parity/computeNftToNftQuote.reference.ts`'s header).
  *
  * THE TWO MODELS ARE NOT THE SAME MATH, BY DESIGN:
- *   - The reference is FLOAT arithmetic over a `reserves` snapshot, applies royalty
- *     as ONE AVERAGED rate per collection, and CAPS the buy count itself
- *     (`actualBuyCount = min(nftOutCount, maxBuyCount)`) when the sell proceeds
- *     cannot cover the requested buy — the pre-v1 client UX contract ("Route A"),
- *     which never requires a top-up from the user.
- *   - The SDK is BIGINT arithmetic reconciled to the wei against the Router's own
- *     on-chain read, sums RAW per-id royalty amounts (never an average —
- *     `snf-54-12-SUMMARY.md`'s rounding-hazard deviation), and ALWAYS fulfils the
- *     requested `buy.count` up to pool depth, exposing `remainder`/`netProceeds`/
- *     `buyCost` so a caller derives a top-up instead — the v1 API contract
- *     (DATASHEET §4 "Remainder field").
+ * - The reference is FLOAT arithmetic over a `reserves` snapshot, applies royalty
+ * as ONE AVERAGED rate per collection, and CAPS the buy count itself
+ * (`actualBuyCount = min(nftOutCount, maxBuyCount)`) when the sell proceeds
+ * cannot cover the requested buy — the pre-v1 client UX contract ("Route A"),
+ * which never requires a top-up from the user.
+ * - The SDK is BIGINT arithmetic reconciled to the wei against the Router's own
+ * on-chain read, sums RAW per-id royalty amounts (never an average —
+ * this file's rounding-hazard deviation), and ALWAYS fulfils the
+ * requested `buy.count` up to pool depth, exposing `remainder`/`netProceeds`/
+ * `buyCost` so a caller derives a top-up instead — the v1 API contract
+ * (DATASHEET §4 "Remainder field").
  *
  * Parity is therefore measured on rows where the reference's own cap NEVER engages
  * (`maxBuyCount >= buyCount` asserted per row) — in that regime the two models

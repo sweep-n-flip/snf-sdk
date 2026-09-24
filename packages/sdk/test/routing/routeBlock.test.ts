@@ -6,9 +6,9 @@ import { ROUTE_BLOCK_REASONS } from '../../src/routing/routing.types'
 import type { PoolRef } from '../../src/routing/routing.types'
 
 /**
- * Parity port of `snf-client/src/lib/swap/__tests__/routeBlock.test.ts`, extended
- * with the different-base NFT×NFT case R9's `quoteNftToNft` (plan 13) depends on
- * (this plan proves the predicate so plan 13 asserts behaviour instead of
+ * Parity port of the production AMM client's own routing-block test suite, extended
+ * with the different-base NFT×NFT case `quoteNftToNft` depends on
+ * (this file proves the predicate so the quote layer can assert behaviour instead of
  * re-deriving it) and the plan's required reason→code exhaustiveness test.
  */
 
@@ -71,7 +71,7 @@ describe('evaluateRouteBlock', () => {
     expect(result.reason).toBe('no-liquidity')
   })
 
-  it('NFT×NFT with different pool bases ⇒ different-base / NO_ROUTE — the predicate plan 13 depends on', () => {
+  it('NFT×NFT with different pool bases ⇒ different-base / NO_ROUTE — the predicate the quote layer depends on', () => {
     const result = evaluateRouteBlock({
       candidates: [wethPool],
       path: undefined,

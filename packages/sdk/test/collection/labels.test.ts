@@ -8,8 +8,7 @@ import {
 } from '../../src/collection/labels'
 
 /**
- * `getCollectionLabels` — an address is never a name (REQ-SDK-10, R6, prohibition #6;
- * 54-SPEC.md). Every `<behavior>` bullet of plan 10's Task 1 is one `it` below.
+ * `getCollectionLabels` — an address is never a name (prohibition #6).
  */
 
 const ADDRESS = '0x7c479938ba2a3edb0a744c3743cf6db4b7e70ebc' as `0x${string}`

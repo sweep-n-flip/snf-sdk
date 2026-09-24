@@ -12,11 +12,11 @@ import type { SnfClientContext } from '../types/client.types'
  * (`RoyaltyHelper.sol`), including the `capBps === 0` ⇒ zero-royalty footgun and the
  * `capRoyaltyFee=false` pin (SPEC prohibition #6 — this function never sends
  * `capRoyaltyFee=true` anywhere; every mention of that flag below is a comment or a
- * warning string). Ported from `snf-client/src/hooks/contracts/resolveEip2981.ts` +
- * `hooks/royalty/collectionRoyalty.ts`.
+ * warning string). Ported from the production AMM client's own royalty-resolution
+ * hooks.
  *
  * ONE call determines the SHAPE of a collection's royalty (does it implement 2981,
- * flat or per-token, capped at what) — it is NOT the quote path. Plan 12's quote
+ * flat or per-token, capped at what) — it is NOT the quote path. The quote
  * functions re-read `royaltyInfo` per id at the REAL sale price; a per-token
  * collection's `bps`/`receiver` here are illustrative (first sampled id only, always
  * accompanied by a `'per-token'` warning), never authoritative for a charge.
@@ -31,7 +31,7 @@ const PROBE_SALE_PRICE = 10n ** 18n
 /** `royaltyFeeCap` is scaled `1e18 = 100%`; `raw * 10000n / 1e18n` converts to bps. */
 const ROYALTY_SCALE = 10n ** 18n
 /** No usable cap read ⇒ fail-safe as "no effective cap" (100%), matching
- * `snf-client/src/hooks/royalty/collectionRoyalty.ts`'s own convention — defaulting to
+ * the production AMM client's own convention — defaulting to
  * `0` instead would silently look identical to a genuine on-chain cap-zero footgun. */
 const NO_CAP_BPS = 10_000
 const MAX_SAMPLE_IDS = 5
@@ -90,7 +90,7 @@ async function probe(
     })),
   ]
 
-  // ONE multicall for the whole probe (T-54-54 — no per-field RPC amplification): a
+  // ONE multicall for the whole probe (— no per-field RPC amplification): a
   // spy in the test suite asserts this is called exactly once.
   let results: readonly MulticallReadResult[]
   try {

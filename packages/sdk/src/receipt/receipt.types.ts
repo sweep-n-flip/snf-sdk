@@ -3,7 +3,7 @@ import type { Log } from 'viem'
 import type { Amount } from '../types/amount.types'
 
 /**
- * `parseReceipt` result and input shapes (R16; 54-SPEC.md). See `parseReceipt.ts`'s
+ * `parseReceipt` result and input shapes. See `parseReceipt.ts`'s
  * header for what this module can and cannot honestly attribute from a receipt's own
  * logs alone — that scope is what these two types are shaped around.
  */
@@ -42,8 +42,8 @@ export interface SwapReceipt {
   readonly fees: { readonly marketplace: Amount; readonly royalty: Amount }
   /** Strictly increasing per client instance (`SnfClientContext.nextTxInvalidationVersion`)
    * — owned by the instance, never derived from `blockNumber`/`transactionIndex`, so an
-   * out-of-order or reorged receipt delivery cannot make it stall or go backwards (R16
-   * concurrency backstop). */
+   * out-of-order or reorged receipt delivery cannot make it stall or go backwards
+   * (the documented concurrency backstop). */
   readonly txInvalidationVersion: number
   readonly blockNumber: bigint
   /** Non-empty whenever a field above could not be measured from this receipt's own

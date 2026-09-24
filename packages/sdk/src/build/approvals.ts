@@ -10,7 +10,7 @@ import type { Quote } from '../types/quote.types'
 
 /**
  * `missingApprovals` — the on-chain approval pre-check every `build*` function runs
- * before assembling its swap step (R13; 54-SPEC.md). Reads `isApprovedForAll`/
+ * before assembling its swap step. Reads `isApprovedForAll`/
  * `allowance` in ONE multicall and returns ONLY what is actually absent — a wallet
  * that already granted the operator approval, or whose ERC-20 allowance already
  * covers the required amount (`>=`, never `>`), gets no approval step for that leg

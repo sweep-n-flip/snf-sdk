@@ -10,9 +10,9 @@ export interface CircuitBreakerOptions {
 /**
  * `N` consecutive failures open the circuit for `cooldownMs`; the open state issues NO
  * request at all — the whole point of a breaker over a client-side retry loop
- * (T-54-24). After the cooldown it half-opens for exactly one probe: success closes
+ *. After the cooldown it half-opens for exactly one probe: success closes
  * it, failure re-opens it for another full `cooldownMs`. Entirely instance-scoped
- * (R3) — never a module-level breaker shared across two clients (R3's multi-page
+ * — never a module-level breaker shared across two clients (this rule's multi-page
  * test).
  */
 export class CircuitBreaker {

@@ -109,7 +109,7 @@ beforeEach(() => {
   mockedQuoteBuy.mockReset()
 })
 
-describe('buildBuy — fresh re-quote, never the caller\'s numbers (R13, T-54-81)', () => {
+describe('buildBuy — fresh re-quote, never the caller\'s numbers', () => {
   it('calls quoteBuy again internally with the args\' selection, not the caller\'s totals', async () => {
     const reQuote = fixtureQuote({ totalCost: 2_000_000n })
     mockedQuoteBuy.mockResolvedValue(reQuote)
@@ -151,7 +151,7 @@ describe('buildBuy — fresh re-quote, never the caller\'s numbers (R13, T-54-81
   })
 })
 
-describe('buildBuy — approvals (empty | R13)', () => {
+describe('buildBuy — approvals (empty)', () => {
   it('a native buy never checks or emits any approval — no multicall at all', async () => {
     mockedQuoteBuy.mockResolvedValue(fixtureQuote({ isNative: true }))
     const ctx = buildCtx({})
@@ -179,7 +179,7 @@ describe('buildBuy — approvals (empty | R13)', () => {
     expect(plan.steps[0]?.kind).toBe('swap-buy')
   })
 
-  // Finding 2, snf-54-18-SUMMARY.md (fixed in snf-54-18F): a missing ERC-20 allowance
+  // Finding 2, (fixed in): a missing ERC-20 allowance
   // used to make buildBuy THROW (the swap step's live gas estimate reverted before
   // assemblePlan ever ran), so the caller never received the approval step that would
   // have fixed it. `estimateContractGasImpl` below is wired to throw a GENUINE
@@ -290,7 +290,7 @@ describe('buildBuy — encoding (native vs ERC-20 entry point, capRoyaltyFee pin
   })
 })
 
-describe('buildBuy — validation (R13 hard caps)', () => {
+describe('buildBuy — validation (Hard caps)', () => {
   it('deadline = now + 3601 throws INVALID_PARAMS', async () => {
     const ctx = buildCtx({})
     const now = Math.floor(Date.now() / 1000)

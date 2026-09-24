@@ -18,8 +18,8 @@ import { createSubgraphTransport } from './transport/subgraph'
 import type { SnfClient, SnfClientConfig, SnfClientContext } from './types/client.types'
 
 /**
- * `createSnfClient` — the ONE documented surface (D-01, D-02; 54-SPEC.md R3). Named
- * after viem's own `createPublicClient` on purpose (D-02): a partner who already knows
+ * `createSnfClient` — the ONE documented surface. Named
+ * after viem's own `createPublicClient` on purpose: a partner who already knows
  * viem recognises the shape immediately, and there is no `SnF` class, no `new SnF()`.
  *
  * Every piece of state this factory needs — the subgraph transport (its TTL cache and
@@ -28,18 +28,18 @@ import type { SnfClient, SnfClientConfig, SnfClientContext } from './types/clien
  * scope (`local/no-module-global-state` is asserted over this whole file, and over
  * every other module under `src/` — see this file's own test). Two calls to
  * `createSnfClient`, even with byte-identical config, therefore share nothing: no
- * cache entry, no breaker state, no counter. That is R3's entire acceptance
+ * cache entry, no breaker state, no counter. That is this rule's entire acceptance
  * criterion, and `test/client.test.ts`'s two-chain case proves it by priming one
- * client's transport and asserting the other's mocked `fetch` count stays at 0
- * (T-54-42 in the threat register).
+ * client's transport and asserting the other's mocked `fetch` count stays at 0.
  *
- * This file is `packages/sdk/src`'s single assembly point and its only writer (this
- * plan's own repo note: "plans 10 and 11 must not edit it"). Later plans replace the
+ * This file is `packages/sdk/src`'s single assembly point and its only writer (a
+ * documented convention: no other module in this file's own dependency graph may edit
+ * it directly). Later revisions replace the
  * BODIES of the domain modules imported below (`collection/`, `inventory/`, `quote/`,
  * `build/`, `receipt/`) — none of them touch this file again. If a future method is
  * ever added to the documented surface, its signature goes into `types/client.types.ts`
  * first and its module ships as a stub (the same marker convention `internal/stub.ts`
- * documents), exactly like the twenty modules plan 04 already created — so this file
+ * documents), exactly like every other domain module already created — so this file
  * keeps having exactly one writer.
  */
 
@@ -88,7 +88,7 @@ function validateConfig(config: SnfClientConfig): void {
  * Builds the one object a partner actually holds. Config is validated first (throws
  * synchronously, before any state exists); the context is assembled once from local
  * `const`s; the returned object is frozen and binds every domain function with that
- * context already applied, in D-01's exact order.
+ * context already applied, in this rule's exact order.
  */
 export function createSnfClient(config: SnfClientConfig): SnfClient {
   validateConfig(config)
@@ -118,7 +118,7 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
     nextTxInvalidationVersion,
   }
 
-  // D-01 order: chainId, chain, then the thirteen methods exactly as `SnfClient`
+  // Documented order: chainId, chain, then the thirteen methods exactly as `SnfClient`
   // declares them. `Object.keys(client)` is asserted against this same order in
   // `test/client.test.ts`.
   const client = Object.freeze<SnfClient>({
@@ -126,45 +126,45 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
     chain,
 
     /** Discovers a collection's wrapper, pools, display labels, royalty and lock
-     * state in one call (R6). */
+     * state in one call. */
     collection: (address: `0x${string}`) => resolveCollection(ctx, address),
 
-    /** Candidate tokenIds a pool currently holds, plus the buyable ceiling (R7). */
+    /** Candidate tokenIds a pool currently holds, plus the buyable ceiling. */
     poolInventory: (pair: `0x${string}`) => poolInventory(ctx, pair),
 
-    /** On-chain cost to buy, reconciled to the wei against the Router (R8). */
+    /** On-chain cost to buy, reconciled to the wei against the Router. */
     quoteBuy: (args) => quoteBuy(ctx, args),
 
-    /** On-chain proceeds from selling, reconciled to the wei against the Router (R8). */
+    /** On-chain proceeds from selling, reconciled to the wei against the Router. */
     quoteSell: (args) => quoteSell(ctx, args),
 
-    /** Two-leg collection→collection quote: sell one, buy the other (R9). */
+    /** Two-leg collection→collection quote: sell one, buy the other. */
     quoteNftToNft: (args) => quoteNftToNft(ctx, args),
 
-    /** Fungible↔fungible quote, delegate-aware (R10). */
+    /** Fungible↔fungible quote, delegate-aware. */
     quoteSwap: (args) => quoteSwap(ctx, args),
 
-    /** Offline, `reserves`-only per-unit price ladder (R12) — never on-chain-
+    /** Offline, `reserves`-only per-unit price ladder — never on-chain-
      * authoritative, never a source for a transaction bound. Issues zero RPC calls. */
     estimateLadder: (reserves, n) => estimateLadderPure(reserves, n),
 
-    /** Builds an unsigned buy `ExecutionPlan`, bounds re-quoted on-chain (R13). */
+    /** Builds an unsigned buy `ExecutionPlan`, bounds re-quoted on-chain. */
     buildBuy: (args) => buildBuy(ctx, args),
 
-    /** Builds an unsigned sell `ExecutionPlan`, bounds re-quoted on-chain (R13). */
+    /** Builds an unsigned sell `ExecutionPlan`, bounds re-quoted on-chain. */
     buildSell: (args) => buildSell(ctx, args),
 
-    /** Builds the user-driven, multi-step NFT×NFT `ExecutionPlan` (R13, R15, INV-17). */
+    /** Builds the user-driven, multi-step NFT×NFT `ExecutionPlan` (INV-17). */
     buildNftToNft: (args) => buildNftToNft(ctx, args),
 
-    /** Builds an unsigned fungible↔fungible `ExecutionPlan` (R13). */
+    /** Builds an unsigned fungible↔fungible `ExecutionPlan`. */
     buildSwap: (args) => buildSwap(ctx, args),
 
-    /** Attributes items/fees from an already-mined receipt's own logs (R16).
+    /** Attributes items/fees from an already-mined receipt's own logs.
      * Synchronous — bumps this client's own `txInvalidationVersion` counter. */
     parseReceipt: (receipt) => parseReceiptPure(ctx, receipt),
 
-    /** Maps any unknown throwable to a stable `SnfError` (R17). Pure — needs no
+    /** Maps any unknown throwable to a stable `SnfError`. Pure — needs no
      * context. */
     describeError: (e: unknown) => describeErrorPure(e),
   })

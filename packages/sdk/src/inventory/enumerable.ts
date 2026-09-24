@@ -4,7 +4,7 @@ import { ERC721_ABI } from '../abis/ERC721'
 import type { SnfClientContext } from '../types/client.types'
 
 /**
- * The `ERC721Enumerable` fast path for `poolInventory` (R7, OD-SDK-3; 54-SPEC.md):
+ * The `ERC721Enumerable` fast path for `poolInventory`:
  * when a collection implements it, the pool's own holdings are readable directly from
  * the chain — fresher than any index and free of Goldsky's free-tier quota.
  */
@@ -13,7 +13,7 @@ export const ERC721_ENUMERABLE_INTERFACE_ID = '0x780e9d63' as const
 
 /** Multicall3 has no formal per-call limit, but 200 keeps one call's calldata and
  * response comfortably bounded — the same discipline every caller-sized loop in this
- * package follows (T-54-59). Reported via `truncated`, never a silent cut. */
+ * package follows. Reported via `truncated`, never a silent cut. */
 const MAX_ENUMERABLE_BATCH = 200
 
 /** Loosely-typed multicall shape — see `collection/royalty.ts`'s identical

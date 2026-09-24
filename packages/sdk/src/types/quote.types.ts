@@ -2,8 +2,8 @@ import type { SnfChainId } from '../chains/chains.types'
 import type { Amount } from './amount.types'
 
 /**
- * Quote shapes (R8–R12; 54-SPEC.md; DATASHEET §4 "NFT AMM — quotes" + this phase's
- * `reconciled` addendum). Every quote is on-chain authoritative.
+ * Quote shapes (DATASHEET §4 "NFT AMM — quotes" plus the `reconciled` addendum).
+ * Every quote is on-chain authoritative.
  */
 
 /** Fee breakdown for a quote (DATASHEET §0.5). `pool` is the AMM curve fee — already
@@ -30,18 +30,18 @@ export interface QuoteLeg {
   readonly kind: 'native' | 'erc20' | 'wnft'
   readonly side: 'buy' | 'sell'
   /**
-   * This leg's own fee breakdown (plan 13 addition — not in plan 04's original
-   * shape). `nft-to-nft` is the first quote kind with two independently-priced legs:
+   * This leg's own fee breakdown (a later addition, not the original shape).
+   * `nft-to-nft` is the first quote kind with two independently-priced legs:
    * royalty is paid per leg in that leg's own base currency and is NEVER
    * consolidated (docs/NFT_SWAP_RULES.md) — this field is what lets a single leg
    * carry its own marketplace/royalty amounts while `Quote.fees` reports the sum.
    * Omitted on the single-leg `buy`/`sell` quote kinds, whose only `FeeBreakdown`
-   * lives at `Quote.fees` (see `snf-54-13-SUMMARY.md`, Deviations).
+   * lives at `Quote.fees`.
    */
   readonly fees?: FeeBreakdown
   /**
-   * This leg's own NFT collection/wrapper (plan 15 addition — not in plan 04's
-   * original shape, nor plan 13's). Needed by `build/*`'s `StepPreflightRefs` (R14):
+   * This leg's own NFT collection/wrapper (a later addition, not part of the
+   * original shape). Needed by `build/*`'s `StepPreflightRefs`:
    * `Quote.collection` is only populated for the single-collection `buy`/`sell`
    * kinds, and NOTHING on the committed `Quote`/`QuoteLeg` shape carried a wrapper
    * address anywhere — `nft-to-nft` in particular has no top-level `collection` at
@@ -52,7 +52,7 @@ export interface QuoteLeg {
   readonly collection?: `0x${string}`
   readonly wrapper?: `0x${string}`
   /**
-   * The concrete tokenIds this leg buys/sells (plan 15 addition). Redundant with the
+   * The concrete tokenIds this leg buys/sells. Redundant with the
    * top-level `Quote.tokenIds` on the single-collection `buy`/`sell` kinds (kept here
    * too for uniformity), but the ONLY place these ids exist at all on `nft-to-nft`,
    * whose `Quote` carries no top-level `tokenIds` (each leg trades a different set).
@@ -64,7 +64,7 @@ export interface QuoteLeg {
  * The result of any `quote*` call. `reconciled` is typed as the literal `true` — a
  * `Quote` that did not reconcile to the wei against the Router's own on-chain read is
  * never constructed; the alternative is always `SnfError('QUOTE_RECONCILIATION_FAILED')`,
- * never a `Quote` with `reconciled: false` (T-54-18 in the threat register).
+ * never a `Quote` with `reconciled: false`.
  */
 export interface Quote {
   readonly side: 'buy' | 'sell' | 'swap' | 'nft-to-nft'
@@ -80,10 +80,10 @@ export interface Quote {
   readonly netProceeds?: Amount
   /** nft-to-nft only: buy-leg cost including its own fees. */
   readonly buyCost?: Amount
-  /** nft-to-nft only: change returned to the seller — saturates to 0 when `buyCost > netProceeds` (R9). */
+  /** nft-to-nft only: change returned to the seller — saturates to 0 when `buyCost > netProceeds`. */
   readonly remainder?: Amount
   /**
-   * nft-to-nft only (plan 15 addition): which top-up mode `remainder` was priced in —
+   * nft-to-nft only: which top-up mode `remainder` was priced in —
    * `'native'` (the chain's own base currency) or `'wnft'` (the buy collection's
    * wrapper units, a real sequential follow-up trade against the buy pool's POST-buy
    * reserves — see `quoteNftToNft.ts`). `buildNftToNft` needs this literal flag to
@@ -93,15 +93,15 @@ export interface Quote {
    */
   readonly remainderMode?: 'native' | 'wnft'
   /**
-   * swap only (plan 13 addition — not in plan 04's original shape, DATASHEET §4
-   * `/v1/quote/swap`: "Returns `amountIn`, `amountOut`, `path[]`, `priceImpact`").
+   * swap only (a later addition — DATASHEET §4 `/v1/quote/swap`: "Returns
+   * `amountIn`, `amountOut`, `path[]`, `priceImpact`").
    * The exact input spent.
    */
   readonly amountIn?: Amount
   /** swap only: the exact output received. */
   readonly amountOut?: Amount
   /**
-   * swap only (plan 15 addition): which side the caller pinned exactly — `'in'` when
+   * swap only: which side the caller pinned exactly — `'in'` when
    * `amountIn` was given (`amountOutMin` is the protective floor bound), `'out'` when
    * `amountOut` was given (`amountInMax` is the protective ceiling bound).
    * `buildSwap` needs this to pick the matching Router entry point and to know which
@@ -115,26 +115,23 @@ export interface Quote {
   readonly reconciled: true
   readonly stale?: boolean
   /**
-   * Non-fatal notes (plan 12 addition — not in plan 04's original shape): a locked
-   * redemption on a sell, an Arc unpayable-royalty adjustment on either side. Never
-   * a reason to fail the call — see `snf-54-12-SUMMARY.md`, Deviations, for why
-   * this field was required to implement the plan's own literal `<behavior>` text
-   * ("adds a `warnings` entry to the quote and does not throw").
+   * Non-fatal notes: a locked redemption on a sell, an Arc unpayable-royalty
+   * adjustment on either side. Never a reason to fail the call — the quote still
+   * returns, with a `warnings` entry added instead of throwing.
    */
   readonly warnings?: readonly string[]
 }
 
-/** Args for `quoteBuy` (R8). Exactly one of `count`/`tokenIds`/`amount` is required
+/** Args for `quoteBuy`. Exactly one of `count`/`tokenIds`/`amount` is required
  * at runtime — `INVALID_PARAMS` otherwise. `chainId` is optional and, when supplied,
- * validated against the client's own chain (`WRONG_CHAIN` on a mismatch) — R11. */
+ * validated against the client's own chain (`WRONG_CHAIN` on a mismatch). */
 export interface QuoteBuyArgs {
   readonly chainId?: SnfChainId
   readonly collection: `0x${string}`
   readonly count?: number
   readonly tokenIds?: readonly string[]
   /**
-   * A fractional wNFT amount, in wrapper units (`1 NFT = 1e18`) — plan 12 addition
-   * (not in plan 04's original shape; see `snf-54-12-SUMMARY.md`, Deviations).
+   * A fractional wNFT amount, in wrapper units (`1 NFT = 1e18`) — a later addition.
    * Routes through the fungible leg (`getAmountsIn` on the wrapper token itself),
    * never the `*Collection` path — a fractional amount has no tokenId to carry an
    * EIP-2981 royalty.
@@ -144,24 +141,24 @@ export interface QuoteBuyArgs {
   readonly payToken?: `0x${string}` | null
 }
 
-/** Args for `quoteSell` (R8). Exactly one of `tokenIds`/`count`/`amount` is
+/** Args for `quoteSell`. Exactly one of `tokenIds`/`count`/`amount` is
  * required at runtime. `chainId` is optional and, when supplied, validated against
- * the client's own chain (`WRONG_CHAIN` on a mismatch) — R11. */
+ * the client's own chain (`WRONG_CHAIN` on a mismatch). */
 export interface QuoteSellArgs {
   readonly chainId?: SnfChainId
   readonly collection: `0x${string}`
   readonly tokenIds?: readonly string[]
   readonly count?: number
   /** A fractional wNFT amount, in wrapper units — see `QuoteBuyArgs.amount`'s doc
-   * comment; the sell-side mirror (plan 12 addition). */
+   * comment; the sell-side mirror. */
   readonly amount?: bigint
   /** `null`/omitted = native. */
   readonly receiveToken?: `0x${string}` | null
 }
 
-/** Args for `quoteNftToNft` (R9): sell collection A's tokenIds, buy N of collection B.
+/** Args for `quoteNftToNft`: sell collection A's tokenIds, buy N of collection B.
  * `chainId` is optional and, when supplied, validated against the client's own chain
- * (`WRONG_CHAIN` on a mismatch) — R11. */
+ * (`WRONG_CHAIN` on a mismatch). */
 export interface QuoteNftToNftArgs {
   readonly chainId?: SnfChainId
   readonly sell: { readonly collection: `0x${string}`; readonly tokenIds: readonly string[] }
@@ -169,9 +166,9 @@ export interface QuoteNftToNftArgs {
   readonly remainder: 'native' | 'wnft'
 }
 
-/** Args for `quoteSwap` (R10, fungible↔fungible, delegate-aware). Exactly one of
+/** Args for `quoteSwap` (fungible↔fungible, delegate-aware). Exactly one of
  * `amountIn`/`amountOut` is required at runtime. `chainId` is optional and, when
- * supplied, validated against the client's own chain (`WRONG_CHAIN` on a mismatch) — R11. */
+ * supplied, validated against the client's own chain (`WRONG_CHAIN` on a mismatch). */
 export interface QuoteSwapArgs {
   readonly chainId?: SnfChainId
   readonly tokenIn: `0x${string}` | null
@@ -181,10 +178,9 @@ export interface QuoteSwapArgs {
   readonly directOnly?: boolean
 }
 
-// `LadderPoint`/`LadderResult` used to be declared here as a float-shaped placeholder
-// (plan 04). Plan 09 (Deviations, snf-54-09-SUMMARY.md) reconciled `SnfClient.
-// estimateLadder`'s return type to the real, bigint-exact shape `math/nftPricing.ts`'s
-// `estimateLadder` actually produces (`math/nftPricing.types.ts`'s `LadderResult`) —
-// see `client.types.ts`'s import. This file no longer declares a second, unused
-// `LadderResult`/`LadderPoint` pair; grep found no consumer of the old shape outside
-// `client.types.ts` itself before this plan.
+// `LadderPoint`/`LadderResult` used to be declared here as a float-shaped placeholder.
+// A later revision reconciled `SnfClient.estimateLadder`'s return type to the real,
+// bigint-exact shape `math/nftPricing.ts`'s `estimateLadder` actually produces
+// (`math/nftPricing.types.ts`'s `LadderResult`) — see `client.types.ts`'s import. This
+// file no longer declares a second, unused `LadderResult`/`LadderPoint` pair; grep
+// found no consumer of the old shape outside `client.types.ts` itself.

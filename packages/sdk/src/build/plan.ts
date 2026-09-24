@@ -5,8 +5,8 @@ import type { SnfClientContext } from '../types/client.types'
 import type { ExecutionPlan, Step } from '../types/plan.types'
 
 /**
- * `assemblePlan` — the shared final step of every `build*` function (R13, R14;
- * 54-SPEC.md). Takes the raw, not-yet-ordered `steps[]` a builder assembled (from
+ * `assemblePlan` — the shared final step of every `build*` function. Takes the raw,
+ * not-yet-ordered `steps[]` a builder assembled (from
  * `build/approvals.ts`'s `buildApprovalStep` plus its own swap step(s)) and returns
  * the frozen `ExecutionPlan` a partner actually consumes: canonically ordered,
  * chain-stamped, labeled from the one shared vocabulary `checkout/labels.ts` also
@@ -20,7 +20,7 @@ import type { ExecutionPlan, Step } from '../types/plan.types'
  * builder that already emits `[approval(sell)?, swap-sell, swap-buy,
  * swap-buy-wnft?]` gets that exact order back; nothing here re-derives NFT×NFT's
  * leg ordering, it only guarantees approvals never trail behind the swap(s) they
- * unblock. Exported as its own pure function so plan 15's four `build*` functions
+ * unblock. Exported as its own pure function so this module's four `build*` functions
  * share ONE ordering rule instead of four independently-written ones.
  */
 export function orderSteps(rawSteps: readonly Step[]): readonly Step[] {

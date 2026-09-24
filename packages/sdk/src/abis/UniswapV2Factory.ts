@@ -1,18 +1,18 @@
 /**
- * Uniswap V2 Factory (SnF extension) ABI — verbatim copy from
- * `snf-client/src/abis/UniswapV2Factory.ts` (commit `9e6c70aa466b62e68854cf781d723fd5cc08c1e8`),
- * only the exported const renamed. See `UniswapV2Router02Collection.ts` for the R21
- * "generated data artifact" note on why this file is not subject to the ~400-line rule.
+ * Uniswap V2 Factory (SnF extension) ABI — verbatim copy from the production AMM
+ * client's own Factory ABI, only the exported const renamed. See
+ * `UniswapV2Router02Collection.ts` for the "generated data artifact" note on why this
+ * file is not subject to the ~400-line rule.
  *
  * Sweep n' Flip extensions over standard Uniswap V2:
- *   createWrapper(collection)  — deploy WERC721 ERC-20 wrapper for an ERC-721 collection
- *   getWrapper(collection)     — returns WERC721 wrapper address (address(0) if not deployed)
- *   getCollection(wrapper)     — reverse lookup: wrapper → ERC-721 collection address
- *   allWrappers(index)         — enumerate deployed wrappers by index
- *   allWrappersLength()        — count of all deployed wrappers
- *   delegates(token0, token1)  — whether pair delegates NFT handling
- *   router(router)             — whether a router address is authorized
- *   WrapperCreated event       — emitted on new WERC721 wrapper deployment
+ * createWrapper(collection) — deploy WERC721 ERC-20 wrapper for an ERC-721 collection
+ * getWrapper(collection) — returns WERC721 wrapper address (address(0) if not deployed)
+ * getCollection(wrapper) — reverse lookup: wrapper → ERC-721 collection address
+ * allWrappers(index) — enumerate deployed wrappers by index
+ * allWrappersLength() — count of all deployed wrappers
+ * delegates(token0, token1) — whether pair delegates NFT handling
+ * router(router) — whether a router address is authorized
+ * WrapperCreated event — emitted on new WERC721 wrapper deployment
  */
 export const FACTORY_ABI = [
   // ── Constructor ───────────────────────────────────────────────────────────

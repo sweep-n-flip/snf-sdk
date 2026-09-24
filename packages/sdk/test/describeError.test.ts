@@ -7,7 +7,7 @@ import { SNF_ERROR_CODES, SnfError } from '../src/errors'
 import type { SnfErrorCode } from '../src/errors.types'
 
 /**
- * R17 — describeError is total, ordered, and never throws (54-SPEC.md; must_haves).
+ * describeError is total, ordered, and never throws (must_haves).
  * The `it.each` table below is the 12+-row classification matrix; the loop after it
  * is the 20-adversarial-input never-throws property.
  */

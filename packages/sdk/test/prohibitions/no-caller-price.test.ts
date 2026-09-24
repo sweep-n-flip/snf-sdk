@@ -25,10 +25,10 @@ import type { BuildArgs } from '../../src/types/plan.types'
 import type { FeeBreakdown, Quote, QuoteLeg } from '../../src/types/quote.types'
 
 /**
- * SPEC prohibition #2 (54-SPEC.md): the SDK MUST NOT use caller-supplied prices to
+ * SPEC prohibition #2: the SDK MUST NOT use caller-supplied prices to
  * derive `bounds`/`value`/`amountOutMin` — `build()` always re-quotes on-chain
  * itself. This is the STANDING gate: it survives independently of any one builder's
- * own test file (plan 15's `test/build/{buildBuy,buildSell,buildNftToNft}.test.ts`
+ * own test file (this module's `test/build/{buildBuy,buildSell,buildNftToNft}.test.ts`
  * each proved this per-builder already; this file generalises the same invariant into
  * one place with a provable failure mode — a causation-controlled `GSD_PROHIB_SUBJECT`
  * run against a deliberately-tampering implementation, not just an assertion that
@@ -200,7 +200,7 @@ function nftToNftQuote(netProceeds: bigint, buyCost: bigint): Quote {
 // A fixed, in-range deadline shared by the paired builds. Without it each build()
 // defaults `deadline` to "now + 1200 s" read at call time, so a wall-clock second
 // boundary between the two calls changes the encoded deadline and makes the
-// byte-identical assertions flaky (caught by the wave-9 post-merge gate).
+// byte-identical assertions flaky (caught by the post-merge gate).
 const FIXED_DEADLINE = Math.floor(Date.now() / 1000) + 600
 
 function buildArgs(quote: Quote): BuildArgs {

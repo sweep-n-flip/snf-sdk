@@ -151,7 +151,7 @@ describe('buildApprovalStep', () => {
   })
 })
 
-describe('orderSteps / assemblePlan — approvals before swap(s) (ordering | R13, empty | R13)', () => {
+describe('orderSteps / assemblePlan — approvals before swap(s) (ordering, empty)', () => {
   function fixtureQuote(): Quote {
     const amount = (v: bigint): Amount => ({ value: v, formatted: v.toString(), symbol: 'ETH', decimals: 18 })
     const fees: FeeBreakdown = {
@@ -293,7 +293,7 @@ describe('gas — estimateGasWithBuffer / fallbackGasForNFTBatch / isSimulationR
   })
 })
 
-describe('gas — resolveGasForStep (Finding 2, snf-54-18F: gas estimation must not be attempted live while an approval is still pending)', () => {
+describe('gas — resolveGasForStep (Finding 2, : gas estimation must not be attempted live while an approval is still pending)', () => {
   it('hasPendingApproval: true never calls estimateContractGas at all — even one that WOULD revert live — and returns the fallback marked gasSource', async () => {
     const revertError = new BaseError('execution reverted', {
       cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swap' }),

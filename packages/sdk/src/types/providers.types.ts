@@ -3,32 +3,33 @@ import type { SnfPublicClient } from './client.types'
 import type { PoolInventory } from './inventory.types'
 
 /**
- * Optional partner-supplied data sources (R4, R19; 54-SPEC.md). An absent provider ⇒
+ * Optional partner-supplied data sources. An absent provider ⇒
  * the corresponding result field is `undefined` — NEVER a hidden fetch and NEVER a
  * silent empty list (SPEC prohibition: "MUST NOT degradar silenciosamente para lista
  * vazia quando um provider está ausente — o estado deve ser explícito"). `ImagesProvider`
  * is the one field with a keyless on-chain default (`tokenURI` via Multicall3,
  * `enrichListingsWithOnChainTokenURI` pattern); the other three have none.
  *
- * Plan 09 (Deviations, snf-54-09-SUMMARY.md) reshaped this file from its plan-04
- * placeholder in two ways, both required to make the plan's own literal behavior
+ * A later revision reshaped this file from its original
+ * placeholder in two ways, both required to make the documented behavior
  * implementable and type-safe:
  *
  * 1. `ImagesProvider.getImageUrl(collection, tokenId, chainId)` (one call per token, no
- *    way to reach a `publicClient`) could not implement "issues exactly ONE
- *    `publicClient.multicall` for up to 50 ids" — the interface had no parameter
- *    capable of carrying a `publicClient` at all. Replaced with a single batched
- *    `getImages(ctx, collection, tokenIds)` returning a `Map`, where `ctx` is the
- *    minimal `{ publicClient, chain }` slice a provider needs — deliberately NOT the
- *    full `SnfClientContext` (which also carries the transport/counter internals no
- *    provider should reach). `SnfClientContext` is a structural superset of
- *    `ImagesProviderContext`, so callers pass their real `ctx` straight through.
+ * way to reach a `publicClient`) could not implement "issues exactly ONE
+ * `publicClient.multicall` for up to 50 ids" — the interface had no parameter
+ * capable of carrying a `publicClient` at all. Replaced with a single batched
+ * `getImages(ctx, collection, tokenIds)` returning a `Map`, where `ctx` is the
+ * minimal `{ publicClient, chain }` slice a provider needs — deliberately NOT the
+ * full `SnfClientContext` (which also carries the transport/counter internals no
+ * provider should reach). `SnfClientContext` is a structural superset of
+ * `ImagesProviderContext`, so callers pass their real `ctx` straight through.
  * 2. `WalletNftsProvider.getWalletNfts` and `PoolInventoryProvider.getPoolInventory`
- *    returned non-optional types, which cannot represent "this provider doesn't have
- *    data for this request" without throwing or returning an empty list — exactly what
- *    R19 forbids ("Calling a NO_PROVIDER surface resolves to undefined — it does not
- *    throw, does not fetch, and does not return `[]`"). Both now return `| undefined`,
- *    matching `PricesProvider.getNativeUsd`, which already did.
+ * returned non-optional types, which cannot represent "this provider doesn't have
+ * data for this request" without throwing or returning an empty list — exactly what
+ * the documented provider contract forbids ("Calling a NO_PROVIDER surface resolves
+ * to undefined — it does not throw, does not fetch, and does not return `[]`"). Both
+ * now return `| undefined`,
+ * matching `PricesProvider.getNativeUsd`, which already did.
  */
 
 /** The minimal slice of `SnfClientContext` an `ImagesProvider` needs — a publicClient

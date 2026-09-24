@@ -13,7 +13,7 @@ import { FORK_LANES, anvilMissingMessage, resolveAnvilBinary, startAnvil } from 
 import type { AnvilInstance } from './anvil'
 
 /**
- * The Arc fork lane (Task 2, R11, R20; 54-SPEC.md). Arc's `UniswapV2Router01Collection
+ * The Arc fork lane (Task 2). Arc's `UniswapV2Router01Collection
  * NativeERC20` variant is the whole reason `chains/units.ts` exists: native USDC is
  * the gas token (18-dec `msg.value`), but the pool's quote token is the USDC ERC-20
  * predeploy at SIX decimals — same underlying balance, two views, related by
@@ -72,7 +72,7 @@ describeOrSkip(`Arc fork lane (chainId ${ARC_LANE.chainId}, block ${ARC_LANE.for
     expect((weth as string).toLowerCase()).toBe((ARC_LANE!.fixtures['baseToken'] as string).toLowerCase())
   })
 
-  describe('reconciliation, both directions (R8, R11, R20)', () => {
+  describe('reconciliation, both directions', () => {
     it('quoteBuy(1 id) matches getAmountsInCollection — pool-side amounts stay 6-decimal (quote-unit) magnitude, never 18', async () => {
       const fixtures = ARC_LANE!.fixtures as { collection: `0x${string}` }
       const quote = await snf.quoteBuy({ chainId: 5042, collection: fixtures.collection, tokenIds: ['1'] })
@@ -91,7 +91,7 @@ describeOrSkip(`Arc fork lane (chainId ${ARC_LANE.chainId}, block ${ARC_LANE.for
     })
   })
 
-  describe('the two unit axes on the real Router variant (R11)', () => {
+  describe('the two unit axes on the real Router variant', () => {
     // FINDING (environment limitation, NOT an SDK bug — packages/sdk/src is out of
     // scope for this plan regardless): a real SEND of swapETHForExactTokensCollection
     // reverts on THIS anvil fork of Arc with `TransferHelper::safeTransfer: transfer

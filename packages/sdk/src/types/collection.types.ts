@@ -1,12 +1,12 @@
 import type { TokenRef } from './amount.types'
 
 /**
- * The result shapes of `resolveCollection` (R6; 54-SPEC.md).
+ * The result shapes of `resolveCollection`.
  */
 
 /**
  * Display identity for a collection. `name` is NEVER an address, full or shortened —
- * see `.specs/codebase/COLLECTION_IDENTITY.md`. A shortened address is only ever a
+ * see the workspace-wide collection-identity canon this module implements. A shortened address is only ever a
  * last-resort fallback produced inside `getCollectionLabels` itself, never treated as
  * the collection's persisted identity elsewhere.
  */
@@ -17,12 +17,11 @@ export interface CollectionLabels {
 }
 
 /**
- * Input to `getCollectionLabels` (plan 10). Both a subgraph-sourced pair and an
+ * Input to `getCollectionLabels`. Both a subgraph-sourced pair and an
  * on-chain-read pair are accepted so the waterfall (subgraph → on-chain → shortened
- * address) can be resolved in ONE call — plan 04's original stub signature (bare
+ * address) can be resolved in ONE call — this module's original stub signature (bare
  * `symbol`/`name`) could not distinguish the two sources, which the waterfall's own
- * priority order requires (`.specs/codebase/COLLECTION_IDENTITY.md`). See
- * `snf-54-10-SUMMARY.md`, Deviations, for why this replaces the committed stub shape.
+ * priority order requires. This replaces the committed stub shape for exactly that reason.
  */
 export interface CollectionLabelsInput {
   readonly address: `0x${string}`
@@ -38,8 +37,8 @@ export interface CollectionLabelsInput {
  * royalty cap is unset, which zeroes the royalty entirely if `capRoyaltyFee=true` were
  * ever requested — the SDK pins `capRoyaltyFee=false` everywhere (SPEC Constraint,
  * prohibition #6), but `effectiveBpsWhenCapped` still reports what a capped read WOULD
- * yield, with `warnings` explaining why (R6 acceptance: `capBps === 0` ⇒
- * `effectiveBpsWhenCapped === 0` with a warning).
+ * yield, with `warnings` explaining why: `capBps === 0` ⇒
+ * `effectiveBpsWhenCapped === 0` with a warning.
  */
 export interface RoyaltyInfo {
   readonly bps: number
@@ -52,8 +51,8 @@ export interface RoyaltyInfo {
   /**
    * True when the whole EIP-2981 probe itself could not be read (RPC/multicall
    * failure) — distinguishes "this collection has no royalty" (`probeFailed: false`,
-   * `bps: 0`) from "we could not tell" (`probeFailed: true`, `bps: 0`). Added by plan
-   * 10 (not in plan 04's original shape) — see `snf-54-10-SUMMARY.md`, Deviations.
+   * `bps: 0`) from "we could not tell" (`probeFailed: true`, `bps: 0`). A later
+   * addition, not part of the original shape.
    */
   readonly probeFailed: boolean
 }
@@ -75,8 +74,8 @@ export interface PoolRef {
   readonly wrapperIsToken0: boolean
 }
 
-/** The full result of `resolveCollection` (R6). `pools` is ordered by liquidity, native
- * base first on a tie (Edge `ordering | R6`); an empty array (no pool yet) is valid,
+/** The full result of `resolveCollection`. `pools` is ordered by liquidity, native
+ * base first on a tie (Edge `ordering`); an empty array (no pool yet) is valid,
  * never an error. */
 export interface CollectionInfo {
   readonly address: `0x${string}`

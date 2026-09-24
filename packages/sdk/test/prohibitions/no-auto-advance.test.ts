@@ -14,7 +14,7 @@ import type { Bounds, ExecutionPlan, Step, StepKind, UnsignedTx } from '../../sr
 import type { Quote } from '../../src/types/quote.types'
 
 /**
- * SPEC prohibition #4 (54-SPEC.md; INV-17): the SDK MUST NOT auto-advance between
+ * SPEC prohibition #4 (INV-17): the SDK MUST NOT auto-advance between
  * transactions (dispatch the next tx from a watcher/effect) — every tx requires an
  * explicit `next()`. `src/checkout/reducer.ts`'s own header explains WHY this is
  * structural, not defensive: `snf-client` spent four fix cycles on an unfixable race

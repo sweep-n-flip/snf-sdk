@@ -2,8 +2,7 @@ import type { SnfChainId } from '../chains/chains.types'
 import type { Quote } from './quote.types'
 
 /**
- * Execution-plan shapes (R13, R14; 54-SPEC.md; DATASHEET §5 "NFT AMM — execution
- * builders").
+ * Execution-plan shapes (DATASHEET §5 "NFT AMM — execution builders").
  */
 
 /** Unsigned calldata for one transaction — `chainId` is always explicit (SPEC
@@ -17,14 +16,14 @@ export interface UnsignedTx {
   readonly gas?: bigint
   /** Present only when `gas` is the deterministic NFT-batch fallback because this
    * step's OWN swap simulation could not be attempted against live state — the plan
-   * contains a still-pending approval this step depends on (snf-54-18F, Finding 2).
+   * contains a still-pending approval this step depends on (Finding 2).
    * Additive; absent for every other step. */
   readonly gasSource?: 'fallback-pending-approval'
 }
 
 /** An allowance/operator-approval step, only emitted when it is actually missing
- * on-chain — the builder pre-checks allowances and lists only the missing ones (R13
- * Edge `empty | R13`: no missing approvals ⇒ `steps` contains only the swap). */
+ * on-chain — the builder pre-checks allowances and lists only the missing ones (Edge
+ * `empty`: no missing approvals ⇒ `steps` contains only the swap). */
 export interface Approval {
   readonly kind: 'erc721-approval-for-all' | 'erc20-allowance'
   readonly token: `0x${string}`
@@ -38,7 +37,7 @@ export interface Approval {
  * inside `build()` — NEVER from the caller-supplied `quote` argument (SPEC
  * prohibition: never trust caller-supplied prices for `bounds`/`value`/`amountOutMin`).
  * Units are always **pool-side quote decimals**, never wei, on every chain including
- * Arc (R11).
+ * Arc.
  */
 export interface Bounds {
   readonly amountInMax?: bigint
@@ -50,10 +49,10 @@ export interface Bounds {
 export type StepKind = 'approval' | 'swap-buy' | 'swap-sell' | 'swap-buy-wnft' | 'swap-fungible'
 
 /**
- * Everything `runPreflight` (plan 14, R14) needs to re-verify ONE step against the
- * chain, in the exact frame of a signature. Plan 14 addition — not in plan 04's
- * original `Step` shape (see `snf-54-14-SUMMARY.md`, Deviations): the four checks R14
- * requires (payer ownership on a sell, pool custody on a buy, wrapper identity, an
+ * Everything `runPreflight` needs to re-verify ONE step against the
+ * chain, in the exact frame of a signature. A later addition, not part of the
+ * original `Step` shape: the four checks it requires (payer ownership on a sell,
+ * pool custody on a buy, wrapper identity, an
  * ERC-20 base balance) need domain addresses/ids that no other field on `Step`/
  * `Quote` carries generically across buy/sell/swap/nft-to-nft — `Quote.collection`
  * and `Quote.tokenIds` are only populated for the single-collection buy/sell kinds,
@@ -79,7 +78,7 @@ export interface StepPreflightRefs {
 }
 
 /** One step of an `ExecutionPlan.steps[]` — approvals are always ordered before the
- * swap they unblock (Edge `ordering | R13`). */
+ * swap they unblock (Edge `ordering`). */
 export interface Step {
   readonly kind: StepKind
   readonly label: string
@@ -90,7 +89,7 @@ export interface Step {
   readonly preflightRefs?: StepPreflightRefs
 }
 
-/** Result of `plan.preflight()` (R14) — every check ran against the same
+/** Result of `plan.preflight()` — every check ran against the same
  * `blockNumber` via a single Multicall3 call. A failed pre-flight never returns this
  * shape; it throws a typed `SnfError` instead (`TOKENIDS_UNAVAILABLE`,
  * `WRAPPER_UNVERIFIED`, `WRONG_CHAIN`, `INVALID_PARAMS`) before any signature. */
@@ -99,12 +98,12 @@ export interface PreflightResult {
   readonly blockNumber: bigint
   readonly checked: readonly string[]
   /** Present only when the ONE-call guarantee degraded to a one-block sequential
-   * fallback (multicall3 itself threw) — plan 14 addition, mirrors `Quote.warnings`
+   * fallback (multicall3 itself threw) — mirrors `Quote.warnings`
    * (never a reason to fail the call on its own). */
   readonly warnings?: readonly string[]
 }
 
-/** The output of every `build*` function (R13). */
+/** The output of every `build*` function. */
 export interface ExecutionPlan {
   readonly chainId: SnfChainId
   readonly steps: readonly Step[]

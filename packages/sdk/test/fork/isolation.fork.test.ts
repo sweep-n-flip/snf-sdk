@@ -4,7 +4,7 @@ import { FORK_LANES, FORK_PORTS, anvilMissingMessage, resolveAnvilBinary, startA
 import type { AnvilInstance } from './anvil'
 
 /**
- * The R20 backstop edge (Task 1; 54-SPEC.md): fork lanes run in isolated jobs on
+ * The fork-lane isolation backstop (Task 1): fork lanes run in isolated jobs on
  * distinct ports, and a sanity test proves two lanes never share chain state.
  *
  * Also the skip-guard contract every other `*.fork.test.ts` file relies on: when
@@ -14,7 +14,7 @@ import type { AnvilInstance } from './anvil'
 
 const anvilBin = resolveAnvilBinary()
 
-describe('fork lane isolation (Task 1, R20)', () => {
+describe('fork lane isolation (Task 1)', () => {
   it('FORK_PORTS are pairwise distinct — no lane ever shares a port', () => {
     expect(new Set(FORK_PORTS).size).toBe(FORK_PORTS.length)
     expect(FORK_PORTS.length).toBe(4)

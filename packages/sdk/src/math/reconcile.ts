@@ -7,7 +7,7 @@ import { SnfError } from '../errors'
  * on-chain answer to the wei) or `throw new SnfError('QUOTE_RECONCILIATION_FAILED')`.
  * There is no third outcome, no tolerance, no `Math.abs`, no `<= epsilon`, no
  * `Number()` coercion anywhere in this file — any future occurrence of one of those is
- * a bug, and `test/prohibitions/no-silent-reconcile.test.ts` (plan 17) statically
+ * a bug, and `test/prohibitions/no-silent-reconcile.test.ts` statically
  * scans for it. An allowance here would mean the SDK had decided, on the partner's
  * behalf, how much of their money it is willing to fail to account for.
  */
@@ -56,7 +56,7 @@ export function reconcileGross(args: ReconcileGrossArgs): void {
 
 /**
  * The SELL direction: `pool - marketplace - royalty === routerNet` (the Router already
- * returns the net proceeds on a sell — RESEARCH Pitfall 1, never re-subtract a second
+ * returns the net proceeds on a sell — a known pricing pitfall — never re-subtract a second
  * time upstream of this call).
  */
 export function reconcileNet(args: ReconcileNetArgs): void {

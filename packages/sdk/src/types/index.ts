@@ -1,5 +1,5 @@
 /**
- * The public type contract barrel — DATASHEET §0/§4/§5 mirrored (R6–R16; 54-SPEC.md).
+ * The public type contract barrel — DATASHEET §0/§4/§5 mirrored.
  * Re-exports every `.types.ts` file under this directory; nothing else lives here.
  */
 export type * from './amount.types'

@@ -10,8 +10,8 @@ import type { ImagesProviderContext } from '../../src/types/providers.types'
 import type { SnfClientConfig } from '../../src/types/client.types'
 
 /**
- * `resolveProviders` and the keyless `onChainImagesProvider` default (R19; 54-SPEC.md).
- * Every `<behavior>` bullet of plan 09's Task 2 is one `it` below.
+ * `resolveProviders` and the keyless `onChainImagesProvider` default.
+ * Every `<behavior>` bullet of this module's Task 2 is one `it` below.
  */
 
 const BASE_CHAIN_ID = 8453
@@ -46,7 +46,7 @@ const DATA_JSON_BASE64_SVG = `data:application/json;base64,${btoa(
   JSON.stringify({ name: 'Item #1', image: 'data:image/svg+xml;base64,PHN2Zy8+' }),
 )}`
 
-describe('resolveProviders — defaults + partner overrides (R19)', () => {
+describe('resolveProviders — defaults + partner overrides', () => {
   it('resolveProviders({}) returns the on-chain default for images and NO_PROVIDER for the other three', () => {
     const resolved = resolveProviders(fakeConfig())
     expect(resolved.images).toBe(onChainImagesProvider)
@@ -71,7 +71,7 @@ describe('resolveProviders — defaults + partner overrides (R19)', () => {
   })
 })
 
-describe('onChainImagesProvider.getImages — keyless Multicall3 default (R19)', () => {
+describe('onChainImagesProvider.getImages — keyless Multicall3 default', () => {
   it('issues exactly ONE publicClient.multicall for a batch, with allowFailure:true and batchSize:0', async () => {
     const { ctx, multicall } = fakeImagesCtx(() =>
       Promise.resolve([
@@ -157,7 +157,7 @@ describe('onChainImagesProvider.getImages — keyless Multicall3 default (R19)',
   })
 })
 
-describe('parseTokenUri — pure, no fetch (T-54-43)', () => {
+describe('parseTokenUri — pure, no fetch', () => {
   it('decodes a data:application/json;base64 document', () => {
     const parsed = parseTokenUri(DATA_JSON_BASE64_SVG)
     expect(parsed?.image).toBe('data:image/svg+xml;base64,PHN2Zy8+')

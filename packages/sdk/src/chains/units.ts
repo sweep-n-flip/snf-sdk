@@ -1,7 +1,7 @@
 import { getChain } from './registry'
 
 /**
- * The two-unit-axes module (R2, R11; 54-SPEC.md) — the ONLY place in this package
+ * The two-unit-axes module — the ONLY place in this package
  * allowed to convert between the pool side and the EVM side of an amount.
  *
  * The pool side (`getReserves`, `getAmountsIn/OutCollection`, `amountOutMin`,
@@ -15,7 +15,7 @@ import { getChain } from './registry'
  * through a bare `1e18`/`parseEther`/`parseUnits(x, 18)` literal.
  */
 
-// TODO(54-04): replace with SnfError once errors.ts lands (plan 04, wave 3).
+// TODO(54-04): replace with SnfError once errors.ts lands.
 class UnitsError extends Error {
   readonly code = 'INVALID_PARAMS' as const
   readonly details: Record<string, unknown>

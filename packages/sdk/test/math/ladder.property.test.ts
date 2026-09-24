@@ -5,8 +5,8 @@ import { estimateLadder, nftBuyCost } from '../../src/math/nftPricing'
 import { getAmountIn, ONE_E18, SNF_NFT_NET_FEE } from '../../src/math/quoteMath'
 
 /**
- * The two `🧪 backstop` properties `54-SPEC.md`'s Edge Coverage rows `adjacency | R12`
- * and `precision | R12` require — property-based, not example-based, so they catch a
+ * The two `🧪 backstop` properties the documented Edge Coverage rows `adjacency`
+ * and `precision` require — property-based, not example-based, so they catch a
  * class of regression a fixture table cannot. Both use a FIXED seed (`FIXED_SEED`
  * below) so a failure is reproducible; any shrunk counterexample must be pasted into
  * the plan's SUMMARY.md, never silently re-seeded away.
@@ -28,7 +28,7 @@ function bigintAbsDiff(a: bigint, b: bigint): bigint {
   return a > b ? a - b : b - a
 }
 
-describe('R12 backstop 1: the ladder marginal unit price is strictly increasing', () => {
+describe('Backstop 1: the ladder marginal unit price is strictly increasing', () => {
   it('for any reserves > 0, the k-th unit costs strictly more than the (k-1)-th', () => {
     let runs = 0
     fc.assert(
@@ -48,11 +48,11 @@ describe('R12 backstop 1: the ladder marginal unit price is strictly increasing'
     )
     expect(runs).toBeGreaterThanOrEqual(500)
     // eslint-disable-next-line no-console
-    console.log(`R12 backstop 1 (monotonic marginal price): ${runs} fast-check runs, seed ${FIXED_SEED}`)
+    console.log(`Backstop 1 (monotonic marginal price): ${runs} fast-check runs, seed ${FIXED_SEED}`)
   })
 })
 
-describe('R12 backstop 2: estimateLadder(reserves, n).total tracks nftBuyCost(reserves, n)', () => {
+describe('Backstop 2: estimateLadder(reserves, n).total tracks nftBuyCost(reserves, n)', () => {
   it('differs from the atomic nftBuyCost by at most n wei (n = the actual point count reached)', () => {
     let runs = 0
     fc.assert(
@@ -72,7 +72,7 @@ describe('R12 backstop 2: estimateLadder(reserves, n).total tracks nftBuyCost(re
     )
     expect(runs).toBeGreaterThanOrEqual(500)
     // eslint-disable-next-line no-console
-    console.log(`R12 backstop 2 (ladder-vs-nftBuyCost drift): ${runs} fast-check runs, seed ${FIXED_SEED}`)
+    console.log(`Backstop 2 (ladder-vs-nftBuyCost drift): ${runs} fast-check runs, seed ${FIXED_SEED}`)
   })
 
   it('sanity: nftBuyCost(reserves, n) itself agrees with the same atomic formula used above', () => {

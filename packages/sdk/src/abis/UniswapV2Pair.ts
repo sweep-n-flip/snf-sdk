@@ -1,6 +1,6 @@
 /**
- * Uniswap V2 Pair ABI — verbatim copy from `snf-client/src/abis/UniswapV2Pair.ts`
- * (commit `9e6c70aa466b62e68854cf781d723fd5cc08c1e8`), only the exported const renamed.
+ * Uniswap V2 Pair ABI — verbatim copy from the production AMM client's own ABI, only
+ * the exported const renamed.
  *
  * Covers: reserves, token addresses, LP token operations, minting/burning.
  */

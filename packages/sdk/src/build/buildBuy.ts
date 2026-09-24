@@ -16,7 +16,7 @@ import type { Approval, BuildArgs, ExecutionPlan, Step } from '../types/plan.typ
 import type { QuoteLeg } from '../types/quote.types'
 
 /**
- * `buildBuy` — an unsigned buy `ExecutionPlan` (R13). Every number in `tx.data`/
+ * `buildBuy` — an unsigned buy `ExecutionPlan`. Every number in `tx.data`/
  * `tx.value`/`bounds` comes from a FRESH `quoteBuy` call this function performs
  * itself — `args.quote` is read only for IDENTITY (`collection`, `tokenIds`, which
  * pool/base token was quoted), never for its priced fields (`totalCost`, `fees`). A
@@ -116,7 +116,7 @@ export async function buildBuy(ctx: SnfClientContext, args: BuildArgs): Promise<
   // `hasPendingApproval`: this step's own swap simulation is guaranteed to revert
   // against current state while the ERC-20 allowance above is still missing — skip
   // the live estimate entirely rather than throwing before the caller ever receives
-  // this very approval step (Finding 2, snf-54-18F).
+  // this very approval step (Finding 2).
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
     address: ctx.chain.router02,

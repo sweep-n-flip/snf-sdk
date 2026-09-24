@@ -1,13 +1,13 @@
 /**
- * Quote barrel (R8-R10; 54-SPEC.md) — internal `quote`/`build` module consumption,
+ * Quote barrel — internal `quote`/`build` module consumption,
  * not yet re-exported from the package root (`client.ts` imports the five domain
- * functions directly, per `createSnfClient`'s D-01 wiring).
+ * functions directly, per `createSnfClient`'s documented wiring order).
  *
- * Re-exports all FIVE members now, even though `quoteNftToNft`/`quoteSwap` still
- * carry plan 04's own unimplemented-stub marker in their own header comments —
- * plan 13 replaces only their function BODIES, never touching this barrel again,
- * keeping this file's writer singular across both same-wave plans (12 and 13 run
- * with disjoint files). This barrel itself is not a stub — nothing here throws.
+ * Re-exports all FIVE members, even on a day when `quoteNftToNft`/`quoteSwap` still
+ * carry this module's own unimplemented-stub marker in their own header comments —
+ * a later revision replaces only their function BODIES, never touching this barrel
+ * again, keeping this file's writer singular. This barrel itself is not a stub —
+ * nothing here throws.
  */
 export { loadQuoteContext } from './quoteContext'
 export type { LoadQuoteContextArgs, QuoteContext, QuoteRoyaltyLine } from './quoteContext'

@@ -146,7 +146,7 @@ describe('selectFungibleEntryPoint — the six-entry table', () => {
   })
 })
 
-describe('buildSwap — fresh re-quote, entry-point selection, bounds (R10, R13)', () => {
+describe('buildSwap — fresh re-quote, entry-point selection, bounds', () => {
   it('a native-in swap encodes swapExactETHForTokens with tx.value===toNativeValue(chainId, amountIn)', async () => {
     mockedQuoteSwap.mockResolvedValue(fixtureSwapQuote({ isNativeIn: true, isNativeOut: false, amountIn: 1_000_000n, amountOut: 900_000n }))
     const ctx = buildCtx({})
@@ -171,15 +171,15 @@ describe('buildSwap — fresh re-quote, entry-point selection, bounds (R10, R13)
     expect(swapStep.tx.value).toBe(0n)
   })
 
-  // Finding 2, snf-54-18-SUMMARY.md — the finding's own primary example (first traced
+  // Finding 2, — the finding's own primary example (first traced
   // on this exact function): a missing ERC-20 allowance used to make buildSwap THROW
   // (the swap step's live gas estimate reverted, by design, before assemblePlan ever
   // ran) — so the caller never received the very approval step that would fix it.
-  // Fixed in snf-54-18F. `estimateContractGasImpl` is wired to throw a GENUINE
+  // Fixed in . `estimateContractGasImpl` is wired to throw a GENUINE
   // simulated revert if it is EVER called, proving the fix works because the live
   // estimate is skipped entirely while the approval is pending, not because it
   // happens to succeed.
-  it('a missing ERC-20 allowance returns the plan (approval, then swap) instead of throwing — the live estimate is never attempted (Finding 2, snf-54-18F)', async () => {
+  it('a missing ERC-20 allowance returns the plan (approval, then swap) instead of throwing — the live estimate is never attempted (Finding 2)', async () => {
     mockedQuoteSwap.mockResolvedValue(fixtureSwapQuote({ isNativeIn: false, isNativeOut: true, amountIn: 1_000_000n, amountOut: 900_000n }))
     const revertError = new BaseError('execution reverted', {
       cause: new ContractFunctionRevertedError({ abi: [], functionName: 'swapExactTokensForETH' }),

@@ -10,9 +10,8 @@ import type { SnfClientConfig } from '../src/types/client.types'
 import type { SubgraphTransport } from '../src/transport/subgraph.types'
 
 /**
- * `createSnfClient` — R3's own acceptance test (54-SPEC.md; T-54-42 in the threat
- * register): two clients, two chains, one page, zero cross-talk. Every `<behavior>`
- * bullet of plan 09's Task 1 is one `it` below.
+ * `createSnfClient` — this module's own acceptance test: two clients, two chains,
+ * one page, zero cross-talk.
  */
 
 const BASE_CHAIN_ID = 8453
@@ -52,7 +51,7 @@ function metaEnvelope(): Response {
   })
 }
 
-/** The exact D-01 order: `chainId`, `chain`, then the thirteen methods as
+/** The exact documented order: `chainId`, `chain`, then the thirteen methods as
  * `types/client.types.ts`'s `SnfClient` interface declares them. */
 const D01_KEYS = [
   'chainId',
@@ -81,8 +80,8 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('createSnfClient — the object surface (D-01)', () => {
-  it("own enumerable keys are exactly the 13 method names plus chainId and chain, in D-01's order", () => {
+describe('createSnfClient — the object surface', () => {
+  it("own enumerable keys are exactly the 13 method names plus chainId and chain, in this rule's order", () => {
     const client = createSnfClient(config())
     expect(Object.keys(client)).toEqual(D01_KEYS)
   })
@@ -188,7 +187,7 @@ describe('createSnfClient — pure methods bound without ctx', () => {
   })
 })
 
-describe('createSnfClient — R3 acceptance: two clients, two chains, one page, zero cross-talk', () => {
+describe('createSnfClient — isolation acceptance: two clients, two chains, one page, zero cross-talk', () => {
   it('a Base client and an Arbitrum client hit different subgraph URLs and different registry entries', () => {
     const a = createSnfClient(config({ chainId: BASE_CHAIN_ID }))
     const b = createSnfClient(config({ chainId: ARBITRUM_CHAIN_ID }))
@@ -226,11 +225,11 @@ describe('createSnfClient — R3 acceptance: two clients, two chains, one page, 
     await transports[0]?.meta()
 
     expect(callsByUrl.get(baseUrl) ?? 0).toBe(1)
-    expect(callsByUrl.get(arbitrumUrl) ?? 0).toBe(0) // R3's literal acceptance criterion
+    expect(callsByUrl.get(arbitrumUrl) ?? 0).toBe(0) // the literal isolation acceptance criterion
   })
 })
 
-describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-102-08, R13)', () => {
+describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-102-08)', () => {
   // Every case here is `fakePublicClient()`'s opposite: a REAL `createPublicClient`
   // result, never a hand-rolled stand-in. `fakePublicClient()` above satisfies
   // `SnfClientConfig['publicClient']` by construction (it IS the declared type,

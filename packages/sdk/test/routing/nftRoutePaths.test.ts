@@ -8,9 +8,9 @@ import {
 import type { PoolRef } from '../../src/routing/routing.types'
 
 /**
- * Parity port of `snf-client/src/lib/swap/__tests__/nftRoutePaths.test.ts`, adapted
- * to the SDK's `{ collection, baseToken, side }` route-path shape (see this plan's
- * SUMMARY for the rename table), plus the two wrapper-side cases the plan requires:
+ * Parity port of the production AMM client's own route-path test suite, adapted
+ * to the SDK's `{ collection, baseToken, side }` route-path shape, plus the two
+ * wrapper-side cases required:
  * a pool where the wrapper is `token0` and one where it is `token1`, asserting the
  * same `path[]` orientation results from both (CLAUDE.md: never assume the wrapper
  * side).

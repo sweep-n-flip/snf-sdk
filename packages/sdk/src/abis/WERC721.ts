@@ -1,6 +1,6 @@
 /**
  * WERC721 — Wrapped ERC-721 ABI (Sweep n' Flip protocol). Verbatim copy from
- * `snf-client/src/abis/WERC721.ts` (commit `9e6c70aa466b62e68854cf781d723fd5cc08c1e8`).
+ * the production AMM client's own ABI.
  *
  * Each WERC721 contract wraps a single ERC-721 collection into an ERC-20
  * compatible token. One wrapped NFT = 1 * 10^18 WERC721 units (decimals = 18).
@@ -9,10 +9,10 @@
  * ABI CID: QmcBFmmYQyz7qj68DCxJ8448BCgaGg9CmvnZdJa2Bt4yKt
  *
  * Key operations:
- *   mint(to, tokenIds[])  — transfer NFTs in, receive ERC-20 units
- *   burn(to, tokenIds[])  — burn ERC-20 units, receive specific NFTs out
- *   collection()          — returns the underlying ERC-721 contract address
- *   factory()             — returns the SnF Factory that created this wrapper
+ * mint(to, tokenIds[]) — transfer NFTs in, receive ERC-20 units
+ * burn(to, tokenIds[]) — burn ERC-20 units, receive specific NFTs out
+ * collection() — returns the underlying ERC-721 contract address
+ * factory() — returns the SnF Factory that created this wrapper
  */
 export const WERC721_ABI = [
   // ── Events ───────────────────────────────────────────────────────────────────

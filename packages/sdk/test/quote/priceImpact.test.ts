@@ -4,7 +4,7 @@ import { crossPoolPriceImpact, singlePoolPriceImpact, spotNominal } from '../../
 import { ONE_E18 } from '../../src/math/quoteMath'
 
 /**
- * `priceImpact.ts` (Task 1, R9): the spot (mid) price nominal baseline, the
+ * `priceImpact.ts` (Task 1): the spot (mid) price nominal baseline, the
  * policy-neutrality guarantee, the tiny-pool regression, and the [0,100] clamp.
  */
 

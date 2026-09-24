@@ -12,15 +12,15 @@ import sell3Fixture from '../fixtures/receipts/sell-3.json'
 import sellWnftFixture from '../fixtures/receipts/sell-wnft.json'
 
 /**
- * R16 — `parseReceipt` against sourced receipt fixtures, plus the version-
+ * `parseReceipt` against sourced receipt fixtures, plus the version-
  * monotonicity backstop.
  *
  * `sell-3.json` is a real, fully-verified fixture from live MAINNET history (see its
- * own `source`/`note` fields, and `snf-54-08-SUMMARY.md`'s Deviations): a live
+ * own `source`/`note` fields): a live
  * `eth_getTransactionReceipt` against Base for a real mined DEMON sale, cross-checked
- * against `snf-drops-registration`'s independently-captured `sellReceipt.fixture.ts`.
- * `buy-1.json`/`sell-wnft.json` could not be sourced from mainnet history at plan 08's
- * time and were left `it.todo` pending a fork capture — plan 18 captured both live
+ * against a sibling SnF product's independently-captured `sellReceipt.fixture.ts`.
+ * `buy-1.json`/`sell-wnft.json` could not be sourced from mainnet history at first and
+ * were left `it.todo` pending a fork capture — a later fork session captured both live
  * from a real, mined anvil-fork-of-Base transaction (test/fork/base.fork.test.ts) and
  * converted the two `it.todo`s below into real assertions against the actual,
  * verified `parseReceipt` behavior (including a genuine finding: `received`/`paid`
@@ -137,7 +137,7 @@ describe('parseReceipt — sell-3.json (the one real, sourced fixture)', () => {
   })
 })
 
-describe('parseReceipt — buy-1.json (captured live from the Base fork, plan 18)', () => {
+describe('parseReceipt — buy-1.json (captured live from the Base fork)', () => {
   const fixture = buy1Fixture as unknown as ReceiptFixture
 
   it('has a non-empty source and is no longer pending', () => {
@@ -171,7 +171,7 @@ describe('parseReceipt — buy-1.json (captured live from the Base fork, plan 18
   })
 })
 
-describe('parseReceipt — sell-wnft.json (captured live from the Base fork, plan 18)', () => {
+describe('parseReceipt — sell-wnft.json (captured live from the Base fork)', () => {
   const fixture = sellWnftFixture as unknown as ReceiptFixture
 
   it('has a non-empty source and is no longer pending', () => {
@@ -186,7 +186,7 @@ describe('parseReceipt — sell-wnft.json (captured live from the Base fork, pla
     expect(result.itemsOut).toEqual([])
   })
 
-  it('FIXED (Finding 3, snf-54-18F): received is now attributed for a pure wNFT sale, from the WETH Withdrawal log the itemsIn-only gate used to ignore', () => {
+  it('FIXED (Finding 3): received is now attributed for a pure wNFT sale, from the WETH Withdrawal log the itemsIn-only gate used to ignore', () => {
     const { ctx } = fakeCtx(fixture.chainId ?? 8453)
     const result = parseReceipt(ctx, toReceiptLike(fixture))
     expect(result.received?.value).toBe(BigInt(fixture.expected?.receivedWei as string))
@@ -208,7 +208,7 @@ describe('parseReceipt — reverted receipts throw typed, never return a partial
     const { ctx } = fakeCtx(8453)
     // A synthetic `data` field, as some providers attach non-standard revert data
     // directly on the receipt object — describeError decodes it via `'data' in e`
-    // regardless of the static ReceiptLike type (T-54-39: reused, not re-implemented).
+    // regardless of the static ReceiptLike type (Reused, not re-implemented).
     const revertData = encodeRevert('SweepnFlipRouter: INSUFFICIENT_OUTPUT_AMOUNT')
     const reverted: ReceiptLike & { readonly data: `0x${string}` } = {
       status: 'reverted',
@@ -252,7 +252,7 @@ describe('parseReceipt — a receipt with zero recognisable logs', () => {
   })
 })
 
-describe('parseReceipt — R16 concurrency backstop: out-of-order delivery keeps the counter strictly increasing', () => {
+describe('parseReceipt — concurrency backstop: out-of-order delivery keeps the counter strictly increasing', () => {
   // Fixed seed: a permutation table over 5 receipts (all built from the one real,
   // sourced sell-3.json fixture — only the ORDER of delivery varies, never the
   // content), tried both forwards and reversed, plus 3 explicit shuffles.

@@ -6,8 +6,7 @@ import { quoteSwap } from '../../src/quote/quoteSwap'
 import { buildSwapEnv, ZERO_ADDRESS } from './quoteSwapTestHelpers'
 
 /**
- * `quoteSwap` — fungible, delegate-aware per hop (Task 3, REQ-SDK-14, R10;
- * 54-SPEC.md). Every `<behavior>` bullet is at least one `it` below.
+ * `quoteSwap` — fungible, delegate-aware per hop (Task 3).
  */
 
 const TOKEN_A = '0x0000000000000000000000000000000000000a01' as `0x${string}`
@@ -17,7 +16,7 @@ const PAIR_AB = '0x0000000000000000000000000000000000ab0001' as `0x${string}`
 const PAIR_AQ = '0x0000000000000000000000000000000000a10001' as `0x${string}`
 const PAIR_QB = '0x00000000000000000000000000000000002b0001' as `0x${string}`
 
-describe('quoteSwap (Task 3, R10)', () => {
+describe('quoteSwap (Task 3)', () => {
   it('a single-hop SnF-native pair uses 9800/10000 and matches the mocked on-chain getAmountsOut', async () => {
     const { ctx } = buildSwapEnv({
       hops: [{ from: TOKEN_A, to: TOKEN_B, pair: PAIR_AB, reserveFrom: 1_000n * ONE_E18, reserveTo: 1_000n * ONE_E18 }],
@@ -189,7 +188,7 @@ describe('quoteSwap (Task 3, R10)', () => {
     expect(quote.amountOut?.symbol).toBe('USDX')
   })
 
-  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted', async () => {
     const hops = [{ from: TOKEN_A, to: TOKEN_B, pair: PAIR_AB, reserveFrom: 1_000n * ONE_E18, reserveTo: 1_000n * ONE_E18 }]
     const { ctx: ctxMatching } = buildSwapEnv({ hops })
     const quoteMatching = await quoteSwap(ctxMatching, { chainId: 8453, tokenIn: TOKEN_A, tokenOut: TOKEN_B, amountIn: 10n * ONE_E18 })
@@ -205,7 +204,7 @@ describe('quoteSwap (Task 3, R10)', () => {
     expect(typeof expiresAtOmitted).toBe('string')
   })
 
-  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read', async () => {
     const { ctx, multicall } = buildSwapEnv({
       hops: [{ from: TOKEN_A, to: TOKEN_B, pair: PAIR_AB, reserveFrom: 1_000n * ONE_E18, reserveTo: 1_000n * ONE_E18 }],
     })

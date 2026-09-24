@@ -3,7 +3,7 @@ import { getQuoteDecimals } from './chains/units'
 import type { Amount } from './types/amount.types'
 
 /**
- * D-03's two-field money (54-CONTEXT.md) — the only place in this package that turns a
+ * this rule's two-field money — the only place in this package that turns a
  * `bigint` into a display string. `value` is exact and is what every internal
  * computation and every transaction uses; `formatted` is for UI display ONLY and must
  * NEVER be parsed back for math (`types/amount.types.ts`'s own doc comment repeats
@@ -17,8 +17,8 @@ import type { Amount } from './types/amount.types'
 
 const DISPLAY_FLOOR_DENOM = 1_000_000n // "<0.000001" cutoff, as a bigint ratio test
 
-/** Magnitude-scaled fraction-digit tiers, mirroring `snf-client/src/lib/
- * formatters.ts`'s `formatETH` (2/4/5/6/8 by magnitude) — ported to bigint-exact
+/** Magnitude-scaled fraction-digit tiers, mirroring the production AMM
+ * client's own `formatETH` (2/4/5/6/8 by magnitude) — ported to bigint-exact
  * comparisons (`frac * threshold >= divisor`) instead of a float compare, since the
  * value this function receives may not survive an exact float round-trip. */
 function fractionDigitsFor(frac: bigint, divisor: bigint): number {
@@ -84,7 +84,7 @@ export function formatAmount(
   }
 
   // Pad the fraction to `decimals` digits, truncate to the chosen precision, then
-  // trim trailing zeros — "0.004" not "0.00400" (RESEARCH's Arc fixtures require the
+  // trim trailing zeros — "0.004" not "0.00400" (the Arc fixtures require the
   // two unit-axis wrappers to render the SAME string for the same real amount).
   const fracPadded = frac.toString().padStart(decimals, '0')
   const fracTruncated = fracPadded.slice(0, Math.min(fractionDigits, fracPadded.length))
@@ -97,7 +97,7 @@ export function formatAmount(
   return withSymbol(text, opts.symbol)
 }
 
-/** Builds D-03's two-field `Amount` — `value` exact, `formatted` for display only. */
+/** Builds this rule's two-field `Amount` — `value` exact, `formatted` for display only. */
 export function toAmount(value: bigint, decimals: number, symbol: string): Amount {
   return { value, formatted: formatAmount(value, decimals, { symbol }), symbol, decimals }
 }
@@ -126,7 +126,7 @@ export function toNativeAmount(chainId: number, weiValue: bigint): Amount {
  * basis-point fields (`FeeBreakdown.bps`, `Quote.priceImpact`) that the public type
  * contract declares as `number` — money itself always stays `bigint` end to end;
  * only this label conversion needs a JS number. Deliberately kept here rather than
- * in `src/quote/` (plan 12): `test/math/reconcile.test.ts`'s static scan forbids
+ * in `src/quote/`: `test/math/reconcile.test.ts`'s static scan forbids
  * `Number(` anywhere under `src/quote/`, so any bigint->number narrowing quote/*
  * needs for a display label must live in a file that scan does not cover.
  * `denominator <= 0n` returns `0` rather than dividing by zero.

@@ -17,7 +17,7 @@ import type { Amount } from '../types/amount.types'
 import type { FeeBreakdown, Quote, QuoteLeg, QuoteNftToNftArgs } from '../types/quote.types'
 
 /**
- * Two-leg collection→collection quote (R9): sell `sell.tokenIds` of collection A, buy
+ * Two-leg collection→collection quote: sell `sell.tokenIds` of collection A, buy
  * `buy.count` of collection B. `legs[0]` is ALWAYS the sell, `legs[1]` ALWAYS the buy —
  * both `NFT×NFT branches go FIRST` (docs/NFT_SWAP_RULES.md) in the sense that this
  * module never re-derives its math from the single-leg `quoteBuy`/`quoteSell` branches;

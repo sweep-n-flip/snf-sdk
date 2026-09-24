@@ -13,7 +13,7 @@ import { FORK_LANES, anvilMissingMessage, resolveAnvilBinary, startAnvil } from 
 import type { AnvilInstance } from './anvil'
 
 /**
- * The Robinhood Chain fork lane (Task 2, R20; 54-SPEC.md). Uniswap V2 (Robinhood
+ * The Robinhood Chain fork lane (Task 2). Uniswap V2 (Robinhood
  * Chain mainnet) is this chain's delegate DEX (registry `delegateNetFee: 9970`) —
  * same job as the Arbitrum lane: reconciliation on this chain's own real native NFT
  * pool (ORBIO/WETH), plus an empirical delegated-pair check.
@@ -51,7 +51,7 @@ describeOrSkip(`Robinhood fork lane (chainId ${ROBINHOOD_LANE.chainId}, block ${
     await anvil?.stop()
   })
 
-  describe('reconciliation, both directions, against the real deployed Router (R8, R20)', () => {
+  describe('reconciliation, both directions, against the real deployed Router', () => {
     it('quoteBuy(1 id) on the ORBIO/WETH pool matches getAmountsInCollection AND an independent local reconstruction', async () => {
       const fixtures = ROBINHOOD_LANE!.fixtures as {
         collection: `0x${string}`
@@ -141,7 +141,7 @@ describeOrSkip(`Robinhood fork lane (chainId ${ROBINHOOD_LANE.chainId}, block ${
         functionName: 'delegates',
         args: [fixtures.wrapper, fixtures.baseToken],
       })
-      // FINDING (Task 2 point 5, A2 — see snf-54-18-SUMMARY.md, Findings, for the
+      // FINDING (Task 2 point 5, A2 — see , Findings, for the
       // full account): probed every registered wrapper on this chain (via the
       // snf-robinhood subgraph's `currencies(where:{wrapping:true})`, 2 entries)
       // against `Factory.delegates(...)` this session — every probe returned

@@ -2,8 +2,8 @@ import type { CheckoutState } from '../types/checkout.types'
 import type { Step } from '../types/plan.types'
 
 /**
- * The partner's button copy (R15) — ported from `snf-client/src/components/checkout/
- * hooks/buildCheckoutDerived.ts`'s `buildConfirmLabel`/`isBusyStep`, reduced from the
+ * The partner's button copy — ported from the production AMM client's own
+ * `buildConfirmLabel`/`isBusyStep` derivation, reduced from the
  * 18-member `CheckoutStep` union to this SDK's 11-state `CheckoutState`. A partner
  * may override these strings in their own UI; the defaults are usable as-is.
  */

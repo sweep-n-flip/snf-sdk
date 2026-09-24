@@ -3,7 +3,7 @@ import type { CheckoutState, ReceiptLike } from '../types/checkout.types'
 import type { ExecutionPlan, Step, StepKind } from '../types/plan.types'
 
 /**
- * The pure checkout reducer (R15, INV-17; 54-SPEC.md). This is the ONLY place a
+ * The pure checkout reducer (INV-17). This is the ONLY place a
  * dispatch effect is produced anywhere in this package, and it is produced in exactly
  * ONE `case` of the `switch` below — the `'next'` case. Every other case (`'receipt'`,
  * `'rejected'`, `'cancel'`) returns `{ kind: 'none' }`, unconditionally.
@@ -19,12 +19,12 @@ import type { ExecutionPlan, Step, StepKind } from '../types/plan.types'
  * actions, and those two cases are hard-coded to `{ kind: 'none' }` — there is no
  * `if` a future edit could weaken into producing a dispatch from a watcher path.
  *
- * No timers, no promises, no I/O, no module-scope state (`local/no-module-global-state`,
- * SPEC R3). Pure `(state, action) => { state, effect }`.
+ * No timers, no promises, no I/O, no module-scope state (`local/no-module-global-state`).
+ * Pure `(state, action) => { state, effect }`.
  */
 
 /**
- * Exactly R15's 11 states, `as const satisfies readonly CheckoutState[]` so this array
+ * Exactly this rule's 11 states, `as const satisfies readonly CheckoutState[]` so this array
  * cannot drift from `CheckoutState`'s own membership — `tsc --noEmit` fails the moment
  * the two disagree, not just a runtime test.
  */
@@ -144,8 +144,8 @@ export function checkoutReducer(
   action: CheckoutAction,
 ): { readonly state: CheckoutMachineState; readonly effect: CheckoutEffect } {
   // A receipt/rejection/next/cancel tagged with a SUPERSEDED session (i.e. `cancel()`
-  // already bumped `sessionId` past this action's own) is dropped entirely — R15
-  // concurrency acceptance. Returns the SAME state reference, not a copy, so a caller
+  // already bumped `sessionId` past this action's own) is dropped entirely — the
+  // documented concurrency acceptance. Returns the SAME state reference, not a copy, so a caller
   // (createCheckout) can detect a true no-op with `===`.
   if (action.sessionId < state.sessionId) return { state, effect: NONE }
 

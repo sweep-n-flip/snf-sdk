@@ -14,7 +14,7 @@ import type { Amount } from '../types/amount.types'
 import type { FeeBreakdown, Quote, QuoteLeg, QuoteSwapArgs } from '../types/quote.types'
 
 /**
- * Fungible↔fungible quote (R10): delegate-aware per hop — `9800` on a native SnF pair,
+ * Fungible↔fungible quote: delegate-aware per hop — `9800` on a native SnF pair,
  * that CHAIN'S OWN `delegateNetFee` on a delegated pair (`Factory.delegates(token0,
  * token1)`, a bare `bool`), NEVER a single hardcoded upstream-DEX constant.
  *
@@ -23,7 +23,7 @@ import type { FeeBreakdown, Quote, QuoteLeg, QuoteSwapArgs } from '../types/quot
  * `NO_ROUTE` with `details.viablePayTokens` naming the quote token as the only
  * alternative, rather than a silently multi-hopped quote. Every computed amount is
  * cross-checked against the Router's own `getAmountsOut`/`getAmountsIn` for the
- * identical path — a mismatch throws `QUOTE_RECONCILIATION_FAILED` (same R8 discipline).
+ * identical path — a mismatch throws `QUOTE_RECONCILIATION_FAILED` (the same reconciliation discipline every quote function follows).
  */
 
 const QUOTE_TTL_MS = 30_000

@@ -5,14 +5,14 @@ import { isSnfError } from '../src/errors'
 import { addressLink, tokenLink, txLink } from '../src/links'
 
 /**
- * Explorer link builders (R21; 54-SPEC.md) — all 14 chains, from registry data alone.
+ * Explorer link builders — all 14 chains, from registry data alone.
  */
 
 const HASH = '0x1111111111111111111111111111111111111111111111111111111111111111' as `0x${string}`
 const ADDRESS = '0x2222222222222222222222222222222222222222' as `0x${string}`
 const UNSUPPORTED_CHAIN_ID = 999_999
 
-describe('txLink / addressLink / tokenLink — 14-chain coverage (R21)', () => {
+describe('txLink / addressLink / tokenLink — 14-chain coverage', () => {
   it.each(SNF_CHAIN_IDS)('chain %s: every helper returns an https:// URL containing the chain\'s own explorer host', (chainId) => {
     const host = new URL(getChain(chainId).explorerUrl).host
 
@@ -53,7 +53,7 @@ describe('txLink / addressLink / tokenLink — 14-chain coverage (R21)', () => {
   })
 })
 
-describe('src/index.ts — the wave-5 public barrel surface (D-01, R21)', () => {
+describe('src/index.ts — the public barrel surface', () => {
   it('exports exactly the documented surface, and no free-standing domain function', async () => {
     const barrel = (await import('../src/index')) as Record<string, unknown>
     const names = Object.keys(barrel).sort()

@@ -7,13 +7,13 @@ import type { SnfClientContext } from '../../src/types/client.types'
 
 /**
  * Shared fixture builder for `test/quote/{reconciliation,quoteBuy,quoteSell}.test.ts`
- * (plan 12). `quoteBuy`/`quoteSell` call `resolveCollection` (plan 10) and, in
- * count-mode, `poolInventory` (plan 11) BEFORE ever reaching `loadQuoteContext`
+ *. `quoteBuy`/`quoteSell` call `resolveCollection` and, in
+ * count-mode, `poolInventory` BEFORE ever reaching `loadQuoteContext`
  * (this plan) — so a full end-to-end test needs every one of those modules' own
  * `multicall`/transport reads mocked too, not just `loadQuoteContext`'s. This file
  * is NOT itself a `*.test.ts` (vitest's own glob excludes it), so it adds no test
  * count; it exists purely to avoid ~300 lines of copy-pasted mock plumbing across
- * the three real test files (documented as a deviation in `snf-54-12-SUMMARY.md`
+ * the three real test files (documented as a deviation in 
  * — the plan's `files_modified` lists three test files but not this one).
  *
  * Every multicall batch below is dispatched by its own exact, source-verified

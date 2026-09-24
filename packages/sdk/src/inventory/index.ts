@@ -1,5 +1,5 @@
 /**
- * Inventory barrel (R7; 54-SPEC.md) — `poolInventory` plus the two modules it's built
+ * Inventory barrel — `poolInventory` plus the two modules it's built
  * from, re-exported for anything internal that needs the pieces directly (tests, and
  * a future plan reusing `readEnumerableTokenIds`/`availableCountFromReserve`).
  */

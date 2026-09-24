@@ -5,11 +5,11 @@ import { buildQuoteEnv, ZERO_ADDRESS } from './testHelpers'
 
 /**
  * `quoteSell` — the Router's number is already NET, and never re-subtracted
- * (Task 3, REQ-SDK-12, R8; 54-SPEC.md). Every `<behavior>` bullet is one `it`
+ * (Task 3). Every `<behavior>` bullet is one `it`
  * below.
  *
- * The two Base sell fixtures (`91417099472198` and `237988677509668`) were RESEARCH
- * Assumption A3 — "never independently traced to a source". Plan 18 closed that
+ * The two Base sell fixtures (`91417099472198` and `237988677509668`) were flagged
+ * as "never independently traced to a source". A later fork session closed that
  * assumption: both were re-derived live against the real Base Router
  * (`getAmountsOutCollection`, block 51599577, 2026-09-21) and matched exactly, so
  * the two bottom `it`s below now assert the real numbers (see
@@ -23,11 +23,12 @@ const COLLECTION = '0x000000000000000000000000000000000000c011' as `0x${string}`
 const RECEIVER = '0x1111111111111111111111111111111111111111' as `0x${string}`
 
 // Synthetic, internally-consistent sell fixture for every OTHER test in this file
-// (kept exactly as plan 12 built it — a real, deterministic pool shape, but not
+// (kept exactly as originally built — a real, deterministic pool shape, but not
 // wired to a real Router call). The bottom two `it`s use the SAME reserves, which
 // happen to be the DEMON pool's real historical reserves (`base-demon.json`) — that
-// coincidence is what let RESEARCH Assumption A3 be closed by pure reconstruction
-// PLUS a live cross-check, both in this file and in `test/fork/base.fork.test.ts`.
+// coincidence is what let the flagged assumption above be closed by pure
+// reconstruction PLUS a live cross-check, both in this file and in
+// `test/fork/base.fork.test.ts`.
 const RESERVES = { base: 1_297_217_522_559_477n, wnft: 11_883_323_065_263_036_728n }
 const MARKETPLACE_FEE_E18 = 25n * 10n ** 15n // 2.5%
 
@@ -55,7 +56,7 @@ function sellEnv(overrides: Partial<Parameters<typeof buildQuoteEnv>[0]> = {}) {
   })
 }
 
-describe('quoteSell (Task 3, R8)', () => {
+describe('quoteSell (Task 3)', () => {
   it('totalProceeds equals the Router getAmountsOutCollection answer verbatim — no further subtraction anywhere', async () => {
     const poolLeg1 = poolLegSell(1n)
     const marketplace1 = (poolLeg1 * MARKETPLACE_FEE_E18) / 10n ** 18n
@@ -254,11 +255,11 @@ describe('quoteSell (Task 3, R8)', () => {
     })
   })
 
-  // RESEARCH Assumption A3, CLOSED by plan 18: both figures were re-derived live
+  // The previously-flagged assumption is closed: both figures were re-derived live
   // against the real Base Router (getAmountsOutCollection, block 51599577,
   // mainnet.base.org, 2026-09-21) — see test/fork/base.fork.test.ts for the live
   // on-chain read and test/fixtures/collections/base-demon.json's `sellFixtures`.
-  // The live Router figures matched RESEARCH's Assumption A3 numbers exactly, to
+  // The live Router figures matched the flagged numbers exactly, to
   // the wei, in both directions (raw Router call and local reconstruction).
   it('Base sell-side fixture: selling DEMON tokenId 245830 nets 91417099472198 wei (real reserves, real 2.5%/5% rates)', async () => {
     const poolLeg1 = poolLegSell(1n)
@@ -303,7 +304,7 @@ describe('quoteSell (Task 3, R8)', () => {
     expect(quote.totalProceeds?.value).toBe(237_988_677_509_668n)
   })
 
-  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted', async () => {
     const poolLeg1 = poolLegSell(1n)
     const marketplace1 = (poolLeg1 * MARKETPLACE_FEE_E18) / 10n ** 18n
     const royalty1 = (poolLeg1 * (5n * 10n ** 16n)) / 10n ** 18n
@@ -327,7 +328,7 @@ describe('quoteSell (Task 3, R8)', () => {
     expect(typeof expiresAtOmitted).toBe('string')
   })
 
-  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read', async () => {
     const { ctx, multicall } = sellEnv()
     await expect(
       quoteSell(ctx, { chainId: 1, collection: COLLECTION, tokenIds: ['245830'] }),

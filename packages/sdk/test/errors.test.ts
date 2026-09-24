@@ -101,7 +101,7 @@ describe('assertParam', () => {
   })
 })
 
-describe('assertChainMatch (R11 addendum)', () => {
+describe('assertChainMatch (Addendum)', () => {
   it('does not throw when argsChainId is omitted', () => {
     expect(() => assertChainMatch(undefined, 8453)).not.toThrow()
   })
@@ -146,7 +146,7 @@ describe('toSnfError', () => {
   })
 })
 
-describe('registry.getChain uses SnfError (plan 03 placeholder resolved)', () => {
+describe('registry.getChain uses SnfError (Placeholder resolved)', () => {
   it('throws SnfError with code INVALID_PARAMS and details.chainId for an unsupported id', () => {
     try {
       getChain(999999)
@@ -159,11 +159,11 @@ describe('registry.getChain uses SnfError (plan 03 placeholder resolved)', () =>
   })
 })
 
-// ── Static scan (R5 acceptance, T-54-16) ────────────────────────────────────────────
+// ── Static scan (Acceptance) ────────────────────────────────────────────
 //
 // 1. `throw new Error(` must occur zero times in src/, outside errors.ts itself.
 // 2. Every `new SnfError('X'` call site's `X` must be a member of SNF_ERROR_CODES —
-//    catches a typo'd code the moment it's introduced, not at runtime in production.
+// catches a typo'd code the moment it's introduced, not at runtime in production.
 
 function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(?<!:)\/\/.*$/gm, '')

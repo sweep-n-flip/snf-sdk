@@ -19,14 +19,14 @@ import type { SubgraphTokenCollection } from '../transport/subgraph.types'
 
 /**
  * `resolveCollection` — one call that discovers a collection's wrapper, pools,
- * display labels, royalty, `redemptionLocked` and `wrapperVerified` (R6; 54-SPEC.md).
+ * display labels, royalty, `redemptionLocked` and `wrapperVerified`.
  * Discovery is on-chain first (`Factory.getWrapper` → `Factory.getPair`); the
  * subgraph is used ONLY to (a) discover any ERC-20 base beyond the chain's native
  * quote token — the Factory has no "all pairs for this wrapper" view, so a second
  * base's ADDRESS has to come from somewhere, and every candidate is still confirmed
  * via a real `getPair` before being trusted — and (b) non-blocking enrichment
- * (`reserveUSD`, names). Merges `snf-client/src/hooks/contracts/{useWrapperAddress,
- * usePairAddress,useCollectionFromWrapper,useCollectionRedemptionStatus}.ts`.
+ * (`reserveUSD`, names). Merges the equivalent per-hook logic the production AMM
+ * client keeps split across several hooks into one resolver.
  */
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -59,8 +59,8 @@ function dedupeAddresses(addresses: readonly `0x${string}`[]): readonly `0x${str
   return out
 }
 
-/** REDEMPTION_PROBE guard wordings — ported verbatim from
- * `snf-client/src/hooks/contracts/useCollectionRedemptionStatus.ts` so both products
+/** REDEMPTION_PROBE guard wordings — ported verbatim from the production AMM
+ * client's own redemption-status hook so both products
  * classify the same collections the same way. */
 const BLOCKED_WORDING =
   /transfer[\s\-_]?role|operator (?:not allowed|denied|filter|blocked)|transfer (?:not allowed|denied|blocked|forbidden)|denyl?ist/i

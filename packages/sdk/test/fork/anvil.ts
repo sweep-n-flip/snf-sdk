@@ -6,12 +6,11 @@ import { join } from 'node:path'
 import forkChains from './chains.fork.json'
 
 /**
- * The anvil fork harness (Task 1, R20; 54-SPEC.md). Explicit binary resolution,
+ * The anvil fork harness (Task 1). Explicit binary resolution,
  * pinned fork blocks, one isolated port per lane, Windows-safe shutdown.
  *
  * Foundry's `anvil`/`forge` 1.5.1-stable IS installed on this dev host at
- * `~/.foundry/bin/` but is **NOT on PATH** (confirmed this session — see
- * `snf-54-RESEARCH.md` § "Environment Availability"). CI installs it via the
+ * `~/.foundry/bin/` but is **NOT on PATH** (confirmed this session). CI installs it via the
  * `foundry-rs/foundry-toolchain` action instead of assuming a PATH entry.
  */
 
@@ -37,7 +36,7 @@ export interface ForkLaneConfig {
 export const FORK_LANES = forkChains as readonly ForkLaneConfig[]
 
 /** Every lane's port, in `chains.fork.json` order — `isolation.fork.test.ts` asserts
- * these are pairwise distinct (the R20 backstop edge). */
+ * these are pairwise distinct (the fork-lane isolation backstop). */
 export const FORK_PORTS: readonly number[] = FORK_LANES.map((l) => l.port)
 
 function isWin32(): boolean {
@@ -46,11 +45,11 @@ function isWin32(): boolean {
 
 /**
  * Resolves the local `anvil` executable, in order:
- *   1. `process.env.ANVIL_BIN` (explicit override — CI or a dev with a nonstandard install)
- *   2. `anvil`/`anvil.exe` on `PATH` (works once `foundryup` or the `foundry-toolchain`
- *      GH Action has run)
- *   3. the documented Windows install path `~/.foundry/bin/anvil.exe`
- *   4. the POSIX install path `~/.foundry/bin/anvil`
+ * 1. `process.env.ANVIL_BIN` (explicit override — CI or a dev with a nonstandard install)
+ * 2. `anvil`/`anvil.exe` on `PATH` (works once `foundryup` or the `foundry-toolchain`
+ * GH Action has run)
+ * 3. the documented Windows install path `~/.foundry/bin/anvil.exe`
+ * 4. the POSIX install path `~/.foundry/bin/anvil`
  * Returns `undefined` when none of the four resolves to an existing, executable file
  * — callers must skip loudly (never throw an opaque spawn error) when this happens.
  */

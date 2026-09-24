@@ -7,7 +7,7 @@ import type { SnfClientContext } from '../../src/types/client.types'
 
 /**
  * `resolveRoyalty` — EIP-2981, the Router cap, per-token basis and the unpayable
- * receiver (REQ-SDK-10, R6; 54-SPEC.md). Every `<behavior>` bullet of plan 10's Task 2
+ * receiver. Every `<behavior>` bullet of this module's Task 2
  * is one `it` below. `royaltyInfo(id, 1e18)` results are canned as
  * `[receiver, royaltyAmount]` tuples so a bps rate is `amount * 10000n / 1e18n`.
  */
@@ -52,7 +52,7 @@ const NOT_SUPPORTED: ReadResult = { status: 'success', result: false }
 const SUPPORTED: ReadResult = { status: 'success', result: true }
 const NO_CAP_SET: ReadResult = capAt(100) // 100e16 = "no effective cap" sentinel some collections read as-is
 
-describe('resolveRoyalty (R6)', () => {
+describe('resolveRoyalty', () => {
   it('no ERC-165 / supportsInterface(0x2a55205a) === false ⇒ bps:0, receiver:null, collection-default, no throw', async () => {
     const { ctx } = fakeCtx(BASE_CHAIN_ID, () => Promise.resolve([NOT_SUPPORTED, NO_CAP_SET, royaltyAt(5)]))
     const result = await resolveRoyalty(ctx, COLLECTION)

@@ -16,12 +16,12 @@ import type { FeeBreakdown, Quote, QuoteLeg, QuoteSellArgs } from '../types/quot
 
 /**
  * On-chain proceeds from selling `tokenIds`/`count` NFTs of a collection,
- * reconciled to the wei against the Router's own `getAmountsOutCollection` (R8).
+ * reconciled to the wei against the Router's own `getAmountsOutCollection`.
  *
  * THE ASYMMETRIC FOOTGUN: `getAmountsInCollection` (buy) returns GROSS — fee and
  * royalty still to be added. `getAmountsOutCollection` (sell) returns NET — fee and
  * royalty ALREADY deducted. The names are asymmetric on purpose, and this is the
- * codebase's #1 pricing footgun (RESEARCH Pitfall 1: "a sell quote's displayed
+ * codebase's #1 pricing footgun (a known pricing pitfall: "a sell quote's displayed
  * total is suspiciously ~5-7% lower than the pool-only price" is the symptom of
  * re-subtracting a second time). See the assignment below.
  */

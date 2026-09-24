@@ -13,7 +13,7 @@ import { FORK_LANES, anvilMissingMessage, resolveAnvilBinary, startAnvil } from 
 import type { AnvilInstance } from './anvil'
 
 /**
- * The Arbitrum fork lane (Task 2, R20; 54-SPEC.md). SushiSwap (Arbitrum mainnet) is
+ * The Arbitrum fork lane (Task 2). SushiSwap (Arbitrum mainnet) is
  * this chain's delegate DEX (registry `delegateNetFee: 9970`) — this lane's job is
  * reconciliation on this chain's own (small, real) native NFT pool, PLUS an
  * empirical check for a delegated pair to confirm the registry's `delegateNetFee`
@@ -52,7 +52,7 @@ describeOrSkip(`Arbitrum fork lane (chainId ${ARBITRUM_LANE.chainId}, block ${AR
     await anvil?.stop()
   })
 
-  describe('reconciliation, both directions, against the real deployed Router (R8, R20)', () => {
+  describe('reconciliation, both directions, against the real deployed Router', () => {
     it('quoteBuy(1 id) on the WCBERA/WETH pool matches getAmountsInCollection AND an independent local reconstruction', async () => {
       const fixtures = ARBITRUM_LANE!.fixtures as {
         collection: `0x${string}`
@@ -150,7 +150,7 @@ describeOrSkip(`Arbitrum fork lane (chainId ${ARBITRUM_LANE.chainId}, block ${AR
         functionName: 'delegates',
         args: [fixtures.wrapper, fixtures.baseToken],
       })
-      // FINDING (Task 2 point 5, A2 — see snf-54-18-SUMMARY.md, Findings, for the
+      // FINDING (Task 2 point 5, A2 — see , Findings, for the
       // full account): probed every registered wrapper on this chain (via the
       // snf-arbitrum subgraph's `currencies(where:{wrapping:true})`, 4 entries) plus
       // several well-known fungible pairs (WETH/ARB, WETH/USDC.e, WETH/USDT) against
@@ -158,7 +158,7 @@ describeOrSkip(`Arbitrum fork lane (chainId ${ARBITRUM_LANE.chainId}, block ${AR
       // No delegated pair currently exists on Arbitrum through the SnF Factory, so
       // the registry's `delegateNetFee: 9970` for this chain remains UNVERIFIED
       // against live bytecode (the value is sourced from
-      // `snf-contracts/scripts/delegate-configs.ts`'s committed SushiSwap config,
+      // the deployed contracts' own committed SushiSwap config,
       // which IS a legitimate source — just not a live on-chain read). This is
       // reported, not silently passed: the assertion below documents the actual
       // observed state rather than assuming a delegate exists.

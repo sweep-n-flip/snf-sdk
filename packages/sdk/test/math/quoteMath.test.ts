@@ -254,7 +254,7 @@ describe('applyMarketplaceFee', () => {
   })
 })
 
-// Sell-side fixtures (RESEARCH Assumption A3, CLOSED by plan 18): "91417099472198"
+// Sell-side fixtures (a previously-flagged assumption, closed later): "91417099472198"
 // for 1 item and "237988677509668" for 3 items were re-derived live this session
 // against the real Base Router (`getAmountsOutCollection`, block 51599577,
 // mainnet.base.org, 2026-09-21) AND independently reconstructed here from
@@ -263,7 +263,7 @@ describe('applyMarketplaceFee', () => {
 // this from an "unsourced `additional_context` number" into a verified fixture. See
 // `test/fork/base.fork.test.ts` for the live on-chain read and
 // `test/fixtures/collections/base-demon.json`'s `sellFixtures` for the full record.
-describe('Base sell-side fixture (RESEARCH Assumption A3, closed by plan 18)', () => {
+describe('Base sell-side fixture (a previously-flagged assumption, closed later)', () => {
   const RESERVES = { base: 1_297_217_522_559_477n, wnft: 11_883_323_065_263_036_728n }
   const MARKETPLACE_FEE_E18 = 25n * 10n ** 15n // 2.5%
   const ROYALTY_E18 = 5n * 10n ** 16n // 5% (DEMON collection, confirmed live via royaltyInfo)

@@ -4,12 +4,12 @@ import { parseTokenUri } from './tokenUriParse'
 import type { ImagesProvider, ImagesProviderContext } from '../types/providers.types'
 
 /**
- * The keyless default `ImagesProvider` (R19, D-06; 54-SPEC.md) — the only data source
+ * The keyless default `ImagesProvider` — the only data source
  * this package ships that works, with no API key, on every one of the 14 chains. A
  * collection already carries its own artwork on-chain: `tokenURI(id)` is a public
  * read, and Multicall3 batches an entire request's worth of ids into ONE RPC call
- * (`enrichListingsWithOnChainTokenURI`'s pattern — `snf-client/src/lib/aggregator/
- * onChainTokenURI.ts` — read via the partner's own `publicClient`, never a keyed
+ * (`enrichListingsWithOnChainTokenURI`'s pattern, also used in the production AMM
+ * client — read via the partner's own `publicClient`, never a keyed
  * indexer the SDK would have to pay for or gate).
  *
  * `onChainImagesProvider` is a stateless singleton object (module-scope `const`,

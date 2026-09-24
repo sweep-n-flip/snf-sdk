@@ -134,7 +134,7 @@ function sellRefs(overrides: Partial<StepPreflightRefs> = {}): StepPreflightRefs
   return { payer: PAYER, collection: COLLECTION, wrapper: WRAPPER, pair: PAIR, sellTokenIds: ['7'], ...overrides }
 }
 
-describe('runPreflight — one Multicall3, one block (concurrency | R14)', () => {
+describe('runPreflight — one Multicall3, one block (concurrency)', () => {
   it('issues exactly ONE multicall with batchSize: 0 and an explicit numeric blockNumber', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
@@ -162,12 +162,12 @@ describe('runPreflight — ownership (sell/buy)', () => {
     expect(result.ok).toBe(true)
   })
 
-  // Finding 1, snf-54-18-SUMMARY.md (fixed in snf-54-18F): buy-side custody is the
+  // Finding 1, (fixed in): buy-side custody is the
   // WERC721 WRAPPER, never the AMM Pair — `WERC721.mint` pulls the ERC-721 into the
   // wrapper contract on deposit, the Pair only ever holds the fungible wrapper-token
   // balance. `ownershipChecks` must compare `ownerOf(id)` against `StepPreflightRefs
   // .wrapper`, not `.pair`.
-  it('a buy step checks ownerOf(id) === wrapper (Finding 1, snf-54-18F): wrapper-owned passes', async () => {
+  it('a buy step checks ownerOf(id) === wrapper (Finding 1): wrapper-owned passes', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({
       answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
@@ -412,7 +412,7 @@ describe('runPreflight — deterministic precedence (WRONG_CHAIN > WRAPPER_UNVER
   })
 })
 
-describe('runPreflight — idempotency (idempotency | R14)', () => {
+describe('runPreflight — idempotency (idempotency)', () => {
   it('two consecutive calls return deeply-equal results, two independent multicalls, and the plan is never mutated', async () => {
     const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
     const ctx = buildCtx({

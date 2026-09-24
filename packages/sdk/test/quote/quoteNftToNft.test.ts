@@ -6,7 +6,7 @@ import { buildTwoLegEnv, ZERO_ADDRESS, type TwoLegConfig } from './nftToNftTestH
 
 /**
  * `quoteNftToNft` — two legs, per-leg royalty, saturating remainder, and a typed
- * refusal for cross-base pools (Task 2, REQ-SDK-13, R9; 54-SPEC.md). Every
+ * refusal for cross-base pools (Task 2). Every
  * `<behavior>` bullet from the plan is at least one `it` below; parity against
  * `snf-client`'s `computeNftToNftQuote` lives in its own file
  * (`test/quote/nftToNft.parity.test.ts`).
@@ -59,7 +59,7 @@ const ARGS = {
   remainder: 'native' as const,
 }
 
-describe('quoteNftToNft (Task 2, R9)', () => {
+describe('quoteNftToNft (Task 2)', () => {
   it('legs.length === 2 with legs[0].side === "sell" and legs[1].side === "buy", always in that order', async () => {
     const { ctx } = buildTwoLegEnv(baseConfig())
     const quote = await quoteNftToNft(ctx, ARGS)
@@ -205,7 +205,7 @@ describe('quoteNftToNft (Task 2, R9)', () => {
     expect(quote.deliverable).toBeLessThan(5)
   })
 
-  it('a chainId matching the client\'s own chain behaves identically to chainId omitted (R11)', async () => {
+  it('a chainId matching the client\'s own chain behaves identically to chainId omitted', async () => {
     const { ctx: ctxMatching } = buildTwoLegEnv(baseConfig())
     const quoteMatching = await quoteNftToNft(ctxMatching, ARGS)
     const { ctx: ctxOmitted } = buildTwoLegEnv(baseConfig())
@@ -221,7 +221,7 @@ describe('quoteNftToNft (Task 2, R9)', () => {
     expect(typeof expiresAtOmitted).toBe('string')
   })
 
-  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read (R11)', async () => {
+  it('a chainId mismatched against the client\'s own chain throws WRONG_CHAIN before any on-chain read', async () => {
     const { ctx, multicall } = buildTwoLegEnv(baseConfig())
     await expect(quoteNftToNft(ctx, { ...ARGS, chainId: 1 })).rejects.toMatchObject({ code: 'WRONG_CHAIN' })
     expect(multicall).not.toHaveBeenCalled()

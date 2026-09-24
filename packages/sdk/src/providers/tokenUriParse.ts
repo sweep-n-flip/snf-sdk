@@ -1,25 +1,24 @@
 /**
- * `tokenURI` string parser — pure, no fetch, no `Buffer` dependency (T-54-43 in the
- * threat register).
+ * `tokenURI` string parser — pure, no fetch, no `Buffer` dependency.
  *
  * `tokenURI(id)` on an ERC-721 typically returns a URI POINTING AT a metadata JSON
  * document, not the image itself. Three schemes appear in the wild:
- *   1. `data:application/json;base64,...` — the whole document is already in hand.
- *   2. `data:application/json,...` (URL-encoded or raw) — same, no network needed.
- *   3. `ipfs://...` / `ar://...` / `https://...` — a document the SDK would have to
- *      FETCH to read.
+ * 1. `data:application/json;base64,...` — the whole document is already in hand.
+ * 2. `data:application/json,...` (URL-encoded or raw) — same, no network needed.
+ * 3. `ipfs://...` / `ar://...` / `https://...` — a document the SDK would have to
+ * FETCH to read.
  *
  * This module never performs step 3's fetch. A `tokenURI` string is attacker-
  * influenceable — anyone who can mint into a collection chooses it — and resolving an
  * `https://`/`ipfs://` pointer would mean this package issuing an outbound HTTP
  * request, from a partner's own page, to a host the SDK never chose and cannot vet.
- * That is exactly the SSRF-shaped hazard T-54-43 mitigates. For those three schemes,
+ * That is exactly the SSRF-shaped hazard this module mitigates by never fetching. For those three schemes,
  * `parseTokenUri` returns the URI itself as the candidate `image` — some on-chain
  * contracts (particularly on-chain-SVG collections) DO return an image URI directly
  * from `tokenURI` with no metadata-JSON indirection, and for the ones that don't, the
  * raw URI is still the only honest thing this function can hand back without
  * fetching. A partner who wants full metadata-JSON traversal (and can accept the
- * fetch) supplies their own `images` provider (R19) — this module's whole reason to
+ * fetch) supplies their own `images` provider — this module's whole reason to
  * exist is the keyless, zero-network default, not a complete metadata resolver.
  *
  * No specific IPFS gateway host is chosen or hardcoded anywhere in this package — an
@@ -92,7 +91,7 @@ function firstNonEmptyString(...values: readonly unknown[]): string | undefined 
 
 /** `image` first, then `image_url` (older collections/marketplaces), then
  * `image_data` — raw inline markup, wrapped as an image data URL so it can only ever
- * reach an `<img>` element, never execute (mirrors `snf-drops-registration`'s
+ * reach an `<img>` element, never execute (mirrors a sibling SnF product's own
  * `pickMetadataImage` precedence). */
 function pickImage(doc: NftMetadataDocument): string | undefined {
   const candidate = firstNonEmptyString(doc.image, doc.image_url)

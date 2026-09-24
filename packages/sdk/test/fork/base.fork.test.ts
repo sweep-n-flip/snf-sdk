@@ -15,13 +15,13 @@ import { FORK_LANES, anvilMissingMessage, resolveAnvilBinary, startAnvil } from 
 import type { AnvilInstance } from './anvil'
 
 /**
- * The Base fork lane (Task 2, R20; 54-SPEC.md). Base is the primary lane (D-09): the
+ * The Base fork lane (Task 2). Base is the primary lane: the
  * ETH/DEMON pool `0xE814…1ECf`, reconciled both directions against the real, deployed
  * Router bytecode, a real quickstart round trip (buy → send → recipient owns the
  * ids), preflight negatives, and the two open receipt fixtures (`buy-1.json`,
  * `sell-wnft.json`) captured live from this fork and written back to the repo.
  *
- * ── ANVIL DEFAULT ACCOUNTS ONLY (D-12) ──────────────────────────────────────────
+ * ── ANVIL DEFAULT ACCOUNTS ONLY ──────────────────────────────────────────
  * Every signature in this file comes from one of anvil's own dev accounts — the
  * well-known Foundry/Hardhat test mnemonic ("test test test ... junk"), publicly
  * documented, funded only on the local fork, never used with real funds anywhere.
@@ -73,7 +73,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
     await anvil?.stop()
   })
 
-  describe('reconciliation, both directions, against the real deployed Router (R8, R20)', () => {
+  describe('reconciliation, both directions, against the real deployed Router', () => {
     it('quoteBuy(1 id) matches getAmountsInCollection AND an independent local getAmountIn reconstruction — to the wei', async () => {
       const fixtures = BASE_LANE!.fixtures as { collection: `0x${string}`; wrapper: `0x${string}`; pair: `0x${string}`; baseToken: `0x${string}` }
       const tokenId = '246125'
@@ -121,7 +121,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
       })
       const routerNet = (routerAnswer as readonly bigint[])[1]
       expect(quote.totalProceeds?.value).toBe(routerNet)
-      expect(routerNet).toBe(91_417_099_472_198n) // RESEARCH Assumption A3, closed
+      expect(routerNet).toBe(91_417_099_472_198n) // a previously-flagged assumption, now closed
 
       const [reserve0, reserve1] = (await publicClient.readContract({
         address: fixtures.pair,
@@ -142,7 +142,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
       expect(reconstructed).toBe(quote.totalProceeds?.value)
     })
 
-    it('quoteSell(3 ids) matches getAmountsOutCollection — to the wei (RESEARCH Assumption A3, 3-id figure)', async () => {
+    it('quoteSell(3 ids) matches getAmountsOutCollection — to the wei (a previously-flagged 3-id figure, now closed)', async () => {
       const fixtures = BASE_LANE!.fixtures as { collection: `0x${string}`; wrapper: `0x${string}`; pair: `0x${string}`; baseToken: `0x${string}` }
       const tokenIds = ['246125', '246171', '245868']
       const quote = await snf.quoteSell({ chainId: 8453, collection: fixtures.collection, tokenIds })
@@ -151,7 +151,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
     })
   })
 
-  describe('the quickstart round trip (R13, R14, SPEC AC #2): buildBuy -> preflight -> send -> ownership', () => {
+  describe('the quickstart round trip (SPEC AC #2): buildBuy -> preflight -> send -> ownership', () => {
     it('a real buy transaction on the fork transfers the requested tokenId to the recipient, and captures buy-1.json', async () => {
       const fixtures = BASE_LANE!.fixtures as { collection: `0x${string}`; wrapper: `0x${string}`; pair: `0x${string}`; baseToken: `0x${string}` }
       const tokenId = '245830' // an id NOT touched by the reconciliation tests above
@@ -162,7 +162,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
       const plan = await snf.buildBuy({ quote, recipient: BUYER_ADDRESS })
       expect(plan.steps.length).toBeGreaterThan(0)
 
-      // FIXED (Finding 1, snf-54-18-SUMMARY.md — fixed in snf-54-18F):
+      // FIXED (Finding 1, — fixed in):
       // `runPreflight`'s buy-side ownership check now compares `ownerOf(tokenId)`
       // against `StepPreflightRefs.wrapper` (the WERC721 wrapper, which is this
       // collection's REAL on-chain custody model) instead of `.pair`. A live buy
@@ -239,7 +239,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
     }, 60_000)
   })
 
-  describe('preflight negatives (R14, Task 2 point 3)', () => {
+  describe('preflight negatives (Task 2 point 3)', () => {
     it('WRONG_CHAIN: a publicClient configured for a different chain id throws before any on-chain read', async () => {
       const wrongChain = defineChain({
         id: 1,
@@ -276,11 +276,11 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
     })
   })
 
-  describe('FIXED (Finding 2, snf-54-18-SUMMARY.md — fixed in snf-54-18F): buildSwap now returns a plan on the first call when the needed ERC-20 approval is missing', () => {
+  describe('FIXED (Finding 2, — fixed in): buildSwap now returns a plan on the first call when the needed ERC-20 approval is missing', () => {
     it('a fresh account with no allowance gets a 2-step plan (approval, then swap) instead of a throw', async () => {
       const fixtures = BASE_LANE!.fixtures as { wrapper: `0x${string}` }
       // Anvil account #1 — funded with ETH but has never approved the Router to
-      // move its (zero) wrapper-token balance. Before snf-54-18F, `buildSwap`'s
+      // move its (zero) wrapper-token balance. Before , `buildSwap`'s
       // unconditional `estimateGasWithBuffer` call simulated the swap step against
       // CURRENT on-chain state (no allowance yet) and threw before `assemblePlan`
       // ever ran — the caller never received the plan's own `approval` step. Fixed:
@@ -328,7 +328,7 @@ describeOrSkip(`Base fork lane (chainId ${BASE_LANE.chainId}, block ${BASE_LANE.
 
       // Leg 2: sell HALF the wrapper balance back for ETH — the fixture-capturing tx.
       //
-      // HISTORICAL NOTE (Finding 2, snf-54-18-SUMMARY.md — FIXED in snf-54-18F): this
+      // HISTORICAL NOTE (Finding 2, — FIXED in): this
       // fixture was originally captured by granting the ERC-20 allowance directly via
       // a plain `approve()` call BEFORE the first `buildSwap` call, because at the
       // time `buildSwap` unconditionally gas-estimated the swap step live and threw

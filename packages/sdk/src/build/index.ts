@@ -1,7 +1,7 @@
 /**
- * The shared build machinery every `build*` function (plan 15's `buildBuy`,
+ * The shared build machinery every `build*` function (this module's `buildBuy`,
  * `buildSell`, `buildNftToNft`, `buildSwap`) composes — bounds, validation, approval
- * pre-checks, gas, step assembly, and the pre-flight (R13, R14; 54-SPEC.md).
+ * pre-checks, gas, step assembly, and the pre-flight.
  *
  * Deliberately does NOT re-export `buildBuy`/`buildSell`/`buildNftToNft`/`buildSwap`
  * themselves — `client.ts` imports each of those directly from its own module, and

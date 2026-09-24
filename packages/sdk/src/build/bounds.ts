@@ -2,7 +2,7 @@ import { assertParam } from '../errors'
 import type { Bounds } from '../types/plan.types'
 
 /**
- * `deriveBounds` — protective bigint slippage rounding, pool axis only (R13; 54-SPEC.md).
+ * `deriveBounds` — protective bigint slippage rounding, pool axis only.
  *
  * SPEC prohibition #2: the SDK must never use caller-supplied prices to derive
  * `bounds`/`value`/`amountOutMin` — always re-derive on-chain inside `build()`. This
@@ -74,7 +74,7 @@ export interface DeriveBoundsArgs {
 }
 
 /**
- * Derives a `Bounds` for one build step from a fresh on-chain total (R13). `side:
+ * Derives a `Bounds` for one build step from a fresh on-chain total. `side:
  * 'buy'` populates `amountInMax` (ceil); `side: 'sell'` populates `amountOutMin`
  * (floor). `slippageBps: 0` yields the exact `total` on either side — no drift from
  * the ceil/floor idiom at zero tolerance, asserted by this plan's test suite.

@@ -11,7 +11,7 @@ import type { PoolInventoryProvider } from '../../src/types/providers.types'
 /**
  * `poolInventory` — the ERC721Enumerable fast path, the subgraph fallback with
  * freshness carried through verbatim, and the buyable ceiling that no partner
- * provider can raise (REQ-SDK-11, R7, R4; 54-SPEC.md, plan 11 Task 2). Every
+ * provider can raise (Task 2). Every
  * `<behavior>` bullet is one `it` below.
  */
 
@@ -89,7 +89,7 @@ function fakeCtx(opts: {
 const RESERVE_12 = 12n * 10n ** 18n
 const RESERVE_BASE = 5n * 10n ** 18n
 
-describe('poolInventory — enumerable fast path (R7)', () => {
+describe('poolInventory — enumerable fast path', () => {
   it('supportsInterface true: ids come from tokenOfOwnerByIndex in ONE multicall, source==="enumerable", transport never called', async () => {
     const idResults: ReadResult[] = Array.from({ length: 12 }, (_u, i) => ({
       status: 'success',
@@ -159,7 +159,7 @@ describe('poolInventory — enumerable fast path (R7)', () => {
   })
 })
 
-describe('poolInventory — subgraph fallback (R7, R4)', () => {
+describe('poolInventory — subgraph fallback', () => {
   function ctxWithSubgraph(opts: {
     supportsInterface: ReadResult[]
     inventory: () => Promise<unknown>
@@ -310,7 +310,7 @@ describe('poolInventory — subgraph fallback (R7, R4)', () => {
   })
 })
 
-describe('poolInventory — partner-supplied provider (R19)', () => {
+describe('poolInventory — partner-supplied provider', () => {
   it('replaces both the enumerable and subgraph paths, normalizes its tokenIds, and NEVER raises the recomputed ceiling', async () => {
     const provided: PoolInventory = {
       tokenIds: ['30', '10', '10'],

@@ -104,7 +104,7 @@ describe('static scan: no tolerance vocabulary in reconcile.ts or src/quote', ()
   // to catch, and scanning the whole directory would false-flag it.
   // Negative lookbehind on `Number\(` excludes a legitimate identifier that merely
   // ENDS in "Number(" (e.g. viem's own `publicClient.getBlockNumber()`, required by
-  // plan 12's `loadQuoteContext` to pin every read to one block) — the scan's own
+  // this module's `loadQuoteContext` to pin every read to one block) — the scan's own
   // intent (this file's header comment above) is float-coercion vocabulary, not
   // every substring match of the six letters "Number(". A bare `Number(` (preceded
   // by whitespace, `=`, `(`, or start-of-line — never a letter) still matches.
@@ -133,12 +133,12 @@ describe('static scan: no tolerance vocabulary in reconcile.ts or src/quote', ()
     return files
   }
 
-  it('reconcile.ts contains zero occurrences of Math.abs, epsilon, tolerance, Number(, parseFloat', () => {
+  it('reconcile.ts contains zero occurrences of Math.abs, epsilon, tolerance, Number(parseFloat', () => {
     const cleaned = stripComments(readFileSync(join(SRC_DIR, 'math', 'reconcile.ts'), 'utf8'))
     expect(FORBIDDEN.test(cleaned)).toBe(false)
   })
 
-  it('src/quote/ contains zero occurrences of Math.abs, epsilon, tolerance, Number(, parseFloat', () => {
+  it('src/quote/ contains zero occurrences of Math.abs, epsilon, tolerance, Number(parseFloat', () => {
     const quoteDir = join(SRC_DIR, 'quote')
     const hits: string[] = []
     for (const file of collectTsFiles(quoteDir)) {

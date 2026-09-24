@@ -13,7 +13,7 @@ import type {
   SubgraphTransportOptions,
 } from './subgraph.types'
 
-/** R4's own acceptance numbers — 60 s / 30 s TTL, 300 s / 900 s lag, 3 failures / 60 s
+/** this rule's own acceptance numbers — 60 s / 30 s TTL, 300 s / 900 s lag, 3 failures / 60 s
  * breaker. Overridable per client via `SnfClientConfig.subgraph`. */
 const DEFAULT_OPTIONS: SubgraphTransportOptions = {
   ttlMs: 60_000,
@@ -35,8 +35,8 @@ function swrWindow(ttlMs: number): number {
 
 /** Lowercases every string variable that matches a 0x-hex address, unconditionally, at
  * the transport boundary. A checksummed id returns `currency: null` with NO GraphQL
- * error, which reads identically to "empty pool" (RESEARCH Pitfall 4; verified live in
- * Phase 74) — so this can never be conditional on the caller having remembered to
+ * error, which reads identically to "empty pool" (a known subgraph pitfall, verified
+ * live) — so this can never be conditional on the caller having remembered to
  * lowercase it themselves. */
 function lowercaseAddressVars(
   variables: Record<string, unknown> | undefined,
@@ -50,7 +50,7 @@ function lowercaseAddressVars(
 }
 
 /**
- * Instance-scoped subgraph transport (R3, R4): one `TtlCache`, one `CircuitBreaker`,
+ * Instance-scoped subgraph transport: one `TtlCache`, one `CircuitBreaker`,
  * closed over inside the object this factory returns — never module-scope state. Two
  * transports built from two different `SnfClientConfig`s (two chains, or the same
  * chain twice) share NOTHING — priming one leaves the other's cache and breaker
@@ -74,7 +74,7 @@ export function createSubgraphTransport(config: SnfClientConfig): SubgraphTransp
 
   /** One POST. Only the `fetch` call itself is routed through the breaker — a
    * network-level rejection (DNS failure, abort, connection refused) is what "3
-   * consecutive failures" means for R4's breaker; an HTTP error status or a GraphQL
+   * consecutive failures" means for this rule's breaker; an HTTP error status or a GraphQL
    * `errors` payload is a normal (non-breaker) rejection of this specific call. */
   async function execute<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
     const body = JSON.stringify({ query, variables: lowercaseAddressVars(variables) })
@@ -99,7 +99,7 @@ export function createSubgraphTransport(config: SnfClientConfig): SubgraphTransp
     const json = (await response.json()) as GraphQLEnvelope<T>
 
     // Checked BEFORE `data` — this subgraph returns HTTP 200 with an `errors` array
-    // and no `data` on a schema mismatch (RESEARCH Pitfall 3, verified live).
+    // and no `data` on a schema mismatch (a known subgraph pitfall, verified live).
     if (json.errors !== undefined && json.errors.length > 0) {
       throw new SnfError('UPSTREAM_DEGRADED', 'Subgraph returned GraphQL errors.', {
         details: { graphqlErrors: json.errors },
@@ -111,7 +111,7 @@ export function createSubgraphTransport(config: SnfClientConfig): SubgraphTransp
     return json.data
   }
 
-  /** Whole integer seconds on both sides (Edge `precision | R4`) — never a float. A lag
+  /** Whole integer seconds on both sides (Edge `precision`) — never a float. A lag
    * of exactly `staleLagSeconds` (300) is still fresh; a lag of exactly
    * `degradedLagSeconds` (900) is stale but NOT yet degraded — degraded starts
    * strictly above it. `hasIndexingErrors` forces `stale: true` regardless of lag
@@ -163,7 +163,7 @@ export function createSubgraphTransport(config: SnfClientConfig): SubgraphTransp
     async inventory(wrapper) {
       const key = `inv:${String(config.chainId)}:${wrapper.toLowerCase()}`
       // `tokenIds` does not paginate: the whole array comes back regardless of length,
-      // so this transport caps what it *consumes* downstream (plan 11) rather than
+      // so this transport caps what it *consumes* downstream rather than
       // relying on the query to truncate.
       const loader = () =>
         execute<{ currency: SubgraphCurrency | null; _meta: SubgraphMeta }>(POOL_INVENTORY_QUERY, {

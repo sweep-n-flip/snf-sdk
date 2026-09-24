@@ -3,10 +3,9 @@ import { ROUTER02_COLLECTION_ABI } from './UniswapV2Router02Collection'
 /**
  * Arc's Router variant ABI — `UniswapV2Router01CollectionNativeERC20`.
  *
- * There is no `snf-client` TypeScript source for this ABI (Arc is the only chain
- * running it). Built directly from the Solidity source at
- * `snf-contracts/contracts/periphery/UniswapV2Router01CollectionNativeERC20.sol`
- * (commit `5513e11029ac273491f20b7b0dd127b2795c15f3` on `origin/master`).
+ * There is no production-client TypeScript source for this ABI (Arc is the only chain
+ * running it). Built directly from the deployed contract's Solidity source
+ * (`UniswapV2Router01CollectionNativeERC20.sol`).
  *
  * This contract `is UniswapV2Router01Collection` — it OVERRIDES only the native-leg
  * functions (`addLiquidityETH*`, `removeLiquidityETH*`, `swap*ETH*`, all with the same

@@ -1,7 +1,7 @@
 /**
  * `TtlCache` — TTL + stale-while-revalidate + single-flight in-flight dedupe, entirely
- * instance-scoped (R3: "nenhum `let`/`Map` mutável no escopo de módulo" — this class
- * IS the state R3 requires to live inside `createSnfClient`, never at module scope).
+ * instance-scoped ("nenhum `let`/`Map` mutável no escopo de módulo" — this class
+ * IS the state that rule requires to live inside `createSnfClient`, never at module scope).
  * `local/no-module-global-state` only bans mutable state at Program (module top-level)
  * scope, so these `Map`s as private class fields — constructed fresh per
  * `new TtlCache()` call, one per `createSubgraphTransport()` instance — are exactly the

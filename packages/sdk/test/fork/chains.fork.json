@@ -9,7 +9,7 @@
     "observedDate": "2026-09-21",
     "port": 8545,
     "nonDeterministic": false,
-    "note": "Base is the primary lane (D-09). Public RPC (no key). Margin: 100 blocks behind the observed head at capture time.",
+    "note": "Base is the primary lane. Public RPC (no key). Margin: 100 blocks behind the observed head at capture time.",
     "fixtures": {
       "router02": "0x1312488a7BF5aAF2B2EeBE8393c9616A1418CF04",
       "pair": "0xE8143126bdFBe58ED0056f88031236766C311ECf",
@@ -89,7 +89,7 @@
     "port": 8548,
     "nonDeterministic": false,
     "requiresUserAgent": "snf-sdk-fork-lane/1.0",
-    "note": "Arc's RPC rejects requests with no User-Agent header (memory: reference_arc_chain_facts) — startAnvil must pass one via --fork-url header support or a documented wrapper; the ARCT pool is the SPEC R11 fixture (Phase 83 artifact, snf-tests/arc/arc-test-collection.out.json).",
+    "note": "Arc's RPC rejects requests with no User-Agent header — startAnvil must pass one via --fork-url header support or a documented wrapper; the ARCT pool is the documented fixture for Arc coverage.",
     "fixtures": {
       "router02": "0xDc0088a282d225f8cb08D092950Dde6eBAa36E78",
       "pair": "0x4443E51120e1c05F4c116A588bcc4781E1C30c8e",

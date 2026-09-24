@@ -5,27 +5,27 @@ import { isSnfError, SnfError } from './errors'
 import type { SnfErrorCode } from './errors.types'
 
 /**
- * Maps any unknown throwable to a stable `SnfError` (R17; 54-SPEC.md). NEVER throws
+ * Maps any unknown throwable to a stable `SnfError`. NEVER throws
  * itself — the whole body is inside ONE `try { … } catch { return SnfError('UNKNOWN') }`,
  * so "never throws" is structural, not merely tested (proven by the 20-input
  * `not.toThrow()` loop in `test/describeError.test.ts`, including a circular-reference
  * object a naive `JSON.stringify` would choke on — this function never calls
  * `JSON.stringify` on an arbitrary throwable).
  *
- * Preserves `snf-client/src/lib/revert.ts`'s first-match-wins classification order,
+ * Preserves the production AMM client's own first-match-wins classification order,
  * re-targeted to a stable `code` instead of free text:
- *   0. already an `SnfError` -> returned unchanged (idempotent).
- *   1. wallet rejection -> `USER_REJECTED`.
- *   2. wallet-side RPC auth failure ("Unauthorized"/"must authenticate"/"API key" —
- *      the user's own RPC needs a key; NOT a contract bug) -> `UPSTREAM_DEGRADED`.
- *   3. decoded revert data, via `decodeErrorResult` against `ROUTER02_COLLECTION_ABI`
- *      (this Router has no custom Solidity errors — every revert is a plain
- *      `require(string)`, which viem decodes through the built-in `Error(string)`
- *      selector regardless of which ABI is passed).
- *   4. known revert strings matched on the raw, `trim()`ed message (fires even with
- *      no decoded data at all).
- *   5. chain mismatch -> `WRONG_CHAIN`; insufficient funds -> `INVALID_PARAMS`.
- *   6. fallback -> `UNKNOWN`, original preserved as `cause`.
+ * 0. already an `SnfError` -> returned unchanged (idempotent).
+ * 1. wallet rejection -> `USER_REJECTED`.
+ * 2. wallet-side RPC auth failure ("Unauthorized"/"must authenticate"/"API key" —
+ * the user's own RPC needs a key; NOT a contract bug) -> `UPSTREAM_DEGRADED`.
+ * 3. decoded revert data, via `decodeErrorResult` against `ROUTER02_COLLECTION_ABI`
+ * (this Router has no custom Solidity errors — every revert is a plain
+ * `require(string)`, which viem decodes through the built-in `Error(string)`
+ * selector regardless of which ABI is passed).
+ * 4. known revert strings matched on the raw, `trim()`ed message (fires even with
+ * no decoded data at all).
+ * 5. chain mismatch -> `WRONG_CHAIN`; insufficient funds -> `INVALID_PARAMS`.
+ * 6. fallback -> `UNKNOWN`, original preserved as `cause`.
  */
 export function describeError(e: unknown): SnfError {
   try {
@@ -71,7 +71,7 @@ export function describeError(e: unknown): SnfError {
   }
 }
 
-// SPEC R3 (local/no-module-global-state): every module-scope collection here is a
+// local/no-module-global-state: every module-scope collection here is a
 // frozen `as const` literal, never a bare mutable array — none of this is per-client
 // state, it is a fixed classification table shared safely across every instance.
 const USER_REJECTED_PATTERNS = [

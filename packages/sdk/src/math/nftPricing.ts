@@ -3,12 +3,11 @@ import type { LadderPoint, LadderResult, Reserves } from './nftPricing.types'
 
 /**
  * OFFLINE ESTIMATE LAYER — derived from a `reserves` snapshot only, never from a fresh
- * on-chain read of its own. Every exported result here is `kind: 'estimate'` (R12;
- * 54-SPEC.md) and MUST NEVER be used to derive a transaction bound: `build/`'s
+ * on-chain read of its own. Every exported result here is `kind: 'estimate'` and MUST NEVER be used to derive a transaction bound: `build/`'s
  * `Bounds`/`amountOutMin`/`amountInMax` always come from a fresh on-chain re-quote
  * performed inside `build()`, never from this module's output
- * (RESEARCH § "Anti-Patterns to Avoid"; `test/prohibitions/no-ladder-in-build.test.ts`,
- * plan 17, statically enforces it by scanning `src/build/` for an import of this file).
+ * (`test/prohibitions/no-ladder-in-build.test.ts` statically enforces it by scanning
+ * `src/build/` for an import of this file).
  *
  * `nftBuyCost`/`nftSellProceeds` mirror the Router's own AMM curve exactly
  * (`SNF_NFT_NET_FEE = 9800`, `math/quoteMath.ts`) — the arithmetic is exact `bigint`,
@@ -16,7 +15,7 @@ import type { LadderPoint, LadderResult, Reserves } from './nftPricing.types'
  * The reason this whole module is still labelled `estimate` is staleness, not
  * imprecision: `reserves` is a point-in-time read, and the pool may have moved by the
  * time a caller signs — never floats, never `+1e-18` fudge factors like the
- * `snf-client` float port this replaces (`snf-client/src/lib/nftPricing.ts`).
+ * production AMM client's own float-based port this replaces.
  *
  * `estimateLadder`'s per-unit breakdown is built by TELESCOPING the same atomic
  * `nftBuyCost` calls, not by simulating a sequence of real trades against
@@ -28,7 +27,7 @@ import type { LadderPoint, LadderResult, Reserves } from './nftPricing.types'
  * `nftBuyCost(reserves, k)` on the SAME untouched `reserves` for every `k`, and each
  * `unitCost` as the difference of two consecutive cumulatives, is what makes
  * `estimateLadder(reserves, n).total` land within a few wei of `nftBuyCost(reserves,
- * n)` (R12's fast-check backstop, `test/math/ladder.property.test.ts`) while still
+ * n)` (this rule's fast-check backstop, `test/math/ladder.property.test.ts`) while still
  * reporting a real, strictly-increasing marginal price per unit — verified strictly
  * increasing across 5000 random trials at this session's property-test generator
  * ranges before being locked in as this module's design.
@@ -69,8 +68,8 @@ function curveAvailableCount(wnft: bigint): number {
 }
 
 /**
- * The offline, `estimate`-labelled unit-price ladder for `n` NFTs from `reserves` —
- * R12. See this module's header for why each point is a telescoped atomic cost rather
+ * The offline, `estimate`-labelled unit-price ladder for `n` NFTs from `reserves`.
+ * See this module's header for why each point is a telescoped atomic cost rather
  * than a simulated sequential purchase.
  *
  * `n <= 0` → `{ points: [], total: 0n, kind: 'estimate', truncated: false }`.

@@ -4,11 +4,11 @@ import { isSnfError } from '../../src/errors'
 import { availableCountFromReserve, normalizeTokenIds } from '../../src/inventory/availability'
 
 /**
- * `availableCountFromReserve` / `normalizeTokenIds` — R7's two pure rules (54-SPEC.md,
- * plan 11 Task 1). Every `<behavior>` bullet is one `it` below.
+ * `availableCountFromReserve` / `normalizeTokenIds` — the two pure rules behind
+ * `poolInventory`'s buyable ceiling and tokenId normalization.
  */
 
-describe('availableCountFromReserve — the buyable ceiling (R7)', () => {
+describe('availableCountFromReserve — the buyable ceiling', () => {
   it.each([
     { reserve: 0n, expected: 0, label: '0' },
     { reserve: 1n * 10n ** 18n, expected: 0, label: '1e18' },
@@ -41,7 +41,7 @@ describe('availableCountFromReserve — the buyable ceiling (R7)', () => {
   })
 })
 
-describe('normalizeTokenIds — bigint ordering, never lexicographic (R7)', () => {
+describe('normalizeTokenIds — bigint ordering, never lexicographic', () => {
   it('dedupes and sorts ascending as bigint, preserving decimal-string form', () => {
     expect(normalizeTokenIds(['245830', '76197', '76197', '0'])).toEqual(['0', '76197', '245830'])
   })

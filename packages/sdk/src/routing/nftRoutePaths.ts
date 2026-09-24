@@ -8,18 +8,16 @@ import type {
 import type { TokenRef } from '../types/amount.types'
 
 /**
- * Pure NFT swap route-path builders (REQ-SDK-14, R10; 54-SPEC.md). Ported from
- * `snf-client/src/lib/swap/nftRoutePaths.ts` — see `snf-54-07-SUMMARY.md` for the
- * rename table (the SDK's route-path shape is `{ collection, baseToken, side }`
- * rather than the UI-hook-flag inputs `snf-client`'s three builders read, since the
+ * Pure NFT swap route-path builders. Ported from the production AMM client's own
+ * route-path logic (the SDK's route-path shape is `{ collection, baseToken, side }`
+ * rather than the UI-hook-flag inputs the client's own builders read, since the
  * SDK has no `useSwapRoutingFlags` hook upstream deriving those flags).
  *
  * COLLECTION, NEVER THE WRAPPER
  * ------------------------------
  * `buildNftRoutePath` places the **collection** address in `path[]`, never the
  * wrapper — the Router resolves the wrapper internally via `Factory.getWrapper`
- * for every `*Collection` entry point
- * (`snf-contracts/contracts/periphery/UniswapV2Router01Collection.sol:200-330`).
+ * for every `*Collection` entry point (`UniswapV2Router01Collection.sol`).
  * Writing a wrapper address into a `*Collection` path is a silent wrong-path bug:
  * the Router would either revert (no pair at that address) or, worse, resolve to
  * an unrelated pair if the wrapper happens to also be a valid pool token elsewhere.

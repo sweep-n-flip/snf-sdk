@@ -11,7 +11,7 @@ import type { ReceiptLike, SwapReceipt } from './receipt.types'
 
 /**
  * Attributes `itemsIn`/`itemsOut`/fees from an already-mined receipt's own
- * `Transfer`/`Withdrawal`/`Deposit`/`Swap` logs (R16). Synchronous — the logs are
+ * `Transfer`/`Withdrawal`/`Deposit`/`Swap` logs. Synchronous — the logs are
  * already on the receipt, so no further RPC read happens here.
  *
  * ## What this function can honestly attribute from logs alone, and what it cannot
@@ -21,24 +21,24 @@ import type { ReceiptLike, SwapReceipt } from './receipt.types'
  * recoverable — every SnF Router sell/buy leg emits them. The Router's marketplace
  * fee and creator royalty are a DIFFERENT story: both are paid via
  * `TransferHelper.safeTransferETH`/`safeTransferETHBatch` — a raw native transfer
- * with **no log at all** for a plain EOA receiver (`snf-contracts/contracts/
- * periphery/UniswapV2Router01Collection.sol:270-274`,`296-300`). The ONLY case this
+ * with **no log at all** for a plain EOA receiver (the Router's periphery contract,
+ * `UniswapV2Router01Collection.sol`). The ONLY case this
  * function can attribute the marketplace fee from a log is when the marketplace
  * wallet happens to be a contract that itself logs on receipt — a Gnosis Safe does
- * (`SafeReceived`), and two of the workspace's fourteen chains (Base, BNB Chain; see
- * workspace root CLAUDE.md's governance table) use exactly that. Everywhere else, and
+ * (`SafeReceived`), and some SnF-governed chains route their marketplace wallet through
+ * exactly that. Everywhere else, and
  * for creator royalty on every chain (paid to an arbitrary, usually-EOA receiver),
- * there is no generic log signal — `snf-drops-registration/.../sellReceipt.ts`'s
- * `parseSellReceipt` only recovers these because it is handed FROZEN quote-time rates
- * (`marketplaceFeeE18`/`royaltyE18`) as explicit input; this function's `(ctx,
- * receipt)` signature carries no such rates (D-01: `parseReceipt` takes no `quote`
- * argument), and a synchronous function cannot perform the live read that would
+ * there is no generic log signal — a sibling parser with access to FROZEN quote-time
+ * rates (`marketplaceFeeE18`/`royaltyE18`) as explicit input can recover these; this
+ * function's `(ctx,
+ * receipt)` signature carries no such rates (`parseReceipt` takes no `quote`
+ * argument by design), and a synchronous function cannot perform the live read that would
  * supply them.
  *
  * The doctrine this file follows over reproducing an exact number it cannot honestly
  * derive: attribute what the logs prove, and disclose — via `warnings`, never a
  * silent zero presented as measured — whatever they don't. See
- * `snf-54-08-SUMMARY.md`'s Deviations section for the full account, including why
+ * this file's Deviations section for the full account, including why
  * `test/fixtures/receipts/sell-3.json`'s `received` is the fee-only net rather than
  * the collection's true (fee+royalty) net.
  *
@@ -47,7 +47,7 @@ import type { ReceiptLike, SwapReceipt } from './receipt.types'
  * `value`), which the ERC-721 ABI above never matches. `itemsIn`/`itemsOut` therefore
  * stay empty for that leg BY DESIGN (this function has no notion of "the wrapper
  * token" as a distinct concept from any other ERC-20). What used to be broken
- * (Finding 3, `snf-54-18-SUMMARY.md`; fixed in `snf-54-18F`) is that `received`/`paid`
+ * (Finding 3, fixed in) is that `received`/`paid`
  * ALSO stayed `undefined` in that case, even when the pool-side WETH `Withdrawal`/
  * `Deposit` log proved real settlement happened — the gating condition below keyed
  * exclusively off `itemsIn`/`itemsOut`. The fix detects a fungible leg generically
@@ -59,7 +59,7 @@ import type { ReceiptLike, SwapReceipt } from './receipt.types'
  * `sell-3.json`'s own mint log is exactly this) from being mistaken for money
  * actually changing hands.
  *
- * `status: 'reverted'` throws a typed `SnfError` via `describeError` (plan 07) rather
+ * `status: 'reverted'` throws a typed `SnfError` via `describeError` rather
  * than re-implementing the revert-reason mapping — `INSUFFICIENT_OUTPUT_AMOUNT` when
  * the receipt carries decodable revert data, `UNKNOWN` otherwise (a mined revert's
  * logs are empty by EVM design, so most reverted receipts have nothing to decode).

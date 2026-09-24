@@ -13,7 +13,7 @@ import type { StepKind } from '../../src/types/plan.types'
 const fakePublicClient = undefined as unknown as PublicClient
 
 /**
- * Compile-time assertions for the public type contract (Task 2, R6–R16). Most of the
+ * Compile-time assertions for the public type contract (Task 2). Most of the
  * proof here happens at `tsc --noEmit` time via `@ts-expect-error` — an unused
  * directive (i.e. the following line does NOT actually error) fails the compile by
  * itself, so these lines are load-bearing even though the runtime assertions below
@@ -70,7 +70,7 @@ describe('Quote type contract', () => {
 
   it('omitting `reconciled` fails to compile', () => {
     // @ts-expect-error — `reconciled: true` is required; a Quote that did not
-    // reconcile is never constructed (T-54-18).
+    // reconcile is never constructed.
     const missingReconciled: Quote = {
       side: 'buy',
       chainId: 8453,
@@ -95,13 +95,13 @@ describe('SnfClientConfig rejects signing/legacy surfaces at compile time', () =
   })
 
   it('rejects { walletClient: ... }', () => {
-    // @ts-expect-error — the core never accepts a WalletClient (D-04).
+    // @ts-expect-error — the core never accepts a WalletClient.
     const withWalletClient: SnfClientConfig = { chainId: 8453, publicClient: fakePublicClient, walletClient: {} }
     expect(withWalletClient).toBeDefined()
   })
 
   it('rejects { privateKey: ... }', () => {
-    // @ts-expect-error — the core never accepts key material (D-04, T-54-17).
+    // @ts-expect-error — the core never accepts key material.
     const withPrivateKey: SnfClientConfig = { chainId: 8453, publicClient: fakePublicClient, privateKey: '0xdeadbeef' }
     expect(withPrivateKey).toBeDefined()
   })
@@ -132,12 +132,12 @@ const STEP_KINDS = [
 ] as const satisfies readonly StepKind[]
 
 describe('closed union cardinality (satisfies-checked mirrors — cannot drift silently)', () => {
-  it('CheckoutState has exactly 11 members (R15)', () => {
+  it('CheckoutState has exactly 11 members', () => {
     expect(CHECKOUT_STATES).toHaveLength(11)
     expect(new Set(CHECKOUT_STATES).size).toBe(11)
   })
 
-  it('StepKind has exactly 5 members (R13)', () => {
+  it('StepKind has exactly 5 members', () => {
     expect(STEP_KINDS).toHaveLength(5)
     expect(new Set(STEP_KINDS).size).toBe(5)
   })

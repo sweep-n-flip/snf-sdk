@@ -2,9 +2,8 @@ import type { SnfErrorCode } from '../errors.types'
 import type { TokenRef } from '../types/amount.types'
 
 /**
- * Types for `src/routing/*` (REQ-SDK-14, R10; 54-SPEC.md). Ported from
- * `snf-client/src/lib/swap/{nftRoutePaths,directOnlyRouting,routeBlock}.types.ts` —
- * see `snf-54-07-SUMMARY.md` for the snf-client → SDK rename table. No inline types
+ * Types for `src/routing/*`. Ported from the production AMM client's own routing
+ * types, renamed for this SDK's surface. No inline types
  * live in the routing modules themselves (`CLAUDE.md`: "Separate types").
  */
 
@@ -24,9 +23,8 @@ export type RoutePath = readonly `0x${string}`[]
 
 /**
  * Minimal structural pool shape every routing helper reads — deliberately not the
- * feature-level `NFTPool` snf-client uses, so this package never depends on a UI
- * type (mirrors `RoutablePoolLike` in
- * `snf-client/src/lib/swap/directOnlyRouting.types.ts`).
+ * feature-level `NFTPool` shape the production AMM client uses, so this package never
+ * depends on a UI type (mirrors that client's own `RoutablePoolLike`).
  *
  * `token0`/`token1` are the pool's on-chain pair addresses. `discrete0`/`discrete1`
  * are the subgraph's own flags for which side is the NFT wrapper — present only
@@ -55,7 +53,7 @@ export interface PoolRef {
   readonly isDirectOnlyBase?: boolean
 }
 
-/** Why `evaluateRouteBlock` refuses to build a route — a closed union (R9, R10).
+/** Why `evaluateRouteBlock` refuses to build a route — a closed union.
  * `ROUTE_BLOCK_CODE` in `routeBlock.ts` maps every member to an `SnfErrorCode`;
  * that map's exhaustiveness is enforced both by its `Record<RouteBlockReason, ...>`
  * type and by a runtime test over `ROUTE_BLOCK_REASONS`. */
@@ -108,7 +106,7 @@ export interface EvaluateRouteBlockArgs {
   readonly unsupportedToken?: boolean
   /** Caller already determined the sole candidate pool has no reserves. */
   readonly noLiquidity?: boolean
-  /** NFT×NFT only — the two legs' own base tokens (R9: different bases ⇒ `NO_ROUTE`). */
+  /** NFT×NFT only — the two legs' own base tokens (Different bases ⇒ `NO_ROUTE`). */
   readonly nftToNft?: { readonly sellPoolBase: TokenRef; readonly buyPoolBase: TokenRef }
 }
 

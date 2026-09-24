@@ -15,7 +15,7 @@ import type { Approval, BuildArgs, ExecutionPlan, Step } from '../types/plan.typ
 import type { QuoteLeg } from '../types/quote.types'
 
 /**
- * `buildSell` — an unsigned sell `ExecutionPlan` (R13) — same discipline as
+ * `buildSell` — an unsigned sell `ExecutionPlan` — same discipline as
  * `buildBuy`: every number in `tx.data`/`bounds` comes from a FRESH `quoteSell` call
  * this function performs itself, `args.quote` is read only for identity. A sell
  * ALWAYS needs `setApprovalForAll(router, true)` on the sell collection (the caller's
@@ -102,7 +102,7 @@ export async function buildSell(ctx: SnfClientContext, args: BuildArgs): Promise
   // `hasPendingApproval`: this step's own swap simulation is guaranteed to revert
   // against current state while the `setApprovalForAll` above is still missing —
   // skip the live estimate entirely rather than throwing before the caller ever
-  // receives this very approval step (Finding 2, snf-54-18F).
+  // receives this very approval step (Finding 2).
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
     address: ctx.chain.router02,

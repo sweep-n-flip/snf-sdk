@@ -2,9 +2,8 @@ import type { DirectOnlyResult, EvaluateDirectOnlyArgs, IsDirectOnlyArgs } from 
 import type { TokenRef } from '../types/amount.types'
 
 /**
- * Gate 69.5 ported (REQ-SDK-14, R10; 54-SPEC.md). Ported from
- * `snf-client/src/lib/swap/directOnlyRouting.ts` — see `snf-54-07-SUMMARY.md` for
- * the rename table. Original context: the V2 delegate on Robinhood Chain holds
+ * Gate 69.5 ported from the production AMM client's own direct-only routing logic.
+ * Original context: the V2 delegate on Robinhood Chain holds
  * ~1e-9 of the 40 founder stock tokens, so any `[WETH, <stock>, collection]` hop
  * reverts or returns a garbage quote. A stock token may only back a DIRECT pool with
  * a collection — the two-entry path `[<stock>, collection]` / `[collection,

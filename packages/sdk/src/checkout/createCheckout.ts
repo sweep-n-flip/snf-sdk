@@ -5,22 +5,22 @@ import type { ExecutionPlan, Step } from '../types/plan.types'
 import { SnfError } from '../errors'
 
 /**
- * Headless, user-driven checkout state machine over an `ExecutionPlan` (R15, INV-17).
+ * Headless, user-driven checkout state machine over an `ExecutionPlan` (INV-17).
  * Takes no `ctx` — it operates purely on the plan's own `steps[]`; this is why it is
- * NOT one of `SnfClient`'s 13 methods (D-01) and is instead a standalone export.
+ * NOT one of `SnfClient`'s 13 methods and is instead a standalone export.
  *
  * `next()` is the ONLY member that may return a step to dispatch. `onReceipt`/
  * `onRejected` are watcher-only entry points — a caller wires them to whatever
  * receipt/rejection signal their OWN wallet library produces (wagmi's
  * `useWaitForTransactionReceipt`, a raw `publicClient.waitForTransactionReceipt`,
- * etc.); this module never touches a wallet client itself (D-04, prohibition #1).
- * The React adapter (`useSnfCheckout`, plan 16) is the one place `sendTransaction`/
+ * etc.); this module never touches a wallet client itself (prohibition #1).
+ * The React adapter (`useSnfCheckout`) is the one place `sendTransaction`/
  * `writeContract` is actually called — this file only ever hands back the `Step` to
  * send and reads back what happened.
  *
  * All state is closed over inside this factory — `local/no-module-global-state`
  * requires it, and it is also what makes two `createCheckout(plan)` calls fully
- * independent sessions with independent `sessionId`s (R15 concurrency acceptance).
+ * independent sessions with independent `sessionId`s (Concurrency acceptance).
  */
 export function createCheckout(plan: ExecutionPlan): Checkout {
   let machine = initialCheckoutState(plan)
@@ -28,7 +28,7 @@ export function createCheckout(plan: ExecutionPlan): Checkout {
   // was dispatched. `cancel()` bumps `machine.sessionId` but never this — so a
   // receipt/rejection captured under the OLD session compares as stale against the
   // reducer's own `action.sessionId < state.sessionId` check, exactly the way a
-  // closure captured at dispatch time would in a React watcher (R15 concurrency).
+  // closure captured at dispatch time would in a React watcher (Concurrency).
   let openSessionId = machine.sessionId
   let invalidationVersion = 0
   const listeners = new Set<(event: CheckoutEvent) => void>()
@@ -71,7 +71,7 @@ export function createCheckout(plan: ExecutionPlan): Checkout {
   function onReceipt(receipt: ReceiptLike): void {
     const before = machine
     const result = checkoutReducer(machine, { type: 'receipt', sessionId: openSessionId, receipt })
-    // Structural invariant (T-54-37): a watcher path must NEVER be able to produce a
+    // Structural invariant: a watcher path must NEVER be able to produce a
     // dispatch. The reducer's `'receipt'` case is hard-coded to never do so — this is
     // a loud failure that beats a silent extra transaction if that ever regresses.
     if (result.effect.kind === 'dispatch') {

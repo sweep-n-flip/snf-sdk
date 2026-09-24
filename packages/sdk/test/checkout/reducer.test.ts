@@ -16,7 +16,7 @@ import type { Bounds, ExecutionPlan, Step, StepKind, UnsignedTx } from '../../sr
 import type { Quote } from '../../src/types/quote.types'
 
 /**
- * R15/INV-17 — the pure checkout reducer. See `src/checkout/reducer.ts`'s header for
+ * INV-17 — the pure checkout reducer. See `src/checkout/reducer.ts`'s header for
  * the doctrine this proves structurally: a dispatch effect is reachable ONLY from the
  * `'next'` action, and only from `review`/`ready-*` states.
  */
@@ -72,7 +72,7 @@ const SUCCESS_RECEIPT = { status: 'success' as const, transactionHash: '0xaa' as
 const REVERTED_RECEIPT = { status: 'reverted' as const, transactionHash: '0xbb' as const, blockNumber: 1n, logs: [] }
 
 describe('CHECKOUT_STATES', () => {
-  it('has exactly the 11 R15 states, in order', () => {
+  it('has exactly the 11 states, in order', () => {
     expect(CHECKOUT_STATES).toEqual([
       'review',
       'ready-approve',

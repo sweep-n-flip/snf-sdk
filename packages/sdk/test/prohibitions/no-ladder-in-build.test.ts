@@ -6,11 +6,11 @@ import { describe, expect, it } from 'vitest'
 import { estimateLadder } from '../../src/math/nftPricing'
 
 /**
- * R12's static acceptance (54-SPEC.md): "teste estático (grep/AST) garante que
+ * this rule's static acceptance: "teste estático (grep/AST) garante que
  * nenhum builder importa `estimateLadder`" — the offline, staleness-labelled estimate
  * layer must never be able to feed a transaction bound. This test reads every file
  * under `src/build/` AT TEST TIME (not a fixed snapshot), so the rule covers any
- * builder written after this phase too.
+ * builder written later too.
  */
 
 const BANNED_PATTERNS: readonly RegExp[] = [
@@ -69,8 +69,8 @@ describe('no-ladder-in-build — negative-proof discipline (manual, recorded in 
     // transiently inside a test run, and a self-reverting fs.writeFileSync in a test
     // is exactly the kind of flaky, order-dependent I/O CLAUDE.md's testing
     // discipline warns against. That negative run is performed once, manually, by
-    // the executor during Task 3 and its exact console output is pasted verbatim
-    // into snf-54-17-SUMMARY.md instead.
+    // the executor during Task 3 and its exact console output is recorded in the
+    // change history instead.
     expect(true).toBe(true)
   })
 })

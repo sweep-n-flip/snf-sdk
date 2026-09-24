@@ -137,7 +137,7 @@ beforeEach(() => {
   mockedQuoteNftToNft.mockReset()
 })
 
-describe('buildNftToNft — step ordering (R13 ordering, R15 2-vs-3 next())', () => {
+describe('buildNftToNft — step ordering (ordering, 2-vs-3 next())', () => {
   it("remainder: 'native' with no approval granted yields exactly ['approval','swap-sell','swap-buy']", async () => {
     mockedQuoteNftToNft.mockResolvedValue(fixtureQuote({ remainderMode: 'native' }))
     const ctx = buildCtx({ multicallImpl: async () => [{ status: 'success', result: false }] })
@@ -169,7 +169,7 @@ describe('buildNftToNft — step ordering (R13 ordering, R15 2-vs-3 next())', ()
     expect(plan.steps.map((s) => s.kind)).toEqual(['approval', 'swap-sell', 'swap-buy', 'swap-buy-wnft'])
   })
 
-  // Finding 2, snf-54-18-SUMMARY.md (fixed in snf-54-18F): a missing sell-collection
+  // Finding 2, (fixed in): a missing sell-collection
   // `setApprovalForAll` used to make buildNftToNft THROW (the sell step's live gas
   // estimate reverted before assemblePlan ever ran). Proven here from the call-count
   // side: `estimateContractGas` is invoked exactly ONCE (for the buy leg, which needs
@@ -199,7 +199,7 @@ describe('buildNftToNft — step ordering (R13 ordering, R15 2-vs-3 next())', ()
   })
 })
 
-describe('buildNftToNft — fresh re-quote, never the caller\'s numbers (T-54-81)', () => {
+describe('buildNftToNft — fresh re-quote, never the caller\'s numbers', () => {
   it('calls quoteNftToNft again internally with the args\' selection', async () => {
     mockedQuoteNftToNft.mockResolvedValue(fixtureQuote({}))
     const ctx = buildCtx({})

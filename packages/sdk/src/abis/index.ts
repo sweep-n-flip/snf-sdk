@@ -1,7 +1,7 @@
 /**
- * The SDK's audited ABI inventory (R21, 54-SPEC.md): exactly the eight audited AMM
+ * The SDK's audited ABI inventory: exactly the eight audited AMM
  * ABIs plus the Arc `UniswapV2Router01CollectionNativeERC20` variant — nine consts,
- * no more, no fewer. Nothing from Advanced Router, Farm, Bridge, MktBids or Vault
+ * no more, no fewer. Nothing outside this SDK's audited AMM surface
  * belongs in this package; adding a tenth ABI here requires a SPEC amendment, not a
  * routine PR. `test/abis/inventory.test.ts` enforces both the count and the absence
  * of every non-AMM product name.

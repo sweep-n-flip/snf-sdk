@@ -17,7 +17,7 @@ import type { FeeBreakdown, Quote, QuoteBuyArgs, QuoteLeg } from '../types/quote
 
 /**
  * On-chain cost to buy `count`/`tokenIds` NFTs of a collection, reconciled to the
- * wei against the Router's own `getAmountsInCollection` (R8). Never absorbs a
+ * wei against the Router's own `getAmountsInCollection`. Never absorbs a
  * divergence silently — a 1-wei mismatch throws `SnfError('QUOTE_RECONCILIATION_
  * FAILED')` and no `Quote` is returned.
  *
@@ -219,7 +219,7 @@ export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promi
   )
   // Arc's Router variant drops an unpayable (zero-address) EIP-2981 receiver's
   // share from what's CHARGED to a buyer — never charged, so never reconstructed
-  // here either (RESEARCH § "The Arc NativeERC20 variant").
+  // here either.
   const royaltyCharged = isArc ? royaltyRaw - unpayable : royaltyRaw
   const marketplace = (ctxData.poolLeg * ctxData.marketplaceFeeE18) / ONE_E18
 

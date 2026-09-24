@@ -4,10 +4,10 @@ import { SNF_ERROR_RETRYABLE } from './errors.types'
 
 /**
  * `SnfError` — the one error class every public rejection this package produces is an
- * instance of (R5; 54-SPEC.md). See `errors.types.ts` for the closed `SnfErrorCode`
+ * instance of. See `errors.types.ts` for the closed `SnfErrorCode`
  * union and the retryable-hint map this module derives `retryable` from.
  *
- * R5 acceptance (T-54-16 in the threat register): a static scan in
+ * A static scan in
  * `test/errors.test.ts` asserts `throw new Error(` occurs zero times anywhere in
  * `src/` outside this file, and that every string literal passed as the first argument
  * to `new SnfError(` is a member of `SNF_ERROR_CODES`.
@@ -35,7 +35,7 @@ export const SNF_ERROR_CODES = [
 
 /**
  * Default English message per code — substituted whenever a caller passes an
- * empty/whitespace-only `message` (Edge `empty | R5`: an `SnfError` never carries an
+ * empty/whitespace-only `message` (Edge `empty`: an `SnfError` never carries an
  * empty `message`).
  */
 const DEFAULT_MESSAGES: Readonly<Record<SnfErrorCode, string>> = {
@@ -57,10 +57,10 @@ const DEFAULT_MESSAGES: Readonly<Record<SnfErrorCode, string>> = {
  * The one error class every public SDK rejection is an instance of. `code` is a
  * member of the closed `SnfErrorCode` union; `message` is always non-empty English —
  * an empty/whitespace-only `message` is silently replaced by the code's default
- * (Edge `empty | R5`); `retryable` is always derived from `SNF_ERROR_RETRYABLE`, never
+ * (Edge `empty`); `retryable` is always derived from `SNF_ERROR_RETRYABLE`, never
  * accepted from the caller (a caller cannot lie about whether its own error is
  * retryable). `details` is optional and partner-facing diagnostic data only — see
- * `SnfErrorDetails`'s doc comment (T-54-19).
+ * `SnfErrorDetails`'s doc comment.
  */
 export class SnfError extends Error {
   readonly code: SnfErrorCode
@@ -102,7 +102,7 @@ export function assertParam(
 
 /**
  * Guards a caller-supplied `chainId` (optional on `QuoteBuyArgs`/`QuoteSellArgs`/
- * `QuoteNftToNftArgs`/`QuoteSwapArgs` — R11) against the client's own chain. This is
+ * `QuoteNftToNftArgs`/`QuoteSwapArgs`) against the client's own chain. This is
  * the first check each of the four `quote*` functions runs: an omitted `argsChainId`
  * is always fine (every implementation actually uses the client's chain, never this
  * field), a matching one is a no-op, and a mismatched one is rejected with the
@@ -123,7 +123,7 @@ export function assertChainMatch(
 /**
  * Wraps an unknown throwable into an `SnfError`, preserving it as `cause`. Used by
  * every catch site so a raw viem/wallet error can never escape this package untyped
- * (T-54-16). Returns the same instance unchanged if `e` is already an `SnfError`.
+ *. Returns the same instance unchanged if `e` is already an `SnfError`.
  */
 export function toSnfError(e: unknown, fallbackCode: SnfErrorCode = 'UNKNOWN'): SnfError {
   if (e instanceof SnfError) return e

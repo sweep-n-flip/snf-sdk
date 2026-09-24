@@ -2,7 +2,7 @@ import { SnfError } from '../errors'
 import type { SnfChainConfig, SnfChainId } from './chains.types'
 
 /**
- * The SDK's single source of truth for chains and contracts (R2; 54-SPEC.md).
+ * The SDK's single source of truth for chains and contracts.
  *
  * TWO UNIT AXES (read this before touching an amount)
  * ----------------------------------------------------
@@ -31,12 +31,11 @@ import type { SnfChainConfig, SnfChainId } from './chains.types'
  *
  * SOURCING
  * --------
- * Every field below is copied from `snf-client/src/config/{chains,contracts,
- * subgraphs}.ts` (the production config the live app actually runs) or from
- * `snf-contracts/scripts/delegate-configs.ts` / `snf-contracts/deployments/<chainId>.json`
- * for `delegateNetFee`. `test/chains/coverage.test.ts` re-reads those same
- * `snf-client` files from disk and diffs every address field-by-field — a typo here
- * fails CI, it does not ship.
+ * Every field below is copied from the production AMM client's own chain/contract
+ * config (the config the live app actually runs) or from the deployed-contracts
+ * registry for `delegateNetFee`. `test/chains/coverage.test.ts` re-reads the
+ * production client's config files from disk, when a sibling checkout is present, and
+ * diffs every address field-by-field — a typo here fails CI, it does not ship.
  */
 
 /** Universal Multicall3 deployment address, identical on all 14 chains. */
@@ -45,8 +44,8 @@ export const MULTICALL3_ADDRESS: `0x${string}` = '0xcA11bde05977b3631167028862bE
 export const SNF_CHAINS = [
   // ── Robinhood Chain (4663) — Arbitrum Nitro L2, ETH gas. Deploy 2026-08-09, the
   // canonical CREATE2 cluster. Delegate: Uniswap V2 (Robinhood Chain mainnet),
-  // netFee verified empirically via router.getAmountsOut() — snf-contracts
-  // scripts/delegate-configs.ts (origin/master).
+  // netFee verified empirically via router.getAmountsOut() against the deployed
+  // contracts' own delegate-config source.
   {
     chainId: 4663,
     name: 'Robinhood Chain',
@@ -64,9 +63,9 @@ export const SNF_CHAINS = [
       'https://api.goldsky.com/api/public/project_cmngb5qq6d79v01wba5bi7hdg/subgraphs/snf-robinhood/1.1.0/gn',
     explorerUrl: 'https://robinhoodchain.blockscout.com',
     // VERIFY-LIVE: no delegated NFT pair exists through the SnF Factory on Robinhood
-    // Chain as of plan 18's fork session (snf-54-18-SUMMARY.md, Finding 5) — this
-    // value is carried forward from `snf-contracts/scripts/delegate-configs.ts`'s
-    // canonical netFee for the underlying DEX (Uniswap V2), NOT independently
+    // Chain as of this module's fork session (Finding 5) — this
+    // value is carried forward from the deployed contracts' own delegate-config
+    // source's canonical netFee for the underlying DEX (Uniswap V2), NOT independently
     // re-verified against a live delegated pair's own `getAmountOut()` on THIS chain
     // (unlike Base/Arc, which were). Re-verify once a delegated pair is created here.
     delegateNetFee: 9970, // Uniswap V2 (Robinhood Chain mainnet)
@@ -167,7 +166,7 @@ export const SNF_CHAINS = [
   },
 
   // ── HyperEVM (999) — single deploy 2026-04-28, own Factory/Router (no Alchemy
-  // coverage, public RPC is the only option on this chain, matching snf-client).
+  // coverage, public RPC is the only option on this chain).
   // Delegate: HyperSwap (Hyperliquid mainnet).
   {
     chainId: 999,
@@ -333,7 +332,7 @@ export const SNF_CHAINS = [
   // ── BNB Chain (56) — deploy 2024-10-30, own Factory/Router (Base-Latest
   // generation, byte-identical Pair init code hash to Base — NOT the canonical
   // cluster). Delegate: SushiSwap (BNB mainnet), netFee 9970 confirmed explicitly
-  // in snf-contracts/deployments/56.json's `delegate` block (immutable, no setter).
+  // in the deployed contracts' own `delegate` block (immutable, no setter).
   {
     chainId: 56,
     name: 'BNB Chain',
@@ -377,10 +376,10 @@ export const SNF_CHAINS = [
       'https://api.goldsky.com/api/public/project_cmngb5qq6d79v01wba5bi7hdg/subgraphs/snf-arc/1.0.0/gn',
     explorerUrl: 'https://explorer.arc.io',
     // VERIFY-LIVE: verified empirically at 9970 via the delegate's own
-    // `getAmountOut()` in plan 03 (`snf-54-03-SUMMARY.md`) — kept here as a live
-    // pointer rather than a bare "trust me" comment, since `snf-contracts/scripts/
-    // delegate-configs.ts` (the canonical source other chains cite) has NO row for
-    // chainId 5042 at all (snf-54-18-SUMMARY.md, Finding 5). Re-verify if the
+    // `getAmountOut()` — kept here as a live
+    // pointer rather than a bare "trust me" comment, since the deployed contracts'
+    // own delegate-config source (the canonical source other chains cite) has NO row for
+    // chainId 5042 at all (Finding 5). Re-verify if the
     // delegate pair (DyorSwap V2) is ever redeployed or its fee tier changes.
     delegateNetFee: 9970, // DyorSwap V2 (Arc mainnet)
     poolNetFee: 9800,

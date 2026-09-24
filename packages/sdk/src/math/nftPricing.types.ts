@@ -1,11 +1,11 @@
 /**
- * Types for the offline estimate layer (`math/nftPricing.ts`) — R12; 54-SPEC.md.
+ * Types for the offline estimate layer (`math/nftPricing.ts`).
  *
  * Every result this layer produces is labelled `kind: 'estimate'` at the top level,
  * with no variant that omits it. See `nftPricing.ts`'s own header for why: this layer
  * is derived from a point-in-time `reserves` read and must never feed a transaction
  * bound (`build/`'s `Bounds`/`amountOutMin`/`amountInMax` always come from a fresh
- * on-chain re-quote — RESEARCH § "Anti-Patterns to Avoid").
+ * on-chain re-quote).
  */
 
 /** Pool-side reserves as read from `Pair.getReserves()`, already resolved to the

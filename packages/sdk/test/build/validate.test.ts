@@ -71,7 +71,7 @@ describe('validateBuildArgs — recipient', () => {
   })
 })
 
-describe('validateBuildArgs — tokenIds (boundary | R13)', () => {
+describe('validateBuildArgs — tokenIds (boundary)', () => {
   it('accepts exactly 50 tokenIds', () => {
     const tokenIds = Array.from({ length: MAX_TOKEN_IDS }, (_, i) => String(i + 1))
     const result = validateBuildArgs(buildArgs({ quote: buildQuote(tokenIds) }), NOW)
@@ -97,7 +97,7 @@ describe('validateBuildArgs — tokenIds (boundary | R13)', () => {
   })
 })
 
-describe('validateBuildArgs — slippageBps (boundary | R13)', () => {
+describe('validateBuildArgs — slippageBps (boundary)', () => {
   it('defaults to DEFAULT_SLIPPAGE_BPS when omitted', () => {
     const result = validateBuildArgs(buildArgs(), NOW)
     expect(result.slippageBps).toBe(DEFAULT_SLIPPAGE_BPS)
@@ -110,7 +110,7 @@ describe('validateBuildArgs — slippageBps (boundary | R13)', () => {
   })
 })
 
-describe('validateBuildArgs — deadline (boundary | R13)', () => {
+describe('validateBuildArgs — deadline (boundary)', () => {
   it('defaults to now + DEFAULT_DEADLINE_SECONDS when omitted', () => {
     const result = validateBuildArgs(buildArgs(), NOW)
     expect(result.deadline).toBe(BigInt(NOW + DEFAULT_DEADLINE_SECONDS))
