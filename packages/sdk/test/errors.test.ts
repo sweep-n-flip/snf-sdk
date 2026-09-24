@@ -4,7 +4,14 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { getChain } from '../src/chains/registry'
-import { assertParam, isSnfError, SNF_ERROR_CODES, SnfError, toSnfError } from '../src/errors'
+import {
+  assertChainMatch,
+  assertParam,
+  isSnfError,
+  SNF_ERROR_CODES,
+  SnfError,
+  toSnfError,
+} from '../src/errors'
 import { SNF_ERROR_RETRYABLE, type SnfErrorCode } from '../src/errors.types'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -91,6 +98,29 @@ describe('assertParam', () => {
 
   it('does not throw when the condition is truthy', () => {
     expect(() => assertParam(true, 'unreachable')).not.toThrow()
+  })
+})
+
+describe('assertChainMatch (R11 addendum)', () => {
+  it('does not throw when argsChainId is omitted', () => {
+    expect(() => assertChainMatch(undefined, 8453)).not.toThrow()
+  })
+
+  it('does not throw when argsChainId matches clientChainId', () => {
+    expect(() => assertChainMatch(8453, 8453)).not.toThrow()
+  })
+
+  it('throws SnfError(WRONG_CHAIN) with both chainIds in details when they disagree', () => {
+    try {
+      assertChainMatch(1, 8453)
+      throw new Error('expected assertChainMatch to throw')
+    } catch (err) {
+      expect(isSnfError(err)).toBe(true)
+      const snfErr = err as SnfError
+      expect(snfErr.code).toBe('WRONG_CHAIN')
+      expect(snfErr.details).toEqual({ argsChainId: 1, clientChainId: 8453 })
+      expect(snfErr.retryable).toBe(false)
+    }
   })
 })
 

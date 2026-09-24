@@ -1,3 +1,4 @@
+import type { SnfChainId } from './chains/chains.types'
 import type { SnfErrorCode, SnfErrorDetails, SnfErrorOptions } from './errors.types'
 import { SNF_ERROR_RETRYABLE } from './errors.types'
 
@@ -97,6 +98,26 @@ export function assertParam(
 ): asserts condition {
   if (condition) return
   throw new SnfError('INVALID_PARAMS', message, details === undefined ? {} : { details })
+}
+
+/**
+ * Guards a caller-supplied `chainId` (optional on `QuoteBuyArgs`/`QuoteSellArgs`/
+ * `QuoteNftToNftArgs`/`QuoteSwapArgs` — R11) against the client's own chain. This is
+ * the first check each of the four `quote*` functions runs: an omitted `argsChainId`
+ * is always fine (every implementation actually uses the client's chain, never this
+ * field), a matching one is a no-op, and a mismatched one is rejected with the
+ * existing `WRONG_CHAIN` code before any other validation or on-chain work.
+ */
+export function assertChainMatch(
+  argsChainId: SnfChainId | undefined,
+  clientChainId: SnfChainId,
+): void {
+  if (argsChainId === undefined || argsChainId === clientChainId) return
+  throw new SnfError(
+    'WRONG_CHAIN',
+    `The supplied chainId ${argsChainId} does not match this client's chain ${clientChainId}.`,
+    { details: { argsChainId, clientChainId } },
+  )
 }
 
 /**

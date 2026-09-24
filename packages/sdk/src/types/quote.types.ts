@@ -125,9 +125,10 @@ export interface Quote {
 }
 
 /** Args for `quoteBuy` (R8). Exactly one of `count`/`tokenIds`/`amount` is required
- * at runtime — `INVALID_PARAMS` otherwise. */
+ * at runtime — `INVALID_PARAMS` otherwise. `chainId` is optional and, when supplied,
+ * validated against the client's own chain (`WRONG_CHAIN` on a mismatch) — R11. */
 export interface QuoteBuyArgs {
-  readonly chainId: SnfChainId
+  readonly chainId?: SnfChainId
   readonly collection: `0x${string}`
   readonly count?: number
   readonly tokenIds?: readonly string[]
@@ -144,9 +145,10 @@ export interface QuoteBuyArgs {
 }
 
 /** Args for `quoteSell` (R8). Exactly one of `tokenIds`/`count`/`amount` is
- * required at runtime. */
+ * required at runtime. `chainId` is optional and, when supplied, validated against
+ * the client's own chain (`WRONG_CHAIN` on a mismatch) — R11. */
 export interface QuoteSellArgs {
-  readonly chainId: SnfChainId
+  readonly chainId?: SnfChainId
   readonly collection: `0x${string}`
   readonly tokenIds?: readonly string[]
   readonly count?: number
@@ -157,18 +159,21 @@ export interface QuoteSellArgs {
   readonly receiveToken?: `0x${string}` | null
 }
 
-/** Args for `quoteNftToNft` (R9): sell collection A's tokenIds, buy N of collection B. */
+/** Args for `quoteNftToNft` (R9): sell collection A's tokenIds, buy N of collection B.
+ * `chainId` is optional and, when supplied, validated against the client's own chain
+ * (`WRONG_CHAIN` on a mismatch) — R11. */
 export interface QuoteNftToNftArgs {
-  readonly chainId: SnfChainId
+  readonly chainId?: SnfChainId
   readonly sell: { readonly collection: `0x${string}`; readonly tokenIds: readonly string[] }
   readonly buy: { readonly collection: `0x${string}`; readonly count: number }
   readonly remainder: 'native' | 'wnft'
 }
 
 /** Args for `quoteSwap` (R10, fungible↔fungible, delegate-aware). Exactly one of
- * `amountIn`/`amountOut` is required at runtime. */
+ * `amountIn`/`amountOut` is required at runtime. `chainId` is optional and, when
+ * supplied, validated against the client's own chain (`WRONG_CHAIN` on a mismatch) — R11. */
 export interface QuoteSwapArgs {
-  readonly chainId: SnfChainId
+  readonly chainId?: SnfChainId
   readonly tokenIn: `0x${string}` | null
   readonly tokenOut: `0x${string}` | null
   readonly amountIn?: bigint
