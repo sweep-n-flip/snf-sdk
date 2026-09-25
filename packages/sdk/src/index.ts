@@ -17,7 +17,7 @@
  * `SDK_VERSION` must stay in sync with `package.json#version` — a dedicated test
  * asserts that.
  */
-export const SDK_VERSION = '0.1.1'
+export const SDK_VERSION = '0.1.2'
 
 export { createSnfClient } from './client'
 export * from './chains'

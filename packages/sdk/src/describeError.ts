@@ -85,13 +85,16 @@ const RPC_AUTH_PATTERNS = ['Unauthorized', 'must authenticate', 'API key'] as co
 const CHAIN_MISMATCH_PATTERNS = ['chain mismatch', 'does not match the target chain'] as const
 
 /** Known Uniswap V2 / Router revert strings, matched by substring on the
- * `trim()`ed candidate. `INSUFFICIENT_OUTPUT_AMOUNT` is the one entry with its own
- * `SnfErrorCode`; every other entry is a valid-but-unmet parameter -> `INVALID_PARAMS`
+ * `trim()`ed candidate. The two slippage reverts share their own code: a sell (or any
+ * exact-input swap) fails `INSUFFICIENT_OUTPUT_AMOUNT` when it would receive less than
+ * `amountOutMin`, and a buy (exact output) fails `EXCESSIVE_INPUT_AMOUNT` when it would
+ * cost more than `amountInMax` / `msg.value` — both mean "the price moved past the
+ * slippage tolerance; re-quote". Every other entry is a valid-but-unmet parameter -> `INVALID_PARAMS`
  * with `details.revert` naming which string matched (`revert.ts`'s `knownErrors`
  * table, reduced to this package's closed code union). */
 const REVERT_CODE_TABLE = [
   ['INSUFFICIENT_OUTPUT_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
-  ['EXCESSIVE_INPUT_AMOUNT', 'INVALID_PARAMS'],
+  ['EXCESSIVE_INPUT_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
   ['EXPIRED', 'INVALID_PARAMS'],
   ['INSUFFICIENT_INPUT_AMOUNT', 'INVALID_PARAMS'],
   ['UniswapV2: K', 'INVALID_PARAMS'],
@@ -166,7 +169,11 @@ function matchRevertCode(text: string): { readonly key: string; readonly code: S
 
 function revertError(match: { readonly key: string; readonly code: SnfErrorCode }, cause: unknown): SnfError {
   if (match.code === 'INSUFFICIENT_OUTPUT_AMOUNT') {
-    return new SnfError('INSUFFICIENT_OUTPUT_AMOUNT', 'The swap would execute below its minimum output bound.', {
+    const message =
+      match.key === 'EXCESSIVE_INPUT_AMOUNT'
+        ? 'The swap would cost more than its maximum input bound — the price moved.'
+        : 'The swap would execute below its minimum output bound.'
+    return new SnfError('INSUFFICIENT_OUTPUT_AMOUNT', message, {
       details: { revert: match.key },
       cause,
     })

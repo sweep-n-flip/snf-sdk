@@ -158,6 +158,13 @@ export async function quoteNftToNft(ctx: SnfClientContext, args: QuoteNftToNftAr
       details: { collection: args.buy.collection, viablePayTokens: [] },
     })
   }
+  // The buy leg releases whole NFTs from the buy collection's wrapper; if that
+  // collection blocks those transfers the whole trade would revert (see quoteBuy).
+  if (buyCollection.redemptionLocked) {
+    throw new SnfError('REDEMPTION_LOCKED', 'The buy collection blocks NFTs from leaving its wrapper, so this trade would revert.', {
+      details: { collection: buyCollection.address, wrapper: buyCollection.wrapper },
+    })
+  }
 
   // Cross-base NFT×NFT is not expressible on-chain — the atomic Router path is
   // single-hop + same-base only. A partner can still execute this as

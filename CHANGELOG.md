@@ -16,7 +16,25 @@ least 6 months for any deprecated surface.
 
 ## [Unreleased]
 
-Nothing since `0.1.1`.
+Nothing since `0.1.2`.
+
+## [0.1.2] — 2026-09-25
+
+`@sweepnflip/sdk` only; `@sweepnflip/sdk-react` is unchanged and stays `0.1.0`.
+
+### Fixed
+
+- **A buy that fails on slippage is reported as a price move.** The Router refuses a
+  buy that would cost more than `amountInMax` / `msg.value` with
+  `EXCESSIVE_INPUT_AMOUNT`; `describeError` classified it as `INVALID_PARAMS`
+  ("invalid request"), so a partner showed the wrong message and did not re-quote. It
+  is now `INSUFFICIENT_OUTPUT_AMOUNT`, the same code as the sell-side slippage revert,
+  with `details.revert` naming which one.
+- **No quote for a purchase that cannot settle.** When a collection blocks NFTs from
+  leaving its wrapper (`CollectionInfo.redemptionLocked`), `quoteBuy` (whole NFTs) and
+  `quoteNftToNft` (a locked buy collection) now throw `REDEMPTION_LOCKED` instead of
+  pricing a transaction that would revert on-chain and cost the buyer gas. A
+  fractional `amount` buy, and selling into such a collection, are unaffected.
 
 ## [0.1.1] — 2026-09-24
 

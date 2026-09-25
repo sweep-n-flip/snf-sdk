@@ -181,3 +181,18 @@ describe('describeError — 20-adversarial-input never-throws property', () => {
     }
   })
 })
+
+describe('buy-side slippage is classified as a price move, not a bad request', () => {
+  it('EXCESSIVE_INPUT_AMOUNT (the Router refusing a buy above amountInMax / msg.value) -> INSUFFICIENT_OUTPUT_AMOUNT', () => {
+    const result = describeError(revertedError('SweepnFlipRouter: EXCESSIVE_INPUT_AMOUNT'))
+    expect(result.code).toBe('INSUFFICIENT_OUTPUT_AMOUNT')
+    expect(result.details).toEqual({ revert: 'EXCESSIVE_INPUT_AMOUNT' })
+    expect(result.message).toContain('maximum input')
+  })
+
+  it('the sell-side string still maps to the same code with its own message', () => {
+    const result = describeError(revertedError('SweepnFlipRouter: INSUFFICIENT_OUTPUT_AMOUNT'))
+    expect(result.code).toBe('INSUFFICIENT_OUTPUT_AMOUNT')
+    expect(result.message).toContain('minimum output')
+  })
+})

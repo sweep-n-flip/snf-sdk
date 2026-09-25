@@ -226,3 +226,16 @@ describe('quoteNftToNft (Task 2)', () => {
     expect(multicall).not.toHaveBeenCalled()
   })
 })
+
+describe('quoteNftToNft refuses when the BUY collection is redemption-locked', () => {
+  it('throws REDEMPTION_LOCKED — the buy leg would revert releasing NFTs from its wrapper', async () => {
+    const { ctx } = buildTwoLegEnv(baseConfig({ buy: { redemptionLocked: true } }))
+    await expect(quoteNftToNft(ctx, ARGS)).rejects.toMatchObject({ code: 'REDEMPTION_LOCKED' })
+  })
+
+  it('a locked SELL collection still quotes, with a warning', async () => {
+    const { ctx } = buildTwoLegEnv(baseConfig({ sell: { redemptionLocked: true } }))
+    const quote = await quoteNftToNft(ctx, ARGS)
+    expect(quote.warnings?.some((w) => /redemption/i.test(w))).toBe(true)
+  })
+})

@@ -175,6 +175,16 @@ export async function quoteBuy(ctx: SnfClientContext, args: QuoteBuyArgs): Promi
     return quoteBuyFungible(ctx, args, collection, pool)
   }
 
+  // A whole-NFT buy releases NFTs from the wrapper. When the collection blocks those
+  // transfers (`redemptionLocked` is only ever true on a confirmed transfer-guard
+  // revert), the purchase would revert on-chain and cost the buyer gas for nothing —
+  // refuse it here instead. A fractional (`amount`) buy above never leaves the wrapper.
+  if (collection.redemptionLocked) {
+    throw new SnfError('REDEMPTION_LOCKED', 'This collection blocks NFTs from leaving its wrapper, so a whole-NFT buy would revert.', {
+      details: { collection: collection.address, wrapper: collection.wrapper },
+    })
+  }
+
   let tokenIds: readonly string[]
   let requested: number
   if (args.tokenIds !== undefined) {
