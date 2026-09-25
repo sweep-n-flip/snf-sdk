@@ -64,7 +64,7 @@ try {
   // real wallet you control — never a placeholder address.
   const recipient = process.env.RECIPIENT_ADDRESS
   if (!recipient) {
-    console.log('\nset RECIPIENT_ADDRESS to the wallet that will sign and pay, to build and pre-flight the plan')
+    console.log('set RECIPIENT_ADDRESS to the wallet that will sign and pay, to build and pre-flight the plan')
     process.exit(0)
   }
   try {
