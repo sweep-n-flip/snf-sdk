@@ -4,7 +4,6 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createPublicClient, http } from 'viem'
-import type { Chain, PublicClient } from 'viem'
 import { base } from 'viem/chains'
 import { WagmiProvider, createConfig, http as wagmiHttp } from 'wagmi'
 import { injected } from 'wagmi/connectors'
@@ -41,14 +40,10 @@ const wagmiConfig = createConfig({
   transports: { [base.id]: wagmiHttp(RPC_URL) },
 })
 
-// `base as Chain` (not the literal `typeof base`) — `base`'s OP-stack chain
-// formatters add a `deposit` transaction-type variant to `getBlock()`'s inferred
-// return shape that the SDK's generically-typed `publicClient: PublicClient`
-// (viem's own default `Chain | undefined` generic, unresolved) does not carry.
-// This is a documented viem/OP-stack TypeScript rough edge, not an SDK bug — widen
-// at construction, the same way a partner integrating any OP-stack chain
-// (Base, Robinhood Chain, ...) would.
-const publicClient: PublicClient = createPublicClient({ chain: base as Chain, transport: http(RPC_URL) })
+// No cast and no annotation: the SDK types `publicClient` as the few viem methods it
+// calls, so a Base (OP-stack) client fits as-is. Annotating it as viem's generic
+// `PublicClient` is what would fail to compile on OP-stack chains.
+const publicClient = createPublicClient({ chain: base, transport: http(RPC_URL) })
 
 export function Providers({ children }: { readonly children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
