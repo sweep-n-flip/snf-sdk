@@ -37,9 +37,9 @@ try {
   if (!pool) throw new Error('no native-base pool for this collection')
 
   const inv = await snf.poolInventory(pool.pair)
-  if (inv.tokenIds.length < 3) {
-    throw new Error(`pool only has ${inv.tokenIds.length} candidate tokenIds right now, need 3`)
-  }
+  // availableCount is the real ceiling (the pool never sells its last item), not the
+  // length of the candidate list.
+  if (inv.availableCount < 3) throw new Error('fewer than 3 NFTs available in this pool')
 
   const q = await snf.quoteBuy({ collection: col.address, tokenIds: inv.tokenIds.slice(0, 3) })
   if (q.reconciled !== true) throw new Error('quote did not reconcile against the Router on-chain read')

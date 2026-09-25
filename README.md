@@ -45,6 +45,7 @@ const col = await snf.collection(DEMON_COLLECTION)
 const pool = col.pools.find((p) => p.isNative)
 if (!pool) throw new Error('no native-base pool for this collection')
 const inv = await snf.poolInventory(pool.pair)
+if (inv.availableCount < 3) throw new Error('fewer than 3 NFTs available in this pool')
 const q = await snf.quoteBuy({ collection: col.address, tokenIds: inv.tokenIds.slice(0, 3) })
 
 const plan = await snf.buildBuy({ quote: q, recipient, slippageBps: 100 })
