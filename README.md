@@ -141,14 +141,19 @@ never will be — the revenue is the on-chain volume it brings to SnF pools (the
 
 ## Scope
 
-**In v1:** collection/pool discovery, pool inventory, buy/sell/NFT×NFT/
+**In v1 (`0.1.2`):** collection/pool discovery, pool inventory, buy/sell/NFT×NFT/
 fungible quotes with a reconciled fee breakdown, execution-plan builders with
 frame-of-signature pre-flight, a user-driven checkout state machine, and the React
 adapter.
 
-**Explicitly deferred:** liquidity (add/remove/create pool). Portfolio/LP
-position reads.
-Marketplace aggregation, third-party marketplace integrations,
+**Built, unreleased — ships in the next minor version, not `0.1.2`:** liquidity
+(add/remove/create pool, a launch-seeding helper, LP position reads) — see
+`CHANGELOG.md`'s `[Unreleased]` section for the full surface. A collection's
+seeding/attestation status is a typed read that rejects on every chain until that
+product itself is live.
+
+**Explicitly deferred:** a cross-chain portfolio view (LP positions across every
+chain in one call). Marketplace aggregation, third-party marketplace integrations,
 sell-into-bids, and any atomic multi-step NFT×NFT execution
 contract are out of scope for this SDK entirely for now.
 

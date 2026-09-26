@@ -16,7 +16,77 @@ least 6 months for any deprecated surface.
 
 ## [Unreleased]
 
-Nothing since `0.1.2`.
+Liquidity: add/remove/create-pool, a launch-seeding helper, LP position reads, and a
+fixed redemption probe. Ships in the next minor release, not `0.1.2` — no
+`package.json`/`SDK_VERSION` bump in this entry.
+
+### Added
+
+**`@sweepnflip/sdk`** — eleven new client methods:
+
+- `quoteAddLiquidity` / `buildAddLiquidity` — on-chain-reconciled deposit quote and
+  unsigned plan for an EXISTING pool, native or ERC-20 base (Arc included), with
+  dynamic gas and only the approvals actually missing.
+- `quoteCreatePool` / `buildCreatePool` — the same for a pool-creating deposit, always
+  at an EXACT minimum (never zero, never loosened) — this closes the same-block
+  pre-seed front-run a looser minimum would let through untouched.
+- `quoteRemoveLiquidity` / `buildRemoveLiquidity` — withdrawal in `nft` mode (whole
+  NFTs plus a fractional wNFT remainder) or `wnft` mode (the fungible wrapper only, at
+  any share size, including a share too small for one whole NFT); a plain LP
+  `Pair.approve` step, no permit variant (none exists for the collection-aware remove
+  path).
+- `buildSeed` — an explicitly OPTIONAL launch-seeding builder: up to 500 NFTs per
+  call, split into consecutive ≤50-id steps at exact minimums, explicit LP
+  destination, no default and no burn shortcut. A partner who never calls this can
+  still seed a pool with a single plain deposit call — nothing in this package makes
+  it a prerequisite.
+- `lpPosition(pair, owner)` — a single pair's live LP balance, share, and underlying
+  base/wNFT/whole-NFT breakdown.
+- `redemptionStatus(collection)` — a tri-state (`allowed` / `blocked` / `unknown`)
+  probe of whether a collection currently lets NFTs leave its wrapper, sourced from
+  on-chain enumeration or the subgraph — no Alchemy dependency.
+- `seeding(collection)` / `attestation(collection)` — typed reads that reject
+  `PRODUCT_NOT_LIVE` on every chain today; the underlying contract is neither audited
+  nor deployed anywhere, so no ABI, address or struct shape ships until it is.
+
+Type surface: `Quote.side` widened with `'add-liquidity' | 'remove-liquidity' |
+'create-pool'`, plus an optional `Quote.liquidity` sub-object every liquidity quote
+carries (reserves, balances, totalSupply, the exact base/LP/wNFT figures, block
+number). `StepKind` gains `'add-liquidity' | 'remove-liquidity'` (a pool-creating
+deposit is still `'add-liquidity'`, disambiguated by `quote.side`). `Approval.kind`
+gains `'lp-allowance'`. `Bounds` gains `amountInMin` (deposits — equals the exact
+minimum on a create/seed) and `wnftOutMin` (withdrawals). `StepPreflightRefs.wrapper`
+and `.pair` are now nullable (a step whose own transaction creates one or both), and
+`.lpBurn` lets `plan.preflight()` re-verify a withdrawal's live LP balance and, in
+`nft` mode, the exact whole-NFT count at the signing block. `describeError` maps four
+new Router revert strings (`INSUFFICIENT_A_AMOUNT`/`_B_AMOUNT`,
+`EXCESSIVE_A_AMOUNT`/`_B_AMOUNT`) to `INSUFFICIENT_OUTPUT_AMOUNT`, and a bad ERC-20
+`transferFrom` to `INVALID_PARAMS`.
+
+**`@sweepnflip/sdk-react`** — nine new hooks: five read hooks
+(`useSnfQuoteAddLiquidity`, `useSnfQuoteCreatePool`, `useSnfQuoteRemoveLiquidity`,
+`useSnfLpPosition`, `useSnfRedemptionStatus`) mirroring `useSnfQuoteBuy`'s own
+cache/key/enabled/error contract, and four build hooks (`useSnfAddLiquidity`,
+`useSnfCreatePool`, `useSnfRemoveLiquidity`, `useSnfSeed`) that only touch the chain
+when a partner calls `build(args)`, feeding the resulting plan to the existing
+`useSnfCheckout(plan)`.
+
+### Changed
+
+- **The redemption probe now simulates `transferFrom`, not `safeTransferFrom`.** The
+  wrapper's own release path (`WERC721._burn`) calls `transferFrom`; the previous
+  probe simulated the wrong function and could misclassify a collection that guards
+  one but not the other. `CollectionInfo.redemptionLocked` and the `quoteBuy`/
+  `quoteNftToNft` refusal now trigger only on a confirmed `'blocked'` probe result — an
+  `'unknown'` result (no sample id, or an ambiguous revert) prices normally rather
+  than refusing.
+- Creation and seeding always send an EXACT minimum — never `0` and never loosened by
+  slippage — because `_addLiquidity` never reads the minimums at all when a pair's
+  reserves are both zero; a looser minimum is the same window a same-block pre-seed
+  exploits.
+- Withdrawal always uses a plain LP `Pair.approve` step, in both modes — no permit
+  variant exists for the collection-aware remove path (`removeLiquidityETHCollection`
+  / `removeLiquidityCollection`), and this package never encodes one.
 
 ## [0.1.2] — 2026-09-25
 

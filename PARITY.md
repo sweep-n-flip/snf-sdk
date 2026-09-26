@@ -25,13 +25,21 @@ buried in an internal document nobody reads at integration time.
 | `inventory/subgraphQueries.ts` | The pool-inventory GraphQL query string sent to the public index | Internal to `client.poolInventory`'s subgraph transport (`packages/sdk/src/transport/subgraph.ts`) — not exposed as a raw query string, since a partner never needs to hand-assemble GraphQL | covered |
 | `inventory/useSubgraphInventory.ts` | React hook wrapping the inventory query with staleness/freshness sentences | `useSnfPoolInventory` (React adapter) → `PoolInventory.stale` / `.lagSeconds` / `.source` fields | covered |
 | `inventory/tokenUriParse.ts` | Per-token artwork resolution via on-chain `tokenURI(id)` — no indexer, no marketplace API key, parses `data:`/`ipfs:`/`https:` schemes and the image-field precedence | none yet | **not-covered** — `CollectionInfo.labels.imageUrl` (`collection.types.ts`) is declared but never populated by `resolveCollection`; no per-token image resolution exists anywhere in `packages/sdk/src`. A partner building a token picker UI must implement their own `tokenURI` read today. Reason: `resolveCollection` currently scopes to collection-level identity only; per-token artwork was out of scope for this version. No current work owns this — flag for docs-site scoping or a future inventory-enrichment pass. |
+| `liquidity/createPoolGuards.ts` | The pool-creating deposit's minimum, decided the moment reserves are read | `client.quoteCreatePool` / `client.buildCreatePool` always send an EXACT minimum (`min = desired`, never `0`, never loosened by slippage) — a same-block pre-seed reverts the deposit instead of settling it at a hostile price; create-vs-add is decided from LIVE reserves, never from whether a pair address happens to be non-zero | covered |
+| `liquidity/addLiquidityBase.ts` | An ERC-20-base deposit's desired/approval amount, sized against the pool's live ratio | `client.quoteAddLiquidity` (`liquidity.baseDesired`) rounds the desired amount UP — the Router's own floor rounding reverts `INSUFFICIENT_B_AMOUNT` whenever the division isn't exact; the ERC-20 approval always covers this ceil figure, never a smaller one | covered |
+| `liquidity/removeNFTSelection.ts` | Choosing which/how-many tokenIds an `nft`-mode withdrawal redeems | `client.quoteRemoveLiquidity` (`mode: 'nft'`, `liquidity.nftWhole = floor(wnftOut/1e18)`) picks or validates the EXACT count the Router requires (a mismatch throws rather than silently topping up or clamping); `plan.preflight()` re-derives the count at the signing block, since a trade between quote and signature can shift it by one NFT | covered |
+| `liquidity/useCollectionRedemptionStatus.ts` | Probing whether a collection currently lets NFTs leave its wrapper, before pricing a whole-NFT trade | `client.redemptionStatus` — a tri-state probe (`'allowed' \| 'blocked' \| 'unknown'`) that simulates `transferFrom`, the exact function the wrapper's own release path calls (not the safe variant), with a sample id sourced from on-chain enumeration or the subgraph, never a third-party indexer | covered |
+| `liquidity/positionBase.ts` | An LP holder's live position — balance, share, underlying breakdown | `client.lpPosition(pair, owner)` — one pair at a time, reconciled over the pair's own balances (never the cached reserves), which a future cross-chain portfolio view composes | covered |
 
 ## What this checklist does NOT cover (by design, not a gap)
 
 Everything the documented Boundaries section scopes out of this SDK entirely is
-absent from this table on purpose, not because it was missed: liquidity (add/remove/
-create pool), portfolio/LP position reads, the marketplace
-aggregator (third-party marketplace protocol integrations), cross-chain relay,
-sell-into-bids, and any atomic multi-step
-NFT×NFT execution contract. None of these exist in the reference
-checkout either, so they have no corresponding row above.
+absent from this table on purpose, not because it was missed: a cross-chain
+portfolio view (LP positions across every chain in one call — `client.lpPosition`
+above covers a single pair; composing that across chains is a later addition), the
+marketplace aggregator (third-party marketplace protocol integrations), cross-chain
+relay, sell-into-bids, a launch-seeding contract's own on-chain reads (`seeding`/
+`attestation` are typed but reject `PRODUCT_NOT_LIVE` on every chain until that
+product itself deploys), and any atomic multi-step NFT×NFT execution contract. None
+of these exist in the reference checkout either, so they have no corresponding row
+above.
