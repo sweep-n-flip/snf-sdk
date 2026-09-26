@@ -271,28 +271,11 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
 // covered by their own `test/liquidity/*` and `test/build/*` files.
 // `lpPosition`/`quoteRemoveLiquidity`/`buildRemoveLiquidity` are likewise real now —
 // covered by `test/liquidity/lpPosition.test.ts`, `test/liquidity/quoteRemoveLiquidity.test.ts`
-// and `test/build/buildRemoveLiquidity.test.ts`.
-describe('createSnfClient — the remaining three seeding stubs reject UNKNOWN, no RPC issued', () => {
-  it.each([
-    ['buildSeed', (client: ReturnType<typeof createSnfClient>) => client.buildSeed({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'], pricePerNft: 1n, payer: '0x0000000000000000000000000000000000000002', lpRecipient: '0x0000000000000000000000000000000000000003' })],
-    ['seeding', (client: ReturnType<typeof createSnfClient>) => client.seeding('0x0000000000000000000000000000000000000001')],
-    ['attestation', (client: ReturnType<typeof createSnfClient>) => client.attestation('0x0000000000000000000000000000000000000001')],
-  ] as const)('%s rejects SnfError(UNKNOWN) ending in "is not implemented yet", with zero RPC calls', async (name, call) => {
-    const publicClient = fakePublicClient()
-    const client = createSnfClient(config({ publicClient }))
-    let threw: unknown
-    try {
-      await call(client)
-      expect.fail(`expected ${name} to reject`)
-    } catch (e) {
-      threw = e
-    }
-    expect(isSnfError(threw)).toBe(true)
-    if (isSnfError(threw)) {
-      expect(threw.code).toBe('UNKNOWN')
-      expect(threw.message.endsWith('is not implemented yet')).toBe(true)
-    }
-    expect(publicClient.readContract).not.toHaveBeenCalled()
-    expect(publicClient.multicall).not.toHaveBeenCalled()
-  })
-})
+// and `test/build/buildRemoveLiquidity.test.ts`. `buildSeed`/`seeding`/`attestation` were
+// the last three stub bodies in this table — all real now (`buildSeed` covered by
+// `test/build/buildSeed.test.ts`; `seeding`/`attestation` covered by
+// `test/seeding/notLive.test.ts`, which reject with `PRODUCT_NOT_LIVE`, not `UNKNOWN` —
+// they are honestly "not live", not "not yet implemented"). This file's own
+// stub-rejection table (once eleven rows, trimmed plan by plan down to zero) is
+// retired; `D01_KEYS` above still asserts every one of the twenty-four method names
+// exists, in order, on the object `createSnfClient` returns.

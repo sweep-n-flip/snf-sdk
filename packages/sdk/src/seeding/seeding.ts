@@ -13,38 +13,27 @@ import type { SeedingAttestation, SeedingInfo } from '../types/seeding.types'
  * surface is live and audited, both bodies gain the real reads without either
  * signature changing.
  *
- * Both bodies stay non-`async` and return via `Promise.reject` rather than an
- * `async function` with no `await` — the same reasoning this package's other stub
- * bodies already established (an `async` function with no `await` trips
- * `@typescript-eslint/require-await`, and a bare synchronous `throw` would make the
- * *call itself* throw before any `Promise` exists, breaking the common
- * `await expect(...).rejects.toThrow()` idiom). Validating BEFORE that rejection
- * still has to happen without ever throwing synchronously, so a malformed address is
- * caught and re-wrapped into the same rejected `Promise` instead.
+ * Both bodies stay non-`async` — the same reasoning this package's other stub bodies
+ * already established (an `async` function with no `await` trips
+ * `@typescript-eslint/require-await`) — and validate/throw from inside a `.then`
+ * callback rather than calling `Promise.reject` directly with a caught, statically
+ * `unknown` value (which `@typescript-eslint/prefer-promise-reject-errors` correctly
+ * refuses to accept without a cast). A `throw` inside a `.then` callback rejects the
+ * resulting `Promise` exactly like a `Promise.reject` call would — a caller's `await`
+ * always sees a rejection, never a synchronous throw before any `Promise` exists,
+ * whether the failure is the validation or the `PRODUCT_NOT_LIVE` result itself.
  */
 
-function notLive(ctx: SnfClientContext, collection: `0x${string}`, surface: 'seeding' | 'attestation'): SnfError {
-  return new SnfError('PRODUCT_NOT_LIVE', 'Seeding reads are not live on this chain yet.', {
+function notLive(ctx: SnfClientContext, collection: `0x${string}`, surface: 'seeding' | 'attestation'): never {
+  throw new SnfError('PRODUCT_NOT_LIVE', 'Seeding reads are not live on this chain yet.', {
     details: { chainId: ctx.chain.chainId, collection, surface },
   })
 }
 
 export function seeding(ctx: SnfClientContext, collection: `0x${string}`): Promise<SeedingInfo> {
-  let address: `0x${string}`
-  try {
-    address = assertAddress(collection, 'collection')
-  } catch (e) {
-    return Promise.reject(e)
-  }
-  return Promise.reject(notLive(ctx, address, 'seeding'))
+  return Promise.resolve().then(() => notLive(ctx, assertAddress(collection, 'collection'), 'seeding'))
 }
 
 export function attestation(ctx: SnfClientContext, collection: `0x${string}`): Promise<SeedingAttestation> {
-  let address: `0x${string}`
-  try {
-    address = assertAddress(collection, 'collection')
-  } catch (e) {
-    return Promise.reject(e)
-  }
-  return Promise.reject(notLive(ctx, address, 'attestation'))
+  return Promise.resolve().then(() => notLive(ctx, assertAddress(collection, 'collection'), 'attestation'))
 }
