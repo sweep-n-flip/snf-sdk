@@ -48,4 +48,19 @@ export const snfQueryKeys = {
 
   quoteNftToNft: (chainId: number, v: number, args: unknown) =>
     ['snf', 'quoteNftToNft', chainId, v, serializeArgs(args)] as const,
+
+  quoteAddLiquidity: (chainId: number, v: number, args: unknown) =>
+    ['snf', 'quoteAddLiquidity', chainId, v, serializeArgs(args)] as const,
+
+  quoteCreatePool: (chainId: number, v: number, args: unknown) =>
+    ['snf', 'quoteCreatePool', chainId, v, serializeArgs(args)] as const,
+
+  quoteRemoveLiquidity: (chainId: number, v: number, args: unknown) =>
+    ['snf', 'quoteRemoveLiquidity', chainId, v, serializeArgs(args)] as const,
+
+  lpPosition: (chainId: number, v: number, pair: string, owner: string) =>
+    ['snf', 'lpPosition', chainId, v, pair.toLowerCase(), owner.toLowerCase()] as const,
+
+  redemptionStatus: (chainId: number, v: number, collection: string) =>
+    ['snf', 'redemptionStatus', chainId, v, collection.toLowerCase()] as const,
 } as const
