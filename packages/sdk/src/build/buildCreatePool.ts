@@ -1,0 +1,16 @@
+import { SnfError } from '../errors'
+import type { SnfClientContext } from '../types/client.types'
+import type { BuildCreatePoolArgs } from '../types/liquidity.types'
+import type { ExecutionPlan } from '../types/plan.types'
+
+/**
+ * Stub — this body is replaced by its implementation; the signature below is fixed
+ * (see the plan's Interfaces section) and does not change when the body does. Returns
+ * a rejected `Promise` rather than throwing synchronously, so a caller's `await`
+ * always sees a rejection, never a synchronous throw before any `Promise` exists.
+ */
+export function buildCreatePool(ctx: SnfClientContext, args: BuildCreatePoolArgs): Promise<ExecutionPlan> {
+  void ctx
+  void args
+  return Promise.reject(new SnfError('UNKNOWN', 'buildCreatePool is not implemented yet'))
+}

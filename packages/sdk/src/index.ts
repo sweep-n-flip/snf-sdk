@@ -5,14 +5,14 @@
  * domain operation — `snf.quoteBuy(...)`, never a bare imported `quoteBuy(...)`. This
  * is this module's own repo note made permanent: `quoteBuy`, `buildBuy`,
  * `resolveCollection`, `poolInventory`, `createCheckout` and every other domain
- * function under `collection/`, `quote/`, `build/`, `checkout/`, `receipt/` stay
- * internal to this package on purpose. Exporting them as free-standing symbols would
- * create a second, undocumented entry point this package would then have to keep
- * compatible forever, alongside the one actually documented. `checkout/` in
- * particular is a REAL, fully-implemented module that still isn't exported
- * here — `createCheckout` isn't one of this rule's 13 client methods; it's consumed by
- * `@sweepnflip/sdk-react`'s `useSnfCheckout`, a different package, not by a
- * partner importing this one directly.
+ * function under `collection/`, `quote/`, `build/`, `checkout/`, `receipt/`,
+ * `liquidity/`, `seeding/` stay internal to this package on purpose. Exporting them as
+ * free-standing symbols would create a second, undocumented entry point this package
+ * would then have to keep compatible forever, alongside the one actually documented.
+ * `checkout/` in particular is a REAL, fully-implemented module that still isn't
+ * exported here — `createCheckout` isn't one of this rule's 24 client methods; it's
+ * consumed by `@sweepnflip/sdk-react`'s `useSnfCheckout`, a different package, not by
+ * a partner importing this one directly.
  *
  * `SDK_VERSION` must stay in sync with `package.json#version` — a dedicated test
  * asserts that.

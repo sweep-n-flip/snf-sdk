@@ -125,13 +125,15 @@ const REVERT_CODE_TABLE = [
 /** The four liquidity-side price-moved reverts (a later addition) get their own
  * message, distinct from the two original swap-side ones — a deposit/withdrawal has
  * no "input"/"output" in the swap sense, so re-using either existing sentence would
- * misdescribe what actually happened. */
-const LIQUIDITY_PRICE_MOVED_KEYS = new Set([
+ * misdescribe what actually happened. A frozen `as const` array, like every other
+ * module-scope classification list in this file — never a `Set`, which
+ * `local/no-module-global-state` (correctly) treats as shared mutable state. */
+const LIQUIDITY_PRICE_MOVED_KEYS = [
   'INSUFFICIENT_A_AMOUNT',
   'INSUFFICIENT_B_AMOUNT',
   'EXCESSIVE_A_AMOUNT',
   'EXCESSIVE_B_AMOUNT',
-])
+] as const
 
 function extractMessage(e: unknown): string {
   if (e instanceof Error) return e.message
@@ -199,7 +201,7 @@ function matchRevertCode(text: string): { readonly key: string; readonly code: S
 
 function revertError(match: { readonly key: string; readonly code: SnfErrorCode }, cause: unknown): SnfError {
   if (match.code === 'INSUFFICIENT_OUTPUT_AMOUNT') {
-    const message = LIQUIDITY_PRICE_MOVED_KEYS.has(match.key)
+    const message = (LIQUIDITY_PRICE_MOVED_KEYS as readonly string[]).includes(match.key)
       ? 'The liquidity change would settle outside its bounds — the price moved; re-quote.'
       : match.key === 'EXCESSIVE_INPUT_AMOUNT'
         ? 'The swap would cost more than its maximum input bound — the price moved.'

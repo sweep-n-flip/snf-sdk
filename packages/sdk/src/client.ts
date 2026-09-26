@@ -4,9 +4,18 @@ import { describeError as describeErrorPure } from './describeError'
 import { assertParam } from './errors'
 import { estimateLadder as estimateLadderPure } from './math/nftPricing'
 import { poolInventory } from './inventory/poolInventory'
+import { redemptionStatus } from './liquidity/redemptionStatus'
+import { lpPosition } from './liquidity/lpPosition'
+import { quoteAddLiquidity } from './liquidity/quoteAddLiquidity'
+import { quoteCreatePool } from './liquidity/quoteCreatePool'
+import { quoteRemoveLiquidity } from './liquidity/quoteRemoveLiquidity'
 import { parseReceipt as parseReceiptPure } from './receipt/parseReceipt'
+import { buildAddLiquidity } from './build/buildAddLiquidity'
 import { buildBuy } from './build/buildBuy'
+import { buildCreatePool } from './build/buildCreatePool'
 import { buildNftToNft } from './build/buildNftToNft'
+import { buildRemoveLiquidity } from './build/buildRemoveLiquidity'
+import { buildSeed } from './build/buildSeed'
 import { buildSell } from './build/buildSell'
 import { buildSwap } from './build/buildSwap'
 import { quoteBuy } from './quote/quoteBuy'
@@ -14,6 +23,7 @@ import { quoteNftToNft } from './quote/quoteNftToNft'
 import { quoteSell } from './quote/quoteSell'
 import { quoteSwap } from './quote/quoteSwap'
 import { resolveProviders } from './providers/defaults'
+import { attestation, seeding } from './seeding/seeding'
 import { createSubgraphTransport } from './transport/subgraph'
 import type { SnfClient, SnfClientConfig, SnfClientContext } from './types/client.types'
 
@@ -36,10 +46,11 @@ import type { SnfClient, SnfClientConfig, SnfClientContext } from './types/clien
  * documented convention: no other module in this file's own dependency graph may edit
  * it directly). Later revisions replace the
  * BODIES of the domain modules imported below (`collection/`, `inventory/`, `quote/`,
- * `build/`, `receipt/`) — none of them touch this file again. If a future method is
- * ever added to the documented surface, its signature goes into `types/client.types.ts`
- * first and its module ships as a stub (the same marker convention `internal/stub.ts`
- * documents), exactly like every other domain module already created — so this file
+ * `build/`, `receipt/`, `liquidity/`, `seeding/`) — none of them touch this file
+ * again. If a future method is ever added to the documented surface, its signature
+ * goes into `types/client.types.ts` first and its module ships as a stub — a fixed
+ * signature whose body rejects with a stable `UNKNOWN` `SnfError` naming the missing
+ * method, exactly like every liquidity/seeding module already created — so this file
  * keeps having exactly one writer.
  */
 
@@ -118,9 +129,9 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
     nextTxInvalidationVersion,
   }
 
-  // Documented order: chainId, chain, then the thirteen methods exactly as `SnfClient`
-  // declares them. `Object.keys(client)` is asserted against this same order in
-  // `test/client.test.ts`.
+  // Documented order: chainId, chain, then the twenty-four methods exactly as
+  // `SnfClient` declares them. `Object.keys(client)` is asserted against this same
+  // order in `test/client.test.ts`.
   const client = Object.freeze<SnfClient>({
     chainId: chain.chainId,
     chain,
@@ -167,6 +178,43 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
     /** Maps any unknown throwable to a stable `SnfError`. Pure — needs no
      * context. */
     describeError: (e: unknown) => describeErrorPure(e),
+
+    /** A tri-state probe of whether the wrapper currently lets NFTs redeem out. */
+    redemptionStatus: (collection) => redemptionStatus(ctx, collection),
+
+    /** An LP holder's live position: balance, share of the pool, and its underlying
+     * base/wNFT/whole-NFT breakdown. */
+    lpPosition: (pair, owner) => lpPosition(ctx, pair, owner),
+
+    /** On-chain cost/output to deposit into an existing pool, reconciled to the wei
+     * against the Router. */
+    quoteAddLiquidity: (args) => quoteAddLiquidity(ctx, args),
+
+    /** On-chain cost/output to create a new pool with the given deposit. */
+    quoteCreatePool: (args) => quoteCreatePool(ctx, args),
+
+    /** On-chain output to withdraw liquidity, reconciled to the wei against the
+     * Router. */
+    quoteRemoveLiquidity: (args) => quoteRemoveLiquidity(ctx, args),
+
+    /** Builds an unsigned deposit `ExecutionPlan` into an existing pool. */
+    buildAddLiquidity: (args) => buildAddLiquidity(ctx, args),
+
+    /** Builds an unsigned pool-creating deposit `ExecutionPlan`, with exact
+     * minimums. */
+    buildCreatePool: (args) => buildCreatePool(ctx, args),
+
+    /** Builds an unsigned withdrawal `ExecutionPlan`. */
+    buildRemoveLiquidity: (args) => buildRemoveLiquidity(ctx, args),
+
+    /** Builds an unsigned launch-seeding `ExecutionPlan` — entirely optional. */
+    buildSeed: (args) => buildSeed(ctx, args),
+
+    /** A typed read of a collection's seeding status. */
+    seeding: (collection) => seeding(ctx, collection),
+
+    /** A typed read of a collection's seeding attestation. */
+    attestation: (collection) => attestation(ctx, collection),
   })
 
   return client

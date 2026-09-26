@@ -214,6 +214,17 @@ function fakeTradeCardClient(): SnfClient {
     buildSwap: vi.fn(),
     parseReceipt: vi.fn(),
     describeError,
+    redemptionStatus: vi.fn(),
+    lpPosition: vi.fn(),
+    quoteAddLiquidity: vi.fn(),
+    quoteCreatePool: vi.fn(),
+    quoteRemoveLiquidity: vi.fn(),
+    buildAddLiquidity: vi.fn(),
+    buildCreatePool: vi.fn(),
+    buildRemoveLiquidity: vi.fn(),
+    buildSeed: vi.fn(),
+    seeding: vi.fn(),
+    attestation: vi.fn(),
   }
 }
 
@@ -315,6 +326,17 @@ function fakePoolStatsClient(): SnfClient {
       throw new Error('not used by this suite')
     },
     describeError,
+    redemptionStatus: () => Promise.reject(new Error('not used by this suite')),
+    lpPosition: () => Promise.reject(new Error('not used by this suite')),
+    quoteAddLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    quoteCreatePool: () => Promise.reject(new Error('not used by this suite')),
+    quoteRemoveLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    buildAddLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    buildCreatePool: () => Promise.reject(new Error('not used by this suite')),
+    buildRemoveLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    buildSeed: () => Promise.reject(new Error('not used by this suite')),
+    seeding: () => Promise.reject(new Error('not used by this suite')),
+    attestation: () => Promise.reject(new Error('not used by this suite')),
   }
 }
 

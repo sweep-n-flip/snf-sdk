@@ -8,6 +8,30 @@ import { isSnfError } from '../src/errors'
 import * as subgraphModule from '../src/transport/subgraph'
 import type { SnfClientConfig } from '../src/types/client.types'
 import type { SubgraphTransport } from '../src/transport/subgraph.types'
+import type { Amount } from '../src/types/amount.types'
+import type { Quote } from '../src/types/quote.types'
+
+function fakeAmount(value: bigint): Amount {
+  return { value, formatted: value.toString(), symbol: 'ETH', decimals: 18 }
+}
+
+function fakeQuote(): Quote {
+  return {
+    side: 'add-liquidity',
+    chainId: BASE_CHAIN_ID,
+    legs: [],
+    fees: {
+      pool: { bps: 0, note: 'no fee on liquidity' },
+      marketplace: { ...fakeAmount(0n), bps: 0 },
+      royalty: { ...fakeAmount(0n), bps: 0, capApplied: false },
+    },
+    priceImpact: 0,
+    deliverable: 1,
+    bestEffort: false,
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    reconciled: true,
+  }
+}
 
 /**
  * `createSnfClient` — this module's own acceptance test: two clients, two chains,
@@ -51,8 +75,9 @@ function metaEnvelope(): Response {
   })
 }
 
-/** The exact documented order: `chainId`, `chain`, then the thirteen methods as
- * `types/client.types.ts`'s `SnfClient` interface declares them. */
+/** The exact documented order: `chainId`, `chain`, then the twenty-four methods as
+ * `types/client.types.ts`'s `SnfClient` interface declares them — the original
+ * thirteen followed by the eleven liquidity/seeding methods this plan adds. */
 const D01_KEYS = [
   'chainId',
   'chain',
@@ -69,6 +94,17 @@ const D01_KEYS = [
   'buildSwap',
   'parseReceipt',
   'describeError',
+  'redemptionStatus',
+  'lpPosition',
+  'quoteAddLiquidity',
+  'quoteCreatePool',
+  'quoteRemoveLiquidity',
+  'buildAddLiquidity',
+  'buildCreatePool',
+  'buildRemoveLiquidity',
+  'buildSeed',
+  'seeding',
+  'attestation',
 ]
 
 beforeEach(() => {
@@ -81,7 +117,7 @@ afterEach(() => {
 })
 
 describe('createSnfClient — the object surface', () => {
-  it("own enumerable keys are exactly the 13 method names plus chainId and chain, in this rule's order", () => {
+  it("own enumerable keys are exactly the 24 method names plus chainId and chain, in this rule's order", () => {
     const client = createSnfClient(config())
     expect(Object.keys(client)).toEqual(D01_KEYS)
   })
@@ -248,5 +284,38 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
   it('accepts a real PublicClient built for Abstract — zkSync Era formatters, a structurally different formatter family than Base\'s OP-Stack ones, so this proves the fix is not accidentally OP-Stack-specific', () => {
     const publicClient = createPublicClient({ chain: abstract, transport: http('https://example.invalid') })
     expect(() => createSnfClient(config({ publicClient }))).not.toThrow()
+  })
+})
+
+describe('createSnfClient — the eleven liquidity/seeding stubs reject UNKNOWN, no RPC issued', () => {
+  it.each([
+    ['redemptionStatus', (client: ReturnType<typeof createSnfClient>) => client.redemptionStatus('0x0000000000000000000000000000000000000001')],
+    ['lpPosition', (client: ReturnType<typeof createSnfClient>) => client.lpPosition('0x0000000000000000000000000000000000000001', '0x0000000000000000000000000000000000000002')],
+    ['quoteAddLiquidity', (client: ReturnType<typeof createSnfClient>) => client.quoteAddLiquidity({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'] })],
+    ['quoteCreatePool', (client: ReturnType<typeof createSnfClient>) => client.quoteCreatePool({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'], baseAmount: 1n })],
+    ['quoteRemoveLiquidity', (client: ReturnType<typeof createSnfClient>) => client.quoteRemoveLiquidity({ pair: '0x0000000000000000000000000000000000000001', owner: '0x0000000000000000000000000000000000000002', liquidity: 1n, mode: 'wnft' })],
+    ['buildAddLiquidity', (client: ReturnType<typeof createSnfClient>) => client.buildAddLiquidity({ quote: fakeQuote(), recipient: '0x0000000000000000000000000000000000000001' })],
+    ['buildCreatePool', (client: ReturnType<typeof createSnfClient>) => client.buildCreatePool({ quote: fakeQuote(), recipient: '0x0000000000000000000000000000000000000001' })],
+    ['buildRemoveLiquidity', (client: ReturnType<typeof createSnfClient>) => client.buildRemoveLiquidity({ quote: fakeQuote(), recipient: '0x0000000000000000000000000000000000000001' })],
+    ['buildSeed', (client: ReturnType<typeof createSnfClient>) => client.buildSeed({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'], pricePerNft: 1n, payer: '0x0000000000000000000000000000000000000002', lpRecipient: '0x0000000000000000000000000000000000000003' })],
+    ['seeding', (client: ReturnType<typeof createSnfClient>) => client.seeding('0x0000000000000000000000000000000000000001')],
+    ['attestation', (client: ReturnType<typeof createSnfClient>) => client.attestation('0x0000000000000000000000000000000000000001')],
+  ] as const)('%s rejects SnfError(UNKNOWN) ending in "is not implemented yet", with zero RPC calls', async (name, call) => {
+    const publicClient = fakePublicClient()
+    const client = createSnfClient(config({ publicClient }))
+    let threw: unknown
+    try {
+      await call(client)
+      expect.fail(`expected ${name} to reject`)
+    } catch (e) {
+      threw = e
+    }
+    expect(isSnfError(threw)).toBe(true)
+    if (isSnfError(threw)) {
+      expect(threw.code).toBe('UNKNOWN')
+      expect(threw.message.endsWith('is not implemented yet')).toBe(true)
+    }
+    expect(publicClient.readContract).not.toHaveBeenCalled()
+    expect(publicClient.multicall).not.toHaveBeenCalled()
   })
 })

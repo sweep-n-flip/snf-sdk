@@ -200,6 +200,17 @@ function makeLoggingClient(tree: 'A' | 'B'): SnfClient {
     buildSwap: vi.fn(),
     parseReceipt: vi.fn(),
     describeError,
+    redemptionStatus: vi.fn(),
+    lpPosition: vi.fn(),
+    quoteAddLiquidity: vi.fn(),
+    quoteCreatePool: vi.fn(),
+    quoteRemoveLiquidity: vi.fn(),
+    buildAddLiquidity: vi.fn(),
+    buildCreatePool: vi.fn(),
+    buildRemoveLiquidity: vi.fn(),
+    buildSeed: vi.fn(),
+    seeding: vi.fn(),
+    attestation: vi.fn(),
   }
 }
 

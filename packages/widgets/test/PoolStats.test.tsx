@@ -106,6 +106,17 @@ function fakeClient(overrides: Partial<SnfClient> = {}): SnfClient {
       throw new Error('not used by this suite')
     },
     describeError,
+    redemptionStatus: () => Promise.reject(new Error('not used by this suite')),
+    lpPosition: () => Promise.reject(new Error('not used by this suite')),
+    quoteAddLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    quoteCreatePool: () => Promise.reject(new Error('not used by this suite')),
+    quoteRemoveLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    buildAddLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    buildCreatePool: () => Promise.reject(new Error('not used by this suite')),
+    buildRemoveLiquidity: () => Promise.reject(new Error('not used by this suite')),
+    buildSeed: () => Promise.reject(new Error('not used by this suite')),
+    seeding: () => Promise.reject(new Error('not used by this suite')),
+    attestation: () => Promise.reject(new Error('not used by this suite')),
     ...overrides,
   }
 }

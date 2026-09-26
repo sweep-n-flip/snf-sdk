@@ -7,9 +7,20 @@ import type { ReceiptLike, SwapReceipt } from '../receipt/receipt.types'
 import type { SubgraphTransport } from '../transport/subgraph.types'
 import type { CollectionInfo } from './collection.types'
 import type { PoolInventory } from './inventory.types'
+import type {
+  BuildAddLiquidityArgs,
+  BuildCreatePoolArgs,
+  BuildSeedArgs,
+  LpPosition,
+  QuoteAddLiquidityArgs,
+  QuoteCreatePoolArgs,
+  QuoteRemoveLiquidityArgs,
+  RedemptionStatus,
+} from './liquidity.types'
 import type { BuildArgs, ExecutionPlan } from './plan.types'
 import type { DataProviders } from './providers.types'
 import type { Quote, QuoteBuyArgs, QuoteNftToNftArgs, QuoteSellArgs, QuoteSwapArgs } from './quote.types'
+import type { SeedingAttestation, SeedingInfo } from './seeding.types'
 
 // Re-exported (not just imported) so `types/index.ts`'s `export type * from
 // './client.types'` still forwards `SubgraphTransport` from the package root — the
@@ -100,7 +111,7 @@ export interface SnfClientContext {
 
 /**
  * The object `createSnfClient` returns — the ENTIRE documented public surface.
- * Thirteen methods plus `chainId`/`chain`. Free functions may exist internally as
+ * Twenty-four methods plus `chainId`/`chain`. Free functions may exist internally as
  * this package's implementation, but a partner is only ever meant to call through this
  * object — `snf.quoteBuy(...)`, never a bare imported `quoteBuy(...)`.
  */
@@ -124,4 +135,34 @@ export interface SnfClient {
    * type, so any receipt-shaped object from any source works. */
   parseReceipt(receipt: ReceiptLike): SwapReceipt
   describeError(e: unknown): SnfError
+  /** A tri-state probe of whether the wrapper currently lets NFTs redeem out — see
+   * `RedemptionStatus`'s own doc comment for why this is never a plain boolean. */
+  redemptionStatus(collection: `0x${string}`): Promise<RedemptionStatus>
+  /** An LP holder's live position: balance, share of the pool, and its underlying
+   * base/wNFT/whole-NFT breakdown. */
+  lpPosition(pair: `0x${string}`, owner: `0x${string}`): Promise<LpPosition>
+  /** On-chain cost/output to deposit into an EXISTING pool, reconciled to the wei
+   * against the Router. */
+  quoteAddLiquidity(args: QuoteAddLiquidityArgs): Promise<Quote>
+  /** On-chain cost/output to create a NEW pool with the given deposit. */
+  quoteCreatePool(args: QuoteCreatePoolArgs): Promise<Quote>
+  /** On-chain output to withdraw liquidity, `nft` or `wnft` mode, reconciled to the
+   * wei against the Router. */
+  quoteRemoveLiquidity(args: QuoteRemoveLiquidityArgs): Promise<Quote>
+  /** Builds an unsigned deposit `ExecutionPlan` into an existing pool, bounds
+   * re-quoted on-chain. */
+  buildAddLiquidity(args: BuildAddLiquidityArgs): Promise<ExecutionPlan>
+  /** Builds an unsigned pool-creating deposit `ExecutionPlan`, with exact minimums —
+   * a zero/loose minimum on a pool-creating deposit is a same-block front-run window. */
+  buildCreatePool(args: BuildCreatePoolArgs): Promise<ExecutionPlan>
+  /** Builds an unsigned withdrawal `ExecutionPlan`; the LP approval step is emitted
+   * only when it is actually missing. */
+  buildRemoveLiquidity(args: BuildArgs): Promise<ExecutionPlan>
+  /** Builds an unsigned launch-seeding `ExecutionPlan` — entirely optional; a partner
+   * that never calls this can still seed a pool by any other means. */
+  buildSeed(args: BuildSeedArgs): Promise<ExecutionPlan>
+  /** A typed read of a collection's seeding status. */
+  seeding(collection: `0x${string}`): Promise<SeedingInfo>
+  /** A typed read of a collection's seeding attestation. */
+  attestation(collection: `0x${string}`): Promise<SeedingAttestation>
 }
