@@ -11,11 +11,14 @@
     "nonDeterministic": false,
     "note": "Base is the primary lane. Public RPC (no key). Margin: 100 blocks behind the observed head at capture time.",
     "fixtures": {
+      "factory": "0x611103410C8021B51725ab38Cc79C8F0feD715c6",
       "router02": "0x1312488a7BF5aAF2B2EeBE8393c9616A1418CF04",
       "pair": "0xE8143126bdFBe58ED0056f88031236766C311ECf",
       "wrapper": "0xA9f3F136380E53F8f55CaD44391bDa2B617D7C83",
       "collection": "0x7e50af303A0422ebec6bc198034A2430bBe0195c",
       "baseToken": "0x4200000000000000000000000000000000000006",
+      "usdc": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      "usdcNote": "Base native USDC (Circle) — an independent ERC-20 base used only by the liquidity fork lane (Task 1) to create/seed a second, ERC-20-base pool alongside the native ETH/DEMON one. Confirmed at the pinned block: Factory.getPair(wrapper, usdc) == 0x0 (no pool exists yet — a genuine create), and a real WETH/usdc delegate pool exists with deep reserves for funding.",
       "sampleTokenIds": [
         "246125",
         "246171",
