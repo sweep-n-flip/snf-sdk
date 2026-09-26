@@ -32,6 +32,18 @@ export const DEFAULT_SLIPPAGE_BPS = 100
  * (now + 20 minutes). */
 export const DEFAULT_DEADLINE_SECONDS = 1200
 
+/** Creating a pool or seeding one needs at least six NFTs, matching the reference
+ * production app's own rule — the contract itself would accept fewer; this is a
+ * deliberate product-level floor, not a protocol minimum. Adding to an ALREADY
+ * existing pool has no minimum beyond one. */
+export const MIN_NEW_POOL_NFTS = 6
+
+/** The ceiling on how many tokenIds a single `buildSeed` call may name — bounds both
+ * one seed step's calldata size and the one-block pre-flight's `ownerOf` batch. A
+ * launch larger than this calls `buildSeed` again for the next chunk; the SDK never
+ * silently splits a single call's ids across multiple transactions. */
+export const MAX_SEED_TOKEN_IDS = 500
+
 const MIN_SLIPPAGE_BPS = 0
 const MAX_SLIPPAGE_BPS = 10_000
 const DECIMAL_ONLY = /^[0-9]+$/
@@ -49,33 +61,80 @@ export interface ValidatedBuildArgs {
   readonly deadline: bigint
 }
 
-function validateRecipient(recipient: string): `0x${string}` {
+/** Options for `assertTokenIdList` — `field` names the caller's own array (e.g.
+ * `'tokenIds'`, `'quote.tokenIds'`) in both the thrown message and `details`, so a
+ * caller composing several id lists in one build never has to guess which one
+ * failed. */
+export interface AssertTokenIdListOptions {
+  readonly field: string
+  /** Inclusive lower bound — omitted means no minimum (an existing-pool add has
+   * none beyond the caller's own intent). */
+  readonly min?: number
+  /** Inclusive upper bound — omitted means no cap (never the SDK's default; a
+   * caller who wants `MAX_TOKEN_IDS`/`MAX_SEED_TOKEN_IDS` passes it explicitly). */
+  readonly max?: number
+}
+
+/**
+ * Validates a tokenIds array: `max`/`min` bounds (whichever is supplied), no
+ * duplicates, decimal-string-only entries. THROWS `INVALID_PARAMS` naming `field`,
+ * never clamps or dedupes — the caller's own generic building block for every
+ * `build*` and `buildSeed`-style tokenIds check in this package (the
+ * six-NFT creation floor and the 500-id seed ceiling are both just callers of this
+ * one function with different `min`/`max`).
+ */
+export function assertTokenIdList(tokenIds: readonly string[], opts: AssertTokenIdListOptions): readonly string[] {
+  const { field, min, max } = opts
+  if (max !== undefined) {
+    assertParam(tokenIds.length <= max, `${field} must have at most ${max} entries`, {
+      field,
+      max,
+      value: tokenIds.length,
+    })
+  }
+  if (min !== undefined) {
+    assertParam(tokenIds.length >= min, `${field} must have at least ${min} entries`, {
+      field,
+      min,
+      value: tokenIds.length,
+    })
+  }
+  assertParam(new Set(tokenIds).size === tokenIds.length, `${field} must not contain duplicates`, { field })
+  for (const id of tokenIds) {
+    assertParam(DECIMAL_ONLY.test(id), `${field} must be decimal strings, received "${id}"`, { field, value: id })
+  }
+  return tokenIds
+}
+
+/**
+ * Sorts a tokenIds array ascending by BIGINT value (never lexicographic string
+ * order, which would put `"100"` before `"9"`) — the seeding flow requires ids
+ * sorted this way before encoding. Never mutates its input.
+ */
+export function sortTokenIdsAscending(tokenIds: readonly string[]): readonly string[] {
+  return [...tokenIds].sort((a, b) => {
+    const diff = BigInt(a) - BigInt(b)
+    return diff < 0n ? -1 : diff > 0n ? 1 : 0
+  })
+}
+
+/**
+ * The checksum round-trip every well-formed-address check in this package uses:
+ * throws `INVALID_PARAMS` naming `field` on anything that isn't a well-formed
+ * 40-hex-char address, and returns the checksummed form on anything that is.
+ */
+export function assertAddress(value: string, field: string): `0x${string}` {
   try {
-    // `getAddress` is the checksum round-trip: it throws on anything that isn't a
-    // well-formed 40-hex-char address, and normalizes case on anything that is.
-    return getAddress(recipient)
+    return getAddress(value)
   } catch {
-    throw new SnfError('INVALID_PARAMS', 'recipient must be a well-formed 0x address', {
-      details: { field: 'recipient', value: recipient },
+    throw new SnfError('INVALID_PARAMS', `${field} must be a well-formed 0x address`, {
+      details: { field, value },
     })
   }
 }
 
 function validateTokenIds(tokenIds: readonly string[]): readonly string[] {
-  assertParam(tokenIds.length <= MAX_TOKEN_IDS, `tokenIds must have at most ${MAX_TOKEN_IDS} entries`, {
-    field: 'tokenIds',
-    value: tokenIds.length,
-  })
-  assertParam(new Set(tokenIds).size === tokenIds.length, 'tokenIds must not contain duplicates', {
-    field: 'tokenIds',
-  })
-  for (const id of tokenIds) {
-    assertParam(DECIMAL_ONLY.test(id), `tokenIds must be decimal strings, received "${id}"`, {
-      field: 'tokenIds',
-      value: id,
-    })
-  }
-  return tokenIds
+  return assertTokenIdList(tokenIds, { field: 'tokenIds', max: MAX_TOKEN_IDS })
 }
 
 function validateSlippageBps(slippageBps: number): number {
@@ -87,7 +146,20 @@ function validateSlippageBps(slippageBps: number): number {
   return slippageBps
 }
 
-function validateDeadline(deadlineSeconds: number, now: number): bigint {
+/**
+ * Defaults (per-call argument, then `config.defaults`, then the SDK constant) and
+ * validates a `deadline`: an integer unix timestamp, strictly in the future, at most
+ * `MAX_DEADLINE_SECONDS` from `now`. `now` (unix seconds) is threaded explicitly
+ * rather than read from `Date.now()` internally, so this stays pure and trivially
+ * testable at any literal boundary. Every `build*`/`buildSeed`-style deadline check
+ * in this package is a caller of this one function.
+ */
+export function resolveDeadline(
+  deadline: number | undefined,
+  now: number,
+  defaults?: { readonly deadlineSeconds?: number },
+): bigint {
+  const deadlineSeconds = deadline ?? now + (defaults?.deadlineSeconds ?? DEFAULT_DEADLINE_SECONDS)
   assertParam(Number.isInteger(deadlineSeconds), 'deadline must be an integer unix timestamp (seconds)', {
     field: 'deadline',
     value: deadlineSeconds,
@@ -116,15 +188,12 @@ export function validateBuildArgs(
   now: number,
   defaults?: SnfClientConfig['defaults'],
 ): ValidatedBuildArgs {
-  const recipient = validateRecipient(args.recipient)
+  const recipient = assertAddress(args.recipient, 'recipient')
   const tokenIds = validateTokenIds(args.quote.tokenIds ?? [])
   // Precedence: the per-call argument, then the client's `config.defaults`, then the
   // SDK constant. `defaults.deadlineSeconds` is a duration from now; `args.deadline`
   // is an absolute unix timestamp.
   const slippageBps = validateSlippageBps(args.slippageBps ?? defaults?.slippageBps ?? DEFAULT_SLIPPAGE_BPS)
-  const deadline = validateDeadline(
-    args.deadline ?? now + (defaults?.deadlineSeconds ?? DEFAULT_DEADLINE_SECONDS),
-    now,
-  )
+  const deadline = resolveDeadline(args.deadline, now, defaults)
   return { recipient, tokenIds, slippageBps, deadline }
 }

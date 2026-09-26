@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  assertAddress,
+  assertTokenIdList,
   DEFAULT_DEADLINE_SECONDS,
   DEFAULT_SLIPPAGE_BPS,
   MAX_DEADLINE_SECONDS,
+  MAX_SEED_TOKEN_IDS,
   MAX_TOKEN_IDS,
+  MIN_NEW_POOL_NFTS,
+  resolveDeadline,
+  sortTokenIdsAscending,
   validateBuildArgs,
 } from '../../src/build/validate'
 import { isSnfError, SnfError } from '../../src/errors'
@@ -131,6 +137,117 @@ describe('validateBuildArgs — deadline (boundary)', () => {
 
   it('rejects a deadline equal to now (not strictly in the future)', () => {
     expectInvalidParams(() => validateBuildArgs(buildArgs({ deadline: NOW }), NOW))
+  })
+})
+
+describe('MIN_NEW_POOL_NFTS / MAX_SEED_TOKEN_IDS constants', () => {
+  it('are the documented values', () => {
+    expect(MIN_NEW_POOL_NFTS).toBe(6)
+    expect(MAX_SEED_TOKEN_IDS).toBe(500)
+  })
+})
+
+describe('assertTokenIdList', () => {
+  it('passes a well-formed list under the cap', () => {
+    expect(assertTokenIdList(['1', '2'], { field: 'tokenIds', max: 50 })).toEqual(['1', '2'])
+  })
+
+  it('rejects a duplicate, naming field', () => {
+    expectInvalidParams(() => assertTokenIdList(['1', '1'], { field: 'tokenIds', max: 50 }))
+  })
+
+  it('rejects a non-decimal id, naming field', () => {
+    expectInvalidParams(() => assertTokenIdList(['0x1'], { field: 'tokenIds', max: 50 }))
+  })
+
+  it('rejects more than max, with max in details', () => {
+    const tokenIds = Array.from({ length: 51 }, (_, i) => String(i + 1))
+    try {
+      assertTokenIdList(tokenIds, { field: 'tokenIds', max: 50 })
+      expect.fail('expected assertTokenIdList to throw')
+    } catch (e) {
+      expect(isSnfError(e)).toBe(true)
+      if (!isSnfError(e)) throw e
+      expect(e.code).toBe('INVALID_PARAMS')
+      expect(e.details).toMatchObject({ field: 'tokenIds', max: 50 })
+    }
+  })
+
+  it('rejects fewer than min, with min in details', () => {
+    try {
+      assertTokenIdList(['1', '2'], { field: 'tokenIds', min: 6 })
+      expect.fail('expected assertTokenIdList to throw')
+    } catch (e) {
+      expect(isSnfError(e)).toBe(true)
+      if (!isSnfError(e)) throw e
+      expect(e.code).toBe('INVALID_PARAMS')
+      expect(e.details).toMatchObject({ field: 'tokenIds', min: 6 })
+    }
+  })
+
+  it('a different field name is reflected in both the message and details', () => {
+    try {
+      assertTokenIdList(['1', '1'], { field: 'quote.tokenIds' })
+      expect.fail('expected assertTokenIdList to throw')
+    } catch (e) {
+      expect(isSnfError(e)).toBe(true)
+      if (!isSnfError(e)) throw e
+      expect(e.message).toContain('quote.tokenIds')
+      expect(e.details).toMatchObject({ field: 'quote.tokenIds' })
+    }
+  })
+})
+
+describe('sortTokenIdsAscending', () => {
+  it('sorts by bigint value, not string/lexicographic order', () => {
+    expect(sortTokenIdsAscending(['10', '9', '100'])).toEqual(['9', '10', '100'])
+  })
+
+  it('does not mutate its input', () => {
+    const input = ['10', '9', '100']
+    const copy = [...input]
+    sortTokenIdsAscending(input)
+    expect(input).toEqual(copy)
+  })
+})
+
+describe('assertAddress', () => {
+  it('throws INVALID_PARAMS naming the given field on a malformed address', () => {
+    try {
+      assertAddress('0xabc', 'lpRecipient')
+      expect.fail('expected assertAddress to throw')
+    } catch (e) {
+      expect(isSnfError(e)).toBe(true)
+      if (!isSnfError(e)) throw e
+      expect(e.code).toBe('INVALID_PARAMS')
+      expect(e.details).toMatchObject({ field: 'lpRecipient' })
+    }
+  })
+
+  it('returns the checksummed form of a valid lowercase address', () => {
+    expect(assertAddress(RECIPIENT.toLowerCase(), 'lpRecipient').toLowerCase()).toBe(RECIPIENT.toLowerCase())
+  })
+})
+
+describe('resolveDeadline', () => {
+  it('defaults from config.defaults.deadlineSeconds when omitted', () => {
+    expect(resolveDeadline(undefined, NOW, { deadlineSeconds: 600 })).toBe(BigInt(NOW + 600))
+  })
+
+  it('defaults to DEFAULT_DEADLINE_SECONDS when no defaults are given', () => {
+    expect(resolveDeadline(undefined, NOW)).toBe(BigInt(NOW + DEFAULT_DEADLINE_SECONDS))
+  })
+
+  it('rejects a deadline in the past, exactly like validateBuildArgs', () => {
+    expectInvalidParams(() => resolveDeadline(NOW - 1, NOW))
+  })
+
+  it('rejects a deadline beyond now + MAX_DEADLINE_SECONDS, exactly like validateBuildArgs', () => {
+    expectInvalidParams(() => resolveDeadline(NOW + MAX_DEADLINE_SECONDS + 1, NOW))
+  })
+
+  it('accepts an explicit deadline that overrides the default', () => {
+    expect(resolveDeadline(NOW + 90, NOW, { deadlineSeconds: 600 })).toBe(BigInt(NOW + 90))
   })
 })
 
