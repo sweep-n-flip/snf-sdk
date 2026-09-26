@@ -11,7 +11,7 @@ import {
 } from '../../src/liquidity/liquidityMath'
 
 /**
- * Property tests for D-06 (ceil vs floor rounding on the ERC-20-base desired amount)
+ * Property tests for the ceil-vs-floor rounding rule on the ERC-20-base desired amount
  * and the exact-floor guarantee of `floorSqrt`. Both run at >= 2000 trials — the same
  * numeric trap the research verified empirically (2000/2000 reverts using the floor,
  * 0/2000 using the ceil) is re-proven here on every CI run, not trusted from a
@@ -23,7 +23,7 @@ const nArb = fc.integer({ min: 1, max: 50 })
 const rWnftArb = fc.bigInt({ min: 10n ** 18n, max: 10n ** 24n })
 const rBaseArb = fc.bigInt({ min: 1n, max: 10n ** 30n })
 
-describe('D-06: minErc20Desired is the ceil that never reverts, the floor reverts whenever it differs', () => {
+describe('minErc20Desired is the ceil that never reverts, the floor reverts whenever it differs', () => {
   it('requiredBase(n, rWnft, rBase) === routerQuote(n * ONE_WNFT, rWnft, rBase) for every input', () => {
     let runs = 0
     fc.assert(

@@ -49,7 +49,7 @@ describe('requiredBase', () => {
   })
 })
 
-describe('minErc20Desired — D-06 ceil rounding', () => {
+describe('minErc20Desired — ceil rounding', () => {
   it('rejects a non-positive reserveWnft', () => {
     expectInvalidParams(() => minErc20Desired(6, 0n, 10n))
   })
@@ -68,7 +68,7 @@ describe('minErc20Desired — D-06 ceil rounding', () => {
 })
 
 describe('addLiquidityAmounts — mirrors UniswapV2Router01._addLiquidity', () => {
-  it('D-05: both reserves zero returns the desired amounts untouched, mins never read', () => {
+  it('both reserves zero returns the desired amounts untouched, mins never read', () => {
     const result = addLiquidityAmounts({
       amountADesired: 100n,
       amountBDesired: 200n,

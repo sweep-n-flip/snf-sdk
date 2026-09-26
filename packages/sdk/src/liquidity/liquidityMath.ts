@@ -8,7 +8,7 @@ import { SnfError } from '../errors'
  *
  * Every function below names, in its own comment, the exact contract function it
  * mirrors and the rounding direction it reproduces. `test/liquidity/liquidityMath.
- * property.test.ts` proves the two rounding-direction claims (D-06) against random
+ * property.test.ts` proves the two rounding-direction claims against random
  * inputs rather than trusting a handful of examples.
  */
 
@@ -52,7 +52,7 @@ export function requiredBase(nftCount: number, reserveWnft: bigint, reserveBase:
 }
 
 /**
- * D-06: the ERC-20-base `amountADesired` an add/create/seed build must send —
+ * The ERC-20-base `amountADesired` an add/create/seed build must send —
  * `ceil(nftCount·1e18·reserveBase/reserveWnft)`, NOT `Router.quote`'s own floor
  * (`requiredBase`). Passing the floor as `amountADesired` reverts
  * `INSUFFICIENT_B_AMOUNT` in `_addLiquidity`'s branch 1 whenever the division isn't
@@ -83,7 +83,7 @@ export type AddLiquidityAmountsResult =
   | { readonly ok: false; readonly revert: 'INSUFFICIENT_A_AMOUNT' | 'INSUFFICIENT_B_AMOUNT' }
 
 /**
- * Mirrors `UniswapV2Router01._addLiquidity` exactly, branch for branch. D-05: when
+ * Mirrors `UniswapV2Router01._addLiquidity` exactly, branch for branch. When
  * both reserves are zero (the pair does not exist yet, or exists empty) the desired
  * amounts are returned UNTOUCHED and the minimums are NEVER read — this is the exact
  * contract behaviour that makes a zero/loose minimum on a pool-creating deposit a
@@ -155,7 +155,7 @@ export interface MintLiquidityArgs {
 
 /**
  * Mirrors `UniswapV2Pair.mint`'s liquidity computation (fee-off, i.e.
- * `Factory.feeTo() == 0` — the only case a liquidity quote is ever constructed for,
+ * `Factory.feeTo() == 0` — the only circumstance a liquidity quote is ever constructed under,
  * see `LiquidityQuoteDetails.feeToZero`). First deposit: `floorSqrt(amount0 *
  * amount1) - MINIMUM_LIQUIDITY` (the 1000-unit lock to `address(0)`). Subsequent
  * deposits: `min(amount0 * totalSupply / reserve0, amount1 * totalSupply /
