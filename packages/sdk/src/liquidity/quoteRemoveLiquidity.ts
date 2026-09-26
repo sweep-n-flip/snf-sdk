@@ -44,7 +44,7 @@ function assertExactlyOneAmountSelector(args: QuoteRemoveLiquidityArgs): void {
     reason: hasLiquidity && hasBps ? 'both-supplied' : 'neither-supplied',
   })
   if (hasBps) {
-    const bps = args.bps as number
+    const bps = args.bps
     assertParam(
       Number.isInteger(bps) && bps >= 1 && bps <= 10_000,
       'bps must be an integer between 1 and 10000',

@@ -8,30 +8,6 @@ import { isSnfError } from '../src/errors'
 import * as subgraphModule from '../src/transport/subgraph'
 import type { SnfClientConfig } from '../src/types/client.types'
 import type { SubgraphTransport } from '../src/transport/subgraph.types'
-import type { Amount } from '../src/types/amount.types'
-import type { Quote } from '../src/types/quote.types'
-
-function fakeAmount(value: bigint): Amount {
-  return { value, formatted: value.toString(), symbol: 'ETH', decimals: 18 }
-}
-
-function fakeQuote(): Quote {
-  return {
-    side: 'add-liquidity',
-    chainId: BASE_CHAIN_ID,
-    legs: [],
-    fees: {
-      pool: { bps: 0, note: 'no fee on liquidity' },
-      marketplace: { ...fakeAmount(0n), bps: 0 },
-      royalty: { ...fakeAmount(0n), bps: 0, capApplied: false },
-    },
-    priceImpact: 0,
-    deliverable: 1,
-    bestEffort: false,
-    expiresAt: new Date(Date.now() + 60_000).toISOString(),
-    reconciled: true,
-  }
-}
 
 /**
  * `createSnfClient` — this module's own acceptance test: two clients, two chains,
@@ -293,11 +269,11 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
 // `quoteAddLiquidity`/`quoteCreatePool`/`buildAddLiquidity`/`buildCreatePool` no longer
 // belong here either, for the identical reason — real implementations, real RPC calls,
 // covered by their own `test/liquidity/*` and `test/build/*` files.
-describe('createSnfClient — the remaining six liquidity/seeding stubs reject UNKNOWN, no RPC issued', () => {
+// `lpPosition`/`quoteRemoveLiquidity`/`buildRemoveLiquidity` are likewise real now —
+// covered by `test/liquidity/lpPosition.test.ts`, `test/liquidity/quoteRemoveLiquidity.test.ts`
+// and `test/build/buildRemoveLiquidity.test.ts`.
+describe('createSnfClient — the remaining three seeding stubs reject UNKNOWN, no RPC issued', () => {
   it.each([
-    ['lpPosition', (client: ReturnType<typeof createSnfClient>) => client.lpPosition('0x0000000000000000000000000000000000000001', '0x0000000000000000000000000000000000000002')],
-    ['quoteRemoveLiquidity', (client: ReturnType<typeof createSnfClient>) => client.quoteRemoveLiquidity({ pair: '0x0000000000000000000000000000000000000001', owner: '0x0000000000000000000000000000000000000002', liquidity: 1n, mode: 'wnft' })],
-    ['buildRemoveLiquidity', (client: ReturnType<typeof createSnfClient>) => client.buildRemoveLiquidity({ quote: fakeQuote(), recipient: '0x0000000000000000000000000000000000000001' })],
     ['buildSeed', (client: ReturnType<typeof createSnfClient>) => client.buildSeed({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'], pricePerNft: 1n, payer: '0x0000000000000000000000000000000000000002', lpRecipient: '0x0000000000000000000000000000000000000003' })],
     ['seeding', (client: ReturnType<typeof createSnfClient>) => client.seeding('0x0000000000000000000000000000000000000001')],
     ['attestation', (client: ReturnType<typeof createSnfClient>) => client.attestation('0x0000000000000000000000000000000000000001')],
