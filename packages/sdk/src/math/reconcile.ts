@@ -33,7 +33,7 @@ export interface ReconcileNetArgs {
 function reconciliationFailure(
   reconstructed: bigint,
   router: bigint,
-  extra: Record<string, bigint>,
+  extra: Record<string, bigint | string>,
 ): never {
   const deltaWei = reconstructed > router ? reconstructed - router : router - reconstructed
   throw new SnfError(
@@ -64,4 +64,27 @@ export function reconcileNet(args: ReconcileNetArgs): void {
   const reconstructed = pool - marketplace - royalty
   if (reconstructed === routerNet) return
   reconciliationFailure(reconstructed, routerNet, { pool, marketplace, royalty })
+}
+
+export interface ReconcileExactArgs {
+  /** Names the figure being reconciled in the thrown error's `details.label` — e.g.
+   * "add-liquidity base required", "remove-liquidity wnft out". */
+  readonly label: string
+  /** The SDK's own bigint-mirror reconstruction (`liquidityMath.ts`). */
+  readonly reconstructed: bigint
+  /** The Router's own on-chain answer for the same figure. */
+  readonly onChain: bigint
+}
+
+/**
+ * The liquidity-domain sibling of `reconcileGross`/`reconcileNet`: `===`-only,
+ * exactly two outcomes (equality, or throw `QUOTE_RECONCILIATION_FAILED`), same
+ * `reconciliationFailure` helper so this file's own no-tolerance discipline covers it
+ * too. `label` names the figure in `details`, so a mismatch across several liquidity
+ * figures reconciled in the same call is legible without guessing which one failed.
+ */
+export function reconcileExact(args: ReconcileExactArgs): void {
+  const { label, reconstructed, onChain } = args
+  if (reconstructed === onChain) return
+  reconciliationFailure(reconstructed, onChain, { label })
 }

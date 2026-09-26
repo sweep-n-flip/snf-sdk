@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import { isSnfError } from '../../src/errors'
-import { reconcileGross, reconcileNet } from '../../src/math/reconcile'
+import { reconcileExact, reconcileGross, reconcileNet } from '../../src/math/reconcile'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const SRC_DIR = resolve(HERE, '../../src')
@@ -70,6 +70,41 @@ describe('reconcileNet', () => {
 
   it('throws on a 1-wei divergence', () => {
     expect(() => reconcileNet({ pool: 108n, marketplace: 5n, royalty: 3n, routerNet: 101n })).toThrow()
+  })
+})
+
+describe('reconcileExact — the liquidity-domain sibling of reconcileGross/reconcileNet', () => {
+  it('returns void on an exact match', () => {
+    expect(reconcileExact({ label: 'add-liquidity base required', reconstructed: 42n, onChain: 42n })).toBeUndefined()
+  })
+
+  it('throws QUOTE_RECONCILIATION_FAILED on a 1-wei-ABOVE divergence', () => {
+    expect(() =>
+      reconcileExact({ label: 'add-liquidity base required', reconstructed: 43n, onChain: 42n }),
+    ).toThrow()
+  })
+
+  it('throws QUOTE_RECONCILIATION_FAILED on a 1-wei-BELOW divergence (never a one-sided tolerance)', () => {
+    expect(() =>
+      reconcileExact({ label: 'add-liquidity base required', reconstructed: 41n, onChain: 42n }),
+    ).toThrow()
+  })
+
+  it('the thrown SnfError carries label/reconstructed/router/deltaWei in details', () => {
+    try {
+      reconcileExact({ label: 'remove-liquidity wnft out', reconstructed: 100n, onChain: 97n })
+      expect.fail('expected reconcileExact to throw')
+    } catch (e) {
+      expect(isSnfError(e)).toBe(true)
+      if (!isSnfError(e)) throw e
+      expect(e.code).toBe('QUOTE_RECONCILIATION_FAILED')
+      expect(e.details).toEqual({
+        label: 'remove-liquidity wnft out',
+        reconstructed: 100n,
+        router: 97n,
+        deltaWei: 3n,
+      })
+    }
   })
 })
 
