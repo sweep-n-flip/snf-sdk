@@ -196,3 +196,39 @@ describe('buy-side slippage is classified as a price move, not a bad request', (
     expect(result.message).toContain('minimum output')
   })
 })
+
+describe('liquidity reverts are classified as a price move that needs a re-quote', () => {
+  it.each(['INSUFFICIENT_A_AMOUNT', 'INSUFFICIENT_B_AMOUNT', 'EXCESSIVE_A_AMOUNT', 'EXCESSIVE_B_AMOUNT'] as const)(
+    '%s -> INSUFFICIENT_OUTPUT_AMOUNT, details.revert names the exact string, with its own re-quote message',
+    (key) => {
+      const result = describeError(revertedError(`SweepnFlipRouter: ${key}`))
+      expect(result.code).toBe('INSUFFICIENT_OUTPUT_AMOUNT')
+      expect(result.details).toEqual({ revert: key })
+      expect(result.message).toContain('re-quote')
+    },
+  )
+
+  it('SweepnFlip: INSUFFICIENT_LIQUIDITY_BURNED -> INVALID_PARAMS, details.revert is the LONGER key, never the shorter INSUFFICIENT_LIQUIDITY', () => {
+    const result = describeError(revertedError('SweepnFlip: INSUFFICIENT_LIQUIDITY_BURNED'))
+    expect(result.code).toBe('INVALID_PARAMS')
+    expect(result.details?.revert).toBe('INSUFFICIENT_LIQUIDITY_BURNED')
+  })
+
+  it('SweepnFlip: INSUFFICIENT_LIQUIDITY_MINTED -> INVALID_PARAMS, details.revert is the LONGER key', () => {
+    const result = describeError(revertedError('SweepnFlip: INSUFFICIENT_LIQUIDITY_MINTED'))
+    expect(result.code).toBe('INVALID_PARAMS')
+    expect(result.details?.revert).toBe('INSUFFICIENT_LIQUIDITY_MINTED')
+  })
+
+  it('a dust burn that mints/burns zero LP (plain INSUFFICIENT_LIQUIDITY) still maps to INVALID_PARAMS unchanged', () => {
+    const result = describeError(revertedError('SweepnFlip: INSUFFICIENT_LIQUIDITY'))
+    expect(result.code).toBe('INVALID_PARAMS')
+    expect(result.details?.revert).toBe('INSUFFICIENT_LIQUIDITY')
+  })
+
+  it("TransferHelper::transferFrom: transferFrom failed -> INVALID_PARAMS", () => {
+    const result = describeError(new Error('TransferHelper::transferFrom: transferFrom failed'))
+    expect(result.code).toBe('INVALID_PARAMS')
+    expect(result.details?.revert).toBe('transferFrom failed')
+  })
+})

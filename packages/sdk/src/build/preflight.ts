@@ -2,6 +2,7 @@ import type { Abi } from 'viem'
 
 import { ERC20_ABI } from '../abis/ERC20'
 import { ERC721_ABI } from '../abis/ERC721'
+import { PAIR_ABI } from '../abis/UniswapV2Pair'
 import { WERC721_ABI } from '../abis/WERC721'
 import { SnfError } from '../errors'
 import type { SnfClientContext } from '../types/client.types'
@@ -23,7 +24,8 @@ import type { ExecutionPlan, PreflightResult, StepPreflightRefs } from '../types
  *
  * Failure precedence is fixed and documented, so the SAME broken state always
  * produces the SAME error: `WRONG_CHAIN` → `WRAPPER_UNVERIFIED` →
- * `TOKENIDS_UNAVAILABLE` → balance `INVALID_PARAMS`.
+ * `TOKENIDS_UNAVAILABLE` → native/ERC-20 balance → LP balance (a later addition) →
+ * whole-NFT count (a later addition).
  */
 
 interface Call {
@@ -38,6 +40,18 @@ interface OwnershipCheck {
   readonly tokenId: string
   readonly collection: `0x${string}`
   readonly expectedOwner: `0x${string}`
+}
+
+/** One `StepPreflightRefs.lpBurn`, resolved and validated against the ref's own
+ * `pair`/`wrapper` — a `lpBurn` can only ever be present on a step whose pair (and,
+ * for an `nft`-mode burn, whose wrapper) already exists, so a `null` there is an
+ * internal invariant violation, not a user-facing input error. */
+interface LpBurnCheck {
+  readonly payer: `0x${string}`
+  readonly pair: `0x${string}`
+  readonly wrapper: `0x${string}` | null
+  readonly amount: bigint
+  readonly nftCount: number | undefined
 }
 
 function collectRefs(plan: ExecutionPlan): readonly StepPreflightRefs[] {
@@ -58,7 +72,27 @@ function ownershipChecks(refs: readonly StepPreflightRefs[]): readonly Ownership
     // against `r.pair` here made every genuinely-available buy tokenId look
     // unavailable (Finding 1, fixed in) — confirmed
     // live against both the Base and Arc pools later's fork lanes.
-    for (const id of r.buyTokenIds ?? []) checks.push({ tokenId: id, collection: r.collection, expectedOwner: r.wrapper })
+    if (r.buyTokenIds && r.buyTokenIds.length > 0) {
+      if (r.wrapper === null) {
+        throw new SnfError('UNKNOWN', 'internal: a buy-side step cannot reference a null wrapper.')
+      }
+      for (const id of r.buyTokenIds) checks.push({ tokenId: id, collection: r.collection, expectedOwner: r.wrapper })
+    }
+  }
+  return checks
+}
+
+function lpBurnChecks(refs: readonly StepPreflightRefs[]): readonly LpBurnCheck[] {
+  const checks: LpBurnCheck[] = []
+  for (const r of refs) {
+    if (!r.lpBurn) continue
+    if (r.pair === null) {
+      throw new SnfError('UNKNOWN', 'internal: an lpBurn ref cannot reference a null pair.')
+    }
+    if (r.lpBurn.nftCount !== undefined && r.wrapper === null) {
+      throw new SnfError('UNKNOWN', 'internal: an nft-mode lpBurn ref cannot reference a null wrapper.')
+    }
+    checks.push({ payer: r.payer, pair: r.pair, wrapper: r.wrapper, amount: r.lpBurn.amount, nftCount: r.lpBurn.nftCount })
   }
   return checks
 }
@@ -124,12 +158,18 @@ export async function runPreflight(ctx: SnfClientContext, plan: ExecutionPlan): 
 
   const refs = collectRefs(plan)
   const payer = refs[0]?.payer
+  // A `null` wrapper means THIS deposit is what creates it — there is no on-chain
+  // identity to verify yet, so those refs are excluded from the identity check
+  // entirely rather than producing a doomed read.
   const wrappers = uniqueBy(
-    refs.map((r) => ({ wrapper: r.wrapper, collection: r.collection })),
+    refs
+      .filter((r): r is StepPreflightRefs & { wrapper: `0x${string}` } => r.wrapper !== null)
+      .map((r) => ({ wrapper: r.wrapper, collection: r.collection })),
     (w) => w.wrapper.toLowerCase(),
   )
   const ownership = ownershipChecks(refs)
   const erc20Base = refs.find((r) => r.erc20Base)?.erc20Base
+  const lpBurns = lpBurnChecks(refs)
 
   const blockNumber = await ctx.publicClient.getBlockNumber()
 
@@ -141,6 +181,16 @@ export async function runPreflight(ctx: SnfClientContext, plan: ExecutionPlan): 
     ...(erc20Base && payer
       ? [{ address: erc20Base, abi: ERC20_ABI, functionName: 'balanceOf', args: [payer] } satisfies Call]
       : []),
+    // Same multicall, same blockNumber as every other read here: an nft-mode burn's
+    // whole-NFT count and every balance check below must agree on the exact same
+    // on-chain snapshot.
+    ...lpBurns.flatMap((b): Call[] => [
+      { address: b.pair, abi: PAIR_ABI, functionName: 'balanceOf', args: [b.payer] },
+      { address: b.pair, abi: PAIR_ABI, functionName: 'totalSupply', args: [] },
+      ...(b.nftCount !== undefined && b.wrapper !== null
+        ? [{ address: b.wrapper, abi: WERC721_ABI, functionName: 'balanceOf', args: [b.pair] } satisfies Call]
+        : []),
+    ]),
   ]
 
   const [{ results, warnings }, nativeBalance] = await Promise.all([
@@ -154,6 +204,16 @@ export async function runPreflight(ctx: SnfClientContext, plan: ExecutionPlan): 
   const ownershipResults = results.slice(cursor, cursor + ownership.length)
   cursor += ownership.length
   const erc20Result = erc20Base && payer ? results[cursor] : undefined
+  if (erc20Base && payer) cursor += 1
+  const lpBurnResults = lpBurns.map((b) => {
+    const balanceOfResult = results[cursor]
+    cursor += 1
+    const totalSupplyResult = results[cursor]
+    cursor += 1
+    const wrapperBalanceResult = b.nftCount !== undefined && b.wrapper !== null ? results[cursor] : undefined
+    if (b.nftCount !== undefined && b.wrapper !== null) cursor += 1
+    return { burn: b, balanceOfResult, totalSupplyResult, wrapperBalanceResult }
+  })
 
   // 1) WRAPPER_UNVERIFIED — any wrapper whose collection() disagrees (or could not be read).
   for (let i = 0; i < wrappers.length; i += 1) {
@@ -200,10 +260,46 @@ export async function runPreflight(ctx: SnfClientContext, plan: ExecutionPlan): 
     }
   }
 
+  // 4) LP balance INVALID_PARAMS (a later addition) — the payer's live LP balance
+  // must cover every lpBurn this plan depends on.
+  for (const { burn, balanceOfResult } of lpBurnResults) {
+    const lpBalance = balanceOfResult?.status === 'success' ? (balanceOfResult.result as bigint) : 0n
+    if (lpBalance < burn.amount) {
+      throw new SnfError('INVALID_PARAMS', 'Insufficient LP balance to cover this withdrawal.', {
+        details: { field: 'liquidity', required: burn.amount, available: lpBalance },
+      })
+    }
+  }
+
+  // 5) whole-NFT count re-check (a later addition, `nft` mode only) —
+  // INSUFFICIENT_OUTPUT_AMOUNT: the exact id count an nft-mode redemption sends
+  // on-chain has to match precisely, and reserves can move between build and sign.
+  for (const { burn, totalSupplyResult, wrapperBalanceResult } of lpBurnResults) {
+    if (burn.nftCount === undefined) continue
+    const totalSupply = totalSupplyResult?.status === 'success' ? (totalSupplyResult.result as bigint) : 0n
+    const wrapperReserve = wrapperBalanceResult?.status === 'success' ? (wrapperBalanceResult.result as bigint) : 0n
+    const actualNftWhole = totalSupply > 0n ? Number((burn.amount * wrapperReserve) / totalSupply / 10n ** 18n) : 0
+    if (actualNftWhole !== burn.nftCount) {
+      throw new SnfError(
+        'INSUFFICIENT_OUTPUT_AMOUNT',
+        'The whole-NFT count this withdrawal would produce has changed since it was built — re-quote.',
+        { details: { reason: 'nft-count-changed', expected: burn.nftCount, actual: actualNftWhole } },
+      )
+    }
+  }
+
   return {
     ok: true,
     blockNumber,
-    checked: ['ownership', 'pool-holds', 'wrapper-identity', 'balance', 'chain'],
+    checked: [
+      'ownership',
+      'pool-holds',
+      'wrapper-identity',
+      'balance',
+      'chain',
+      ...(lpBurns.length > 0 ? ['lp-balance'] : []),
+      ...(lpBurns.some((b) => b.nftCount !== undefined) ? ['nft-count'] : []),
+    ],
     ...(warnings.length > 0 ? { warnings } : {}),
   }
 }

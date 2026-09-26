@@ -3,6 +3,7 @@ import type { Abi } from 'viem'
 
 import { ERC20_ABI } from '../abis/ERC20'
 import { ERC721_ABI } from '../abis/ERC721'
+import { PAIR_ABI } from '../abis/UniswapV2Pair'
 import type { SnfChainId } from '../chains/chains.types'
 import type { SnfClientContext } from '../types/client.types'
 import type { Approval, Bounds, Step } from '../types/plan.types'
@@ -12,9 +13,13 @@ import type { Quote } from '../types/quote.types'
  * `missingApprovals` — the on-chain approval pre-check every `build*` function runs
  * before assembling its swap step. Reads `isApprovedForAll`/
  * `allowance` in ONE multicall and returns ONLY what is actually absent — a wallet
- * that already granted the operator approval, or whose ERC-20 allowance already
+ * that already granted the operator approval, or whose ERC-20/LP allowance already
  * covers the required amount (`>=`, never `>`), gets no approval step for that leg:
- * the builder pre-checks allowances and only ever lists the missing ones.
+ * the builder pre-checks allowances and only ever lists the missing ones. `lp` (a
+ * later addition) reads the SAME `allowance`/`approve` shape as `erc20`, against the
+ * Pair contract instead of an ERC-20 base — combined with `erc721`/`erc20` the
+ * approvals are still returned in this fixed order (erc721, erc20, lp) from ONE
+ * multicall.
  *
  * A read that FAILS (the RPC drops the call, or the multicall entry comes back
  * `status: 'failure'`) is treated as MISSING, fail-safe: emitting an unnecessary
@@ -33,6 +38,14 @@ export interface MissingApprovalsArgs {
   /** The ERC-20 base token to check `allowance(owner, spender) >= amount` on, when
    * this build spends an ERC-20 (never checked for a native-base leg). */
   readonly erc20?: { readonly token: `0x${string}`; readonly amount: bigint }
+  /**
+   * A later addition: the Pair LP token to check `allowance(owner, spender) >=
+   * amount` on, for a remove-liquidity build. The Router pulls the LP being
+   * withdrawn with a plain `transferFrom`, so this is a plain `approve` — no permit
+   * variant exists for the collection-aware remove path, and this package never
+   * asks for one.
+   */
+  readonly lp?: { readonly token: `0x${string}`; readonly amount: bigint }
 }
 
 function erc721Note(): string {
@@ -41,6 +54,10 @@ function erc721Note(): string {
 
 function erc20Note(): string {
   return 'approve(router, amount) — raises the allowance to cover this swap'
+}
+
+function lpNote(): string {
+  return 'approve(router, amount) — the Router pulls the LP being withdrawn'
 }
 
 function encodeErc721Approval(chainId: SnfChainId, token: `0x${string}`, spender: `0x${string}`): Approval {
@@ -78,6 +95,21 @@ function encodeErc20Approval(
   }
 }
 
+function encodeLpApproval(chainId: SnfChainId, token: `0x${string}`, spender: `0x${string}`, amount: bigint): Approval {
+  return {
+    kind: 'lp-allowance',
+    token,
+    spender,
+    tx: {
+      to: token,
+      data: encodeFunctionData({ abi: PAIR_ABI, functionName: 'approve', args: [spender, amount] }),
+      value: 0n,
+      chainId,
+    },
+    note: lpNote(),
+  }
+}
+
 /** Loosely-typed multicall call/result shape — mirrors `quote/quoteContext.ts`'s
  * identical comment: a batch built from an optional prefix plus an optional tail
  * cannot be precisely position-typed by viem's own inference. */
@@ -93,8 +125,8 @@ export async function missingApprovals(
   ctx: SnfClientContext,
   args: MissingApprovalsArgs,
 ): Promise<readonly Approval[]> {
-  const { owner, spender, erc721, erc20 } = args
-  if (!erc721 && !erc20) return []
+  const { owner, spender, erc721, erc20, lp } = args
+  if (!erc721 && !erc20 && !lp) return []
 
   const contracts: Call[] = []
   if (erc721) {
@@ -102,6 +134,9 @@ export async function missingApprovals(
   }
   if (erc20) {
     contracts.push({ address: erc20.token, abi: ERC20_ABI, functionName: 'allowance', args: [owner, spender] })
+  }
+  if (lp) {
+    contracts.push({ address: lp.token, abi: PAIR_ABI, functionName: 'allowance', args: [owner, spender] })
   }
 
   const results: readonly CallResult[] = await ctx.publicClient.multicall({
@@ -125,6 +160,13 @@ export async function missingApprovals(
     const allowance = r?.status === 'success' ? (r.result as bigint) : undefined
     const sufficient = allowance !== undefined && allowance >= erc20.amount
     if (!sufficient) approvals.push(encodeErc20Approval(ctx.chain.chainId, erc20.token, spender, erc20.amount))
+  }
+  if (lp) {
+    const r = results[cursor]
+    cursor += 1
+    const allowance = r?.status === 'success' ? (r.result as bigint) : undefined
+    const sufficient = allowance !== undefined && allowance >= lp.amount
+    if (!sufficient) approvals.push(encodeLpApproval(ctx.chain.chainId, lp.token, spender, lp.amount))
   }
   return approvals
 }

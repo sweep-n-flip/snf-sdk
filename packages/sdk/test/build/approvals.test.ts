@@ -105,6 +105,52 @@ describe('missingApprovals', () => {
   })
 })
 
+const PAIR = '0x0000000000000000000000000000000000ba1a12' as `0x${string}`
+
+describe('missingApprovals — lp (LP allowance for a remove-liquidity build)', () => {
+  it('an LP allowance already >= amount yields no approval', async () => {
+    const ctx = buildCtx(async () => [{ status: 'success', result: 1_000n }])
+    const result = await missingApprovals(ctx, { owner: OWNER, spender: SPENDER, lp: { token: PAIR, amount: 1_000n } })
+    expect(result).toEqual([])
+  })
+
+  it('an LP allowance below amount yields exactly one lp-allowance Approval encoding Pair.approve(spender, amount)', async () => {
+    const ctx = buildCtx(async () => [{ status: 'success', result: 500n }])
+    const result = await missingApprovals(ctx, { owner: OWNER, spender: SPENDER, lp: { token: PAIR, amount: 1_000n } })
+    expect(result).toHaveLength(1)
+    const approval = result[0] as Approval
+    expect(approval.kind).toBe('lp-allowance')
+    expect(approval.token).toBe(PAIR)
+    expect(approval.spender).toBe(SPENDER)
+    expect(approval.tx.value).toBe(0n)
+    expect(approval.tx.to).toBe(PAIR)
+  })
+
+  it('an unreadable LP allowance is treated as missing (fail-safe)', async () => {
+    const ctx = buildCtx(async () => [{ status: 'failure' }])
+    const result = await missingApprovals(ctx, { owner: OWNER, spender: SPENDER, lp: { token: PAIR, amount: 1_000n } })
+    expect(result).toHaveLength(1)
+    expect(result[0]?.kind).toBe('lp-allowance')
+  })
+
+  it('combined with erc721 and erc20, the order is erc721, erc20, lp — still ONE multicall', async () => {
+    const ctx = buildCtx(async () => [
+      { status: 'success', result: false }, // isApprovedForAll
+      { status: 'success', result: 0n }, // erc20 allowance
+      { status: 'success', result: 0n }, // lp allowance
+    ])
+    const result = await missingApprovals(ctx, {
+      owner: OWNER,
+      spender: SPENDER,
+      erc721: { token: COLLECTION },
+      erc20: { token: BASE_TOKEN, amount: 1_000n },
+      lp: { token: PAIR, amount: 1_000n },
+    })
+    expect(result.map((a) => a.kind)).toEqual(['erc721-approval-for-all', 'erc20-allowance', 'lp-allowance'])
+    expect((ctx.publicClient.multicall as ReturnType<typeof vi.fn>)).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('buildApprovalStep', () => {
   function fixtureApproval(): Approval {
     return {

@@ -90,8 +90,11 @@ export interface StepPreflightRefs {
    * address `BuildArgs.recipient` named at build time. */
   readonly payer: `0x${string}`
   readonly collection: `0x${string}`
-  readonly wrapper: `0x${string}`
-  readonly pair: `0x${string}`
+  /** `null` (a later addition): this step's own deposit is what creates the wrapper —
+   * there is no wrapper identity to verify yet, so the check is skipped for this ref. */
+  readonly wrapper: `0x${string}` | null
+  /** `null` (a later addition): this step's own deposit is what creates the pair. */
+  readonly pair: `0x${string}` | null
   /** tokenIds this step SELLS — the payer must currently own every one. */
   readonly sellTokenIds?: readonly string[]
   /** tokenIds this step BUYS — the pair must currently hold every one. */
@@ -99,6 +102,15 @@ export interface StepPreflightRefs {
   /** The ERC-20 base token this step spends, when the base is not native — absent
    * for a native-base leg. */
   readonly erc20Base?: `0x${string}`
+  /**
+   * A later addition: a remove-liquidity step's LP burn. `amount` is checked against
+   * the payer's live LP balance. When `nftCount` is present (`nft` mode), the exact
+   * whole-NFT count this burn actually produces is re-derived at the signing block
+   * and must still equal it exactly — reserves can move between build and sign, and
+   * an nft-mode redemption's on-chain id count has to match precisely or the Router
+   * rejects it.
+   */
+  readonly lpBurn?: { readonly amount: bigint; readonly nftCount?: number }
 }
 
 /** One step of an `ExecutionPlan.steps[]` — approvals are always ordered before the

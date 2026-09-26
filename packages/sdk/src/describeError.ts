@@ -85,23 +85,53 @@ const RPC_AUTH_PATTERNS = ['Unauthorized', 'must authenticate', 'API key'] as co
 const CHAIN_MISMATCH_PATTERNS = ['chain mismatch', 'does not match the target chain'] as const
 
 /** Known Uniswap V2 / Router revert strings, matched by substring on the
- * `trim()`ed candidate. The two slippage reverts share their own code: a sell (or any
- * exact-input swap) fails `INSUFFICIENT_OUTPUT_AMOUNT` when it would receive less than
- * `amountOutMin`, and a buy (exact output) fails `EXCESSIVE_INPUT_AMOUNT` when it would
- * cost more than `amountInMax` / `msg.value` — both mean "the price moved past the
- * slippage tolerance; re-quote". Every other entry is a valid-but-unmet parameter -> `INVALID_PARAMS`
- * with `details.revert` naming which string matched (`revert.ts`'s `knownErrors`
- * table, reduced to this package's closed code union). */
+ * `trim()`ed candidate, IN ORDER — the first key that is a substring of the message
+ * wins, so a longer, more specific key must always be listed before a shorter key it
+ * itself contains (e.g. `INSUFFICIENT_LIQUIDITY_BURNED` before `INSUFFICIENT_LIQUIDITY`;
+ * without that ordering the shorter, wrong entry would match first and the messages
+ * would be indistinguishable). The two original slippage reverts share their own
+ * code: a sell (or any exact-input swap) fails `INSUFFICIENT_OUTPUT_AMOUNT` when it
+ * would receive less than `amountOutMin`, and a buy (exact output) fails
+ * `EXCESSIVE_INPUT_AMOUNT` when it would cost more than `amountInMax` / `msg.value` —
+ * both mean "the price moved past the slippage tolerance; re-quote". The four
+ * liquidity-side reverts (a later addition) mean the exact same thing for a
+ * deposit/withdrawal: `INSUFFICIENT_A_AMOUNT`/`INSUFFICIENT_B_AMOUNT` fire when the
+ * live ratio no longer meets the caller's minimum, `EXCESSIVE_A_AMOUNT`/
+ * `EXCESSIVE_B_AMOUNT` fire when an nft-mode remove's implied wNFT amount moved
+ * outside its tight band — all four share the same `INSUFFICIENT_OUTPUT_AMOUNT` code
+ * and their own re-quote message. `INSUFFICIENT_LIQUIDITY_BURNED`/`_MINTED` (a later
+ * addition) are a dust deposit/withdrawal that mints or burns zero LP — a valid-but-unmet
+ * parameter, not a price move. Every other entry is likewise a valid-but-unmet
+ * parameter -> `INVALID_PARAMS` with `details.revert` naming which string matched
+ * (`revert.ts`'s `knownErrors` table, reduced to this package's closed code union). */
 const REVERT_CODE_TABLE = [
+  ['INSUFFICIENT_LIQUIDITY_BURNED', 'INVALID_PARAMS'],
+  ['INSUFFICIENT_LIQUIDITY_MINTED', 'INVALID_PARAMS'],
   ['INSUFFICIENT_OUTPUT_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
   ['EXCESSIVE_INPUT_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
+  ['INSUFFICIENT_A_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
+  ['INSUFFICIENT_B_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
+  ['EXCESSIVE_A_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
+  ['EXCESSIVE_B_AMOUNT', 'INSUFFICIENT_OUTPUT_AMOUNT'],
   ['EXPIRED', 'INVALID_PARAMS'],
   ['INSUFFICIENT_INPUT_AMOUNT', 'INVALID_PARAMS'],
   ['UniswapV2: K', 'INVALID_PARAMS'],
   ['TRANSFER_FAILED', 'INVALID_PARAMS'],
+  ['transferFrom failed', 'INVALID_PARAMS'],
   ['INSUFFICIENT_LIQUIDITY', 'INVALID_PARAMS'],
   ['INVALID_PATH', 'INVALID_PARAMS'],
 ] as const satisfies readonly (readonly [string, SnfErrorCode])[]
+
+/** The four liquidity-side price-moved reverts (a later addition) get their own
+ * message, distinct from the two original swap-side ones — a deposit/withdrawal has
+ * no "input"/"output" in the swap sense, so re-using either existing sentence would
+ * misdescribe what actually happened. */
+const LIQUIDITY_PRICE_MOVED_KEYS = new Set([
+  'INSUFFICIENT_A_AMOUNT',
+  'INSUFFICIENT_B_AMOUNT',
+  'EXCESSIVE_A_AMOUNT',
+  'EXCESSIVE_B_AMOUNT',
+])
 
 function extractMessage(e: unknown): string {
   if (e instanceof Error) return e.message
@@ -169,8 +199,9 @@ function matchRevertCode(text: string): { readonly key: string; readonly code: S
 
 function revertError(match: { readonly key: string; readonly code: SnfErrorCode }, cause: unknown): SnfError {
   if (match.code === 'INSUFFICIENT_OUTPUT_AMOUNT') {
-    const message =
-      match.key === 'EXCESSIVE_INPUT_AMOUNT'
+    const message = LIQUIDITY_PRICE_MOVED_KEYS.has(match.key)
+      ? 'The liquidity change would settle outside its bounds — the price moved; re-quote.'
+      : match.key === 'EXCESSIVE_INPUT_AMOUNT'
         ? 'The swap would cost more than its maximum input bound — the price moved.'
         : 'The swap would execute below its minimum output bound.'
     return new SnfError('INSUFFICIENT_OUTPUT_AMOUNT', message, {

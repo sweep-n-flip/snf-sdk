@@ -23,6 +23,13 @@ interface Answers {
   readonly wrapperCollection?: Record<string, string | undefined>
   readonly owners?: Record<string, string | undefined>
   readonly erc20Balance?: bigint
+  /** Keyed by contract address (lowercased) — the LP `Pair.balanceOf(payer)` read. */
+  readonly lpBalance?: Record<string, bigint | undefined>
+  /** Keyed by contract address (lowercased) — the LP `Pair.totalSupply()` read. */
+  readonly lpTotalSupply?: Record<string, bigint | undefined>
+  /** Keyed by contract address (lowercased) — the wrapper's `balanceOf(pair)` read
+   * (nft-mode whole-count re-check). */
+  readonly wrapperBalance?: Record<string, bigint | undefined>
 }
 
 function buildMulticall(answers: Answers, calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[]) {
@@ -39,7 +46,19 @@ function buildMulticall(answers: Answers, calls: { readonly contracts: readonly 
           const result = answers.owners?.[id]
           return result !== undefined ? { status: 'success', result } : { status: 'failure' }
         }
+        if (c.functionName === 'totalSupply') {
+          const result = answers.lpTotalSupply?.[c.address.toLowerCase()]
+          return result !== undefined ? { status: 'success', result } : { status: 'failure' }
+        }
         if (c.functionName === 'balanceOf') {
+          // The Pair LP-balance read and the wrapper reserve read both use
+          // `balanceOf`, disambiguated by which address answered which map — the
+          // ERC-20 base-balance fixture is kept as the pre-existing fallback so every
+          // ownership/balance test above this block keeps working unmodified.
+          const lp = answers.lpBalance?.[c.address.toLowerCase()]
+          if (lp !== undefined) return { status: 'success', result: lp }
+          const wrapperReserve = answers.wrapperBalance?.[c.address.toLowerCase()]
+          if (wrapperReserve !== undefined) return { status: 'success', result: wrapperReserve }
           return answers.erc20Balance !== undefined ? { status: 'success', result: answers.erc20Balance } : { status: 'failure' }
         }
         return { status: 'failure' }
@@ -132,6 +151,13 @@ function buyRefs(overrides: Partial<StepPreflightRefs> = {}): StepPreflightRefs 
 
 function sellRefs(overrides: Partial<StepPreflightRefs> = {}): StepPreflightRefs {
   return { payer: PAYER, collection: COLLECTION, wrapper: WRAPPER, pair: PAIR, sellTokenIds: ['7'], ...overrides }
+}
+
+function removeRefs(
+  lpBurn: NonNullable<StepPreflightRefs['lpBurn']>,
+  overrides: Partial<StepPreflightRefs> = {},
+): StepPreflightRefs {
+  return { payer: PAYER, collection: COLLECTION, wrapper: WRAPPER, pair: PAIR, lpBurn, ...overrides }
 }
 
 describe('runPreflight — one Multicall3, one block (concurrency)', () => {
@@ -442,5 +468,127 @@ describe('runPreflight — never emits a step, never signs', () => {
     expect(result).not.toHaveProperty('tx')
     expect(result).not.toHaveProperty('step')
     expect(result.ok).toBe(true)
+  })
+})
+
+describe('runPreflight — nullable wrapper/pair (a deposit that creates the wrapper/pair)', () => {
+  it('a step whose wrapper is null skips the wrapper-identity check entirely: no collection() read, no WRAPPER_UNVERIFIED', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({ answers: { owners: { '1': PAYER } }, calls })
+    const refs: StepPreflightRefs = {
+      payer: PAYER,
+      collection: COLLECTION,
+      wrapper: null,
+      pair: null,
+      sellTokenIds: ['1'],
+    }
+    const plan = buildPlan([buildStep({ refs })])
+    const result = await runPreflight(ctx, plan)
+    expect(result.ok).toBe(true)
+    expect(calls[0]?.contracts.some((c) => c.functionName === 'collection')).toBe(false)
+  })
+})
+
+describe("runPreflight — lpBurn (a remove-liquidity step's LP balance + nft-mode whole-count re-check)", () => {
+  it('payer LP balance below amount yields INVALID_PARAMS with details.field "liquidity"', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, lpBalance: { [PAIR.toLowerCase()]: 500n } },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: removeRefs({ amount: 1_000n }) })])
+    let threw: unknown
+    try {
+      await runPreflight(ctx, plan)
+    } catch (e) {
+      threw = e
+    }
+    expect(isSnfError(threw)).toBe(true)
+    expect((threw as SnfError).code).toBe('INVALID_PARAMS')
+    expect((threw as SnfError).details?.field).toBe('liquidity')
+    expect((threw as SnfError).details?.required).toBe(1_000n)
+    expect((threw as SnfError).details?.available).toBe(500n)
+  })
+
+  it('a sufficient LP balance passes and "lp-balance" is in checked', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, lpBalance: { [PAIR.toLowerCase()]: 1_000n } },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: removeRefs({ amount: 1_000n }) })])
+    const result = await runPreflight(ctx, plan)
+    expect(result.ok).toBe(true)
+    expect(result.checked).toContain('lp-balance')
+  })
+
+  it('an nft-mode lpBurn whose whole-NFT count moved yields INSUFFICIENT_OUTPUT_AMOUNT (nft-count-changed)', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: {
+        wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION },
+        lpBalance: { [PAIR.toLowerCase()]: 3_000000000000000000n },
+        lpTotalSupply: { [PAIR.toLowerCase()]: 10_000000000000000000n },
+        wrapperBalance: { [WRAPPER.toLowerCase()]: 10_000000000000000000n },
+      },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: removeRefs({ amount: 3_000000000000000000n, nftCount: 4 }) })])
+    let threw: unknown
+    try {
+      await runPreflight(ctx, plan)
+    } catch (e) {
+      threw = e
+    }
+    expect(isSnfError(threw)).toBe(true)
+    expect((threw as SnfError).code).toBe('INSUFFICIENT_OUTPUT_AMOUNT')
+    expect((threw as SnfError).details?.reason).toBe('nft-count-changed')
+    expect((threw as SnfError).details?.expected).toBe(4)
+    expect((threw as SnfError).details?.actual).toBe(3)
+  })
+
+  it('a matching nft-mode whole-NFT count passes and "nft-count" is in checked', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: {
+        wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION },
+        lpBalance: { [PAIR.toLowerCase()]: 3_000000000000000000n },
+        lpTotalSupply: { [PAIR.toLowerCase()]: 10_000000000000000000n },
+        wrapperBalance: { [WRAPPER.toLowerCase()]: 10_000000000000000000n },
+      },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: removeRefs({ amount: 3_000000000000000000n, nftCount: 3 }) })])
+    const result = await runPreflight(ctx, plan)
+    expect(result.ok).toBe(true)
+    expect(result.checked).toContain('lp-balance')
+    expect(result.checked).toContain('nft-count')
+  })
+
+  it('every lpBurn read lands in the SAME single multicall, at the same blockNumber, as every other check', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: {
+        wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION },
+        lpBalance: { [PAIR.toLowerCase()]: 3_000000000000000000n },
+        lpTotalSupply: { [PAIR.toLowerCase()]: 10_000000000000000000n },
+        wrapperBalance: { [WRAPPER.toLowerCase()]: 10_000000000000000000n },
+      },
+      calls,
+    })
+    const plan = buildPlan([buildStep({ refs: removeRefs({ amount: 3_000000000000000000n, nftCount: 3 }) })])
+    await runPreflight(ctx, plan)
+    expect(calls).toHaveLength(1)
+    expect(calls[0]?.blockNumber).toBe(BLOCK)
+  })
+
+  it('a plan without any lpBurn produces exactly the same checked array as before (regression)', async () => {
+    const calls: { readonly contracts: readonly Call[]; readonly blockNumber: bigint }[] = []
+    const ctx = buildCtx({
+      answers: { wrapperCollection: { [WRAPPER.toLowerCase()]: COLLECTION }, owners: { '1': WRAPPER, '2': WRAPPER } },
+      calls,
+    })
+    const result = await runPreflight(ctx, buildPlan([buildStep({ refs: buyRefs() })]))
+    expect(result.checked).toEqual(['ownership', 'pool-holds', 'wrapper-identity', 'balance', 'chain'])
   })
 })
