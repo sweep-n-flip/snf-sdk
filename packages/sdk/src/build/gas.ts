@@ -34,6 +34,31 @@ export function isSimulationRevertError(error: unknown): boolean {
   return error.walk((e) => e instanceof ContractFunctionRevertedError) !== null
 }
 
+/**
+ * A first-time create deposits into a Router that has to deploy the pair — and, if
+ * this is the collection's first pool at all, the wrapper too — inline in the same
+ * transaction. Fork-measured on Base: `Factory.createPair` (discrete) ~2,029,281 gas,
+ * `Factory.createWrapper` ~992,647 gas; rounded up here. Plain per-NFT gas alone
+ * badly under-provisions this case.
+ */
+export const PAIR_CREATION_GAS = 2_100_000n
+export const WRAPPER_CREATION_GAS = 1_000_000n
+
+export interface CreationOverheadGasArgs {
+  readonly createsPair: boolean
+  readonly createsWrapper: boolean
+}
+
+/** The extra gas a deposit needs on top of `fallbackGasForNFTBatch` when this SAME
+ * transaction is also what creates the pair and/or the wrapper — `0n` for a plain
+ * add into an already-existing pool. */
+export function creationOverheadGas(args: CreationOverheadGasArgs): bigint {
+  let overhead = 0n
+  if (args.createsPair) overhead += PAIR_CREATION_GAS
+  if (args.createsWrapper) overhead += WRAPPER_CREATION_GAS
+  return overhead
+}
+
 export interface EstimateGasWithBufferArgs {
   readonly publicClient: SnfPublicClient
   readonly address: Address
@@ -43,6 +68,13 @@ export interface EstimateGasWithBufferArgs {
   readonly account: Address
   readonly value?: bigint
   readonly tokenCount: number
+  /**
+   * A later addition: added to the deterministic NFT-batch fallback ONLY — never to
+   * a live estimate. A liquidity deposit whose OWN transaction creates the pair
+   * and/or wrapper needs this on top of the plain per-NFT fallback; every other
+   * caller omits it (defaults to `0n`) and behaves exactly as before.
+   */
+  readonly extraFallbackGas?: bigint
 }
 
 /**
@@ -72,7 +104,7 @@ export async function estimateGasWithBuffer(args: EstimateGasWithBufferArgs): Pr
     return (estimated * 125n) / 100n
   } catch (e) {
     if (isSimulationRevertError(e)) throw e
-    return fallbackGasForNFTBatch(args.tokenCount)
+    return fallbackGasForNFTBatch(args.tokenCount) + (args.extraFallbackGas ?? 0n)
   }
 }
 
@@ -82,8 +114,11 @@ export interface ResolvedStepGas {
    * step's own live simulation was never attempted (see `resolveGasForStep` below) —
    * additive, absent for every other step (a live estimate, or an RPC-failure
    * fallback with no approval blocking it), so existing `Step`/`UnsignedTx` shapes
-   * are unaffected. */
-  readonly gasSource?: 'fallback-pending-approval'
+   * are unaffected. `'fallback-pending-step'` (a later addition): this step depends
+   * on an EARLIER, still-unconfirmed step of the SAME plan rather than on its own
+   * pending approval — a multi-step liquidity plan (e.g. a seed split across several
+   * add steps) needs to tell the two reasons apart. */
+  readonly gasSource?: 'fallback-pending-approval' | 'fallback-pending-step'
 }
 
 /**
@@ -106,10 +141,17 @@ export interface ResolvedStepGas {
  * expired deadline, …) still propagates, exactly as before.
  */
 export async function resolveGasForStep(
-  args: EstimateGasWithBufferArgs & { readonly hasPendingApproval: boolean },
+  args: EstimateGasWithBufferArgs & {
+    readonly hasPendingApproval: boolean
+    /** A later addition: this step depends on an EARLIER, still-unconfirmed step of
+     * the same plan (rather than on its own pending approval) — same fallback
+     * behaviour, distinct `gasSource` label. */
+    readonly dependsOnPriorStep?: boolean
+  },
 ): Promise<ResolvedStepGas> {
-  if (args.hasPendingApproval) {
-    return { gas: fallbackGasForNFTBatch(args.tokenCount), gasSource: 'fallback-pending-approval' }
+  if (args.hasPendingApproval || args.dependsOnPriorStep) {
+    const gas = fallbackGasForNFTBatch(args.tokenCount) + (args.extraFallbackGas ?? 0n)
+    return { gas, gasSource: args.dependsOnPriorStep ? 'fallback-pending-step' : 'fallback-pending-approval' }
   }
   return { gas: await estimateGasWithBuffer(args) }
 }
