@@ -52,12 +52,17 @@ export function requiredBase(nftCount: number, reserveWnft: bigint, reserveBase:
 }
 
 /**
- * The ERC-20-base `amountADesired` an add/create/seed build must send —
- * `ceil(nftCount·1e18·reserveBase/reserveWnft)`, NOT `Router.quote`'s own floor
- * (`requiredBase`). Passing the floor as `amountADesired` reverts
- * `INSUFFICIENT_B_AMOUNT` in `_addLiquidity`'s branch 1 whenever the division isn't
- * exact — proven by `liquidityMath.property.test.ts`. The ERC-20 approval a build
- * grants must cover this ceil amount (plus slippage), never the floor.
+ * The ERC-20-base `amountADesired` an add/seed into a priced pool must send:
+ * `ceil((nftCount·1e18 + 1)·reserveBase/reserveWnft)`. Two traps sit on either side:
+ * - the floor (`requiredBase`, `Router.quote`) reverts `INSUFFICIENT_B_AMOUNT` in
+ *   `_addLiquidity`'s first branch whenever the division is not exact;
+ * - the plain ceil lands in that same first branch whenever the rounded-back wNFT
+ *   amount equals the deposit exactly, and then the Router pulls the CEIL — one wei
+ *   more than `requiredBase`, which every quote, reconciliation and seed model uses.
+ * The `+ 1` pushes the rounded-back wNFT amount strictly above the deposit, so the
+ * Router always takes its second branch and pulls exactly `requiredBase`. The extra
+ * is only the approved ceiling, never charged. The approval must cover this amount
+ * (plus slippage). Proven by `liquidityMath.property.test.ts`.
  */
 export function minErc20Desired(nftCount: number, reserveWnft: bigint, reserveBase: bigint): bigint {
   if (reserveWnft <= 0n) {
@@ -65,7 +70,7 @@ export function minErc20Desired(nftCount: number, reserveWnft: bigint, reserveBa
       details: { field: 'reserveWnft', value: reserveWnft },
     })
   }
-  const numerator = BigInt(nftCount) * ONE_WNFT * reserveBase
+  const numerator = (BigInt(nftCount) * ONE_WNFT + 1n) * reserveBase
   return (numerator + reserveWnft - 1n) / reserveWnft
 }
 

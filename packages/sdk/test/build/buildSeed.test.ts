@@ -188,7 +188,8 @@ describe("buildSeed — ERC-20 base: one approval covering the sum of every step
     const erc20Approval = approvalSteps.find((s) => s.approvals[0]?.kind === 'erc20-allowance')!
     const decodedApproval = decodeFunctionData({ abi: ERC20_ABI, data: erc20Approval.tx.data })
     expect(decodedApproval.functionName).toBe('approve')
-    expect(decodedApproval.args[1]).toBe(60n * pricePerNft) // sum of both steps' own desired amount
+    // sum of both steps' own desired amount: 50P, plus 10P + 1 for the second chunk
+    expect(decodedApproval.args[1]).toBe(60n * pricePerNft + 1n)
 
     const [step1, step2] = depositSteps
     const decoded1 = decodeFunctionData({ abi: ROUTER02_COLLECTION_ABI, data: step1!.tx.data })
@@ -197,7 +198,9 @@ describe("buildSeed — ERC-20 base: one approval covering the sum of every step
     // [baseToken, collection, desired, tokenIds, min, to, deadline]
     expect(decoded1.args[2]).toBe(50n * pricePerNft) // amountADesired
     expect(decoded1.args[4]).toBe(50n * pricePerNft) // amountAMin — exact, same as desired
-    expect(decoded2.args[2]).toBe(10n * pricePerNft)
+    // desired = ceil((10e18 + 1) * 50P / 50e18): one wei above the minimum, so the Router
+    // takes its exact branch and pulls the minimum itself
+    expect(decoded2.args[2]).toBe(10n * pricePerNft + 1n)
     expect(decoded2.args[4]).toBe(10n * pricePerNft)
     expect(step1!.quote.side).toBe('create-pool')
     expect(step2!.quote.side).toBe('add-liquidity')

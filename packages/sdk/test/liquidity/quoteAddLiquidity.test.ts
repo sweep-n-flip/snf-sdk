@@ -107,7 +107,7 @@ describe('quoteAddLiquidity — ERC-20 base: desired is the ceil, never the Rout
     expect(ceil).toBeGreaterThan(floor)
   })
 
-  it('baseDesired equals baseRequired exactly when the division has no remainder', async () => {
+  it('baseDesired sits just above baseRequired even on an exact division, so the Router pulls exactly baseRequired', async () => {
     const reserves = { base: 4_000_000_000_000_000_000n, wnft: 2_000_000_000_000_000_000n } // exact 2:1
     const env = buildLiquidityEnv({
       collection: COLLECTION,
@@ -117,7 +117,10 @@ describe('quoteAddLiquidity — ERC-20 base: desired is the ceil, never the Rout
       reserves,
     })
     const quote = await quoteAddLiquidity(env.ctx, { collection: COLLECTION, tokenIds: ['1'], baseToken: BASE_ERC20 })
-    expect(quote.liquidity?.baseDesired?.value).toBe(quote.liquidity?.baseRequired?.value)
+    const required = quote.liquidity?.baseRequired?.value as bigint
+    const desired = quote.liquidity?.baseDesired?.value as bigint
+    expect(required).toBe(2_000_000_000_000_000_000n)
+    expect(desired).toBe(2_000_000_000_000_000_002n) // ceil((1e18 + 1) * 2)
   })
 
   it('has no baseDesired at all on a native-base deposit', async () => {

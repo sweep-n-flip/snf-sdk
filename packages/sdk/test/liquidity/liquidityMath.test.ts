@@ -54,16 +54,31 @@ describe('minErc20Desired — ceil rounding', () => {
     expectInvalidParams(() => minErc20Desired(6, 0n, 10n))
   })
 
-  it('is the ceil of the same division requiredBase floors', () => {
+  it('is ceil((n*1e18 + 1)*rBase/rWnft), never below the floor', () => {
     const rWnft = 7n
     const rBase = 10n
     const n = 3
     const floor = requiredBase(n, rWnft, rBase)
-    const ceil = minErc20Desired(n, rWnft, rBase)
-    expect(ceil).toBeGreaterThanOrEqual(floor)
-    expect(ceil - floor).toBeLessThanOrEqual(1n)
-    // Exact division (rWnft divides n*ONE_WNFT*rBase) makes floor === ceil.
-    expect((BigInt(n) * ONE_WNFT * rBase) % rWnft === 0n ? ceil === floor : ceil === floor + 1n).toBe(true)
+    const desired = minErc20Desired(n, rWnft, rBase)
+    expect(desired).toBe(((BigInt(n) * ONE_WNFT + 1n) * rBase + rWnft - 1n) / rWnft)
+    expect(desired).toBeGreaterThanOrEqual(floor)
+  })
+
+  it('the pool priced above 1 token per NFT that used to settle 1 wei high now settles at requiredBase', () => {
+    // rBase = 30e18 + 7, rWnft = 10e18, one NFT: the plain ceil (3e18 + 1) sent the
+    // Router down its first branch, which pulls the desired amount itself.
+    const rWnft = 10n * ONE_WNFT
+    const rBase = 30n * ONE_WNFT + 7n
+    const required = requiredBase(1, rWnft, rBase)
+    const result = addLiquidityAmounts({
+      amountADesired: minErc20Desired(1, rWnft, rBase),
+      amountBDesired: ONE_WNFT,
+      amountAMin: required,
+      amountBMin: ONE_WNFT,
+      reserveA: rBase,
+      reserveB: rWnft,
+    })
+    expect(result).toEqual({ ok: true, amountA: required, amountB: ONE_WNFT })
   })
 })
 

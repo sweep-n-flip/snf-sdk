@@ -65,6 +65,37 @@ describe('minErc20Desired is the ceil that never reverts, the floor reverts when
     expect(runs).toBeGreaterThanOrEqual(2000)
   })
 
+  // The property every quote, reconciliation and seed walk relies on: with the
+  // desired amount this module computes, the Router settles at EXACTLY requiredBase
+  // (never one wei more), so an exact minimum equal to requiredBase never reverts.
+  it('with minErc20Desired as amountADesired the Router pulls exactly requiredBase, exact minimums included', () => {
+    let runs = 0
+    let priced = 0
+    fc.assert(
+      fc.property(nArb, rWnftArb, rBaseArb, (n, rWnft, rBase) => {
+        runs++
+        const wnftDesired = BigInt(n) * ONE_WNFT
+        const required = requiredBase(n, rWnft, rBase)
+        if (required === 0n) return true // degenerate ratio; the Router rejects a zero amount first
+        if (rBase >= rWnft) priced++
+        const result = addLiquidityAmounts({
+          amountADesired: minErc20Desired(n, rWnft, rBase),
+          amountBDesired: wnftDesired,
+          amountAMin: required,
+          amountBMin: wnftDesired,
+          reserveA: rBase,
+          reserveB: rWnft,
+        })
+        return result.ok === true && result.amountA === required && result.amountB === wnftDesired
+      }),
+      { numRuns: 2000, seed: FIXED_SEED },
+    )
+    expect(runs).toBeGreaterThanOrEqual(2000)
+    // The previously failing region (a pool priced at or above 1 token per NFT) must
+    // actually be exercised, so this cannot pass vacuously.
+    expect(priced).toBeGreaterThan(200)
+  })
+
   it('feeding the floor (Router.quote) as amountADesired reverts INSUFFICIENT_B_AMOUNT whenever floor !== ceil', () => {
     let runs = 0
     let divergent = 0
@@ -73,7 +104,7 @@ describe('minErc20Desired is the ceil that never reverts, the floor reverts when
         runs++
         const wnftDesired = BigInt(n) * ONE_WNFT
         const floor = requiredBase(n, rWnft, rBase)
-        const ceil = minErc20Desired(n, rWnft, rBase)
+        const ceil = (BigInt(n) * ONE_WNFT * rBase + rWnft - 1n) / rWnft // the plain ceil
         if (floor === ceil) return true // exact division — no rounding trap to trigger
         // floor === 0n is a degenerate reserve ratio (reserveBase negligible next to
         // reserveWnft) where `amountADesired` itself would be 0 — the Router's own

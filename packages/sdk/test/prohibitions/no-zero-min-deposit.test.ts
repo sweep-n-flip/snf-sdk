@@ -97,7 +97,7 @@ describe('no-zero-min-deposit — real buildSeed plans, every chunk', () => {
     }
   })
 
-  it('empty pool, 120 ids, ERC-20 base: every deposit step decodes min === desired, never 0n', async () => {
+  it('empty pool, 120 ids, ERC-20 base: every deposit step decodes a minimum equal to what the Router pulls, never 0n', async () => {
     const env = buildLiquidityEnv({
       collection: COLLECTION,
       wrapper: null,
@@ -115,10 +115,19 @@ describe('no-zero-min-deposit — real buildSeed plans, every chunk', () => {
     })
     const depositSteps = plan.steps.filter((s) => s.kind === 'add-liquidity')
     expect(depositSteps.length).toBeGreaterThan(1)
-    for (const step of depositSteps) {
+    for (const [index, step] of depositSteps.entries()) {
       expect(decodedMin(step.tx.data, false)).toBe(step.bounds.amountInMin)
-      expect(step.bounds.amountInMin).toBe(step.bounds.amountInMax)
       expect(step.bounds.amountInMin).not.toBe(0n)
+      // The minimum is exactly the amount the Router pulls for this chunk.
+      expect(step.bounds.amountInMin).toBe(step.quote.liquidity?.baseRequired?.value)
+      if (index === 0) {
+        // The creating chunk: desired and minimum are the same amount.
+        expect(step.bounds.amountInMin).toBe(step.bounds.amountInMax)
+      } else {
+        // A later chunk into the now-priced pool approves a hair more so the Router
+        // takes its exact branch; it never pulls more than the minimum.
+        expect(step.bounds.amountInMax).toBeGreaterThanOrEqual(step.bounds.amountInMin as bigint)
+      }
     }
   })
 })
