@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import type { Amount } from '../../src/types/amount.types'
 import type { CheckoutState } from '../../src/types/checkout.types'
 import type { SnfClientConfig } from '../../src/types/client.types'
+import type { LiquidityQuoteDetails } from '../../src/types/liquidity.types'
 import type { FeeBreakdown, Quote, QuoteLeg } from '../../src/types/quote.types'
 import type { StepKind } from '../../src/types/plan.types'
 
@@ -85,6 +86,56 @@ describe('Quote type contract', () => {
   })
 })
 
+// ── a `create-pool` Quote with a full `liquidity` sub-object type-checks ────────────
+
+const createPoolLiquidityFixture: LiquidityQuoteDetails = {
+  pair: null,
+  wrapper: null,
+  baseToken: { address: null, symbol: 'ETH', decimals: 18, isNative: true },
+  wrapperIsToken0: null,
+  reserves: { base: 0n, wnft: 0n },
+  totalSupply: 0n,
+  blockNumber: 1n,
+  nftCount: 6,
+  baseRequired: feeAmount(6_000000000000000000n, 'ETH', 18),
+  pricePerNft: feeAmount(1_000000000000000000n, 'ETH', 18),
+  lpOut: feeAmount(6_000000000000000000n, 'ETH', 18),
+  feeToZero: true,
+}
+
+const createPoolQuoteFixture: Quote = {
+  side: 'create-pool',
+  chainId: 8453,
+  legs: [],
+  fees: {
+    pool: { bps: 0, note: 'no fee on liquidity' },
+    marketplace: { ...feeAmount(0n, 'ETH', 18), bps: 0 },
+    royalty: { ...feeAmount(0n, 'ETH', 18), bps: 0, capApplied: false },
+  } satisfies FeeBreakdown,
+  priceImpact: 0,
+  deliverable: 6,
+  bestEffort: false,
+  expiresAt: '2026-07-12T09:10:45Z',
+  reconciled: true,
+  liquidity: createPoolLiquidityFixture,
+}
+
+describe('a create-pool Quote with a full liquidity sub-object', () => {
+  it('assigns cleanly', () => {
+    expect(createPoolQuoteFixture.liquidity?.feeToZero).toBe(true)
+    expect(createPoolQuoteFixture.side).toBe('create-pool')
+  })
+
+  it('omitting `liquidity.feeToZero` fails to compile', () => {
+    const { feeToZero, ...liquidityWithoutFeeToZero } = createPoolLiquidityFixture
+    void feeToZero
+    // @ts-expect-error — `feeToZero: true` is required; a liquidity quote is only
+    // exact when the Pair's protocol-fee mint is off.
+    const missingFeeToZero: Quote = { ...createPoolQuoteFixture, liquidity: liquidityWithoutFeeToZero }
+    expect(missingFeeToZero).toBeDefined()
+  })
+})
+
 // ── `SnfClientConfig` cannot represent a signer, a key, or `mode` ───────────────────
 
 describe('SnfClientConfig rejects signing/legacy surfaces at compile time', () => {
@@ -129,6 +180,8 @@ const STEP_KINDS = [
   'swap-sell',
   'swap-buy-wnft',
   'swap-fungible',
+  'add-liquidity',
+  'remove-liquidity',
 ] as const satisfies readonly StepKind[]
 
 describe('closed union cardinality (satisfies-checked mirrors — cannot drift silently)', () => {
@@ -137,9 +190,9 @@ describe('closed union cardinality (satisfies-checked mirrors — cannot drift s
     expect(new Set(CHECKOUT_STATES).size).toBe(11)
   })
 
-  it('StepKind has exactly 5 members', () => {
-    expect(STEP_KINDS).toHaveLength(5)
-    expect(new Set(STEP_KINDS).size).toBe(5)
+  it('StepKind has exactly 7 members', () => {
+    expect(STEP_KINDS).toHaveLength(7)
+    expect(new Set(STEP_KINDS).size).toBe(7)
   })
 })
 

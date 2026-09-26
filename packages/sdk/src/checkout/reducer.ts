@@ -56,6 +56,14 @@ export const NEXT_READY_BY_KIND: Readonly<Record<StepKind, CheckoutState>> = {
   'swap-buy-wnft': 'ready-buy-wnft',
   'swap-sell': 'ready-swap',
   'swap-fungible': 'ready-swap',
+  // Depositing/withdrawing liquidity (later additions) is, from this machine's point
+  // of view, the same shape of event a sell or a fungible swap already is: one more
+  // on-chain call the user confirms once. Growing a state for every new step KIND
+  // would make this table (and the exhaustive state machine it's total over) grow
+  // forever; the copy that actually differs between a deposit, a withdrawal and a
+  // sale lives in checkout/labels.ts, which reads the step itself, not the state.
+  'add-liquidity': 'ready-swap',
+  'remove-liquidity': 'ready-swap',
 }
 
 /** The reducer's own state shape — never the public `CheckoutSnapshot` (that's

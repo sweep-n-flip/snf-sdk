@@ -1,5 +1,6 @@
 import type { SnfChainId } from '../chains/chains.types'
 import type { Amount } from './amount.types'
+import type { LiquidityQuoteDetails } from './liquidity.types'
 
 /**
  * Quote shapes for the SDK's NFT AMM quotes, plus the `reconciled` addendum.
@@ -68,13 +69,22 @@ export interface QuoteLeg {
  * never a `Quote` with `reconciled: false`.
  */
 export interface Quote {
-  readonly side: 'buy' | 'sell' | 'swap' | 'nft-to-nft'
+  readonly side: 'buy' | 'sell' | 'swap' | 'nft-to-nft' | 'add-liquidity' | 'remove-liquidity' | 'create-pool'
   readonly chainId: SnfChainId
   readonly collection?: `0x${string}`
   readonly count?: number
   readonly tokenIds?: readonly string[]
   readonly legs: readonly QuoteLeg[]
   readonly fees: FeeBreakdown
+  /**
+   * The liquidity-side breakdown — present only when `side` is `'add-liquidity'`,
+   * `'remove-liquidity'` or `'create-pool'`. A liquidity quote's own `legs` is always
+   * `[]` and its own `fees` is always zero with `pool.note` explaining that no fee
+   * applies to liquidity operations (`priceImpact` is likewise always `0`) — none of
+   * the curve-trade fee/impact machinery applies to depositing or withdrawing from a
+   * pool, only to trading against it.
+   */
+  readonly liquidity?: LiquidityQuoteDetails
   readonly totalCost?: Amount
   readonly totalProceeds?: Amount
   /** nft-to-nft only: sell-leg proceeds after its own fees, before the buy-leg top-up. */

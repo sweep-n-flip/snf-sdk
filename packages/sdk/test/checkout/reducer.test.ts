@@ -147,6 +147,8 @@ describe('checkoutReducer — receipt advances, never dispatches', () => {
     ['swap-buy-wnft', 'ready-buy-wnft'],
     ['swap-sell', 'ready-swap'],
     ['swap-fungible', 'ready-swap'],
+    ['add-liquidity', 'ready-swap'],
+    ['remove-liquidity', 'ready-swap'],
   ] as const)('a non-last success receipt whose NEXT step is %s yields %s', (nextKind, readyState) => {
     const plan = fakePlan(['approval', nextKind])
     const dispatched = checkoutReducer(initialCheckoutState(plan), { type: 'next', sessionId: 1 })
@@ -161,7 +163,15 @@ describe('checkoutReducer — receipt advances, never dispatches', () => {
   })
 
   it('NEXT_READY_BY_KIND covers every StepKind exactly once', () => {
-    const kinds: readonly StepKind[] = ['approval', 'swap-buy', 'swap-buy-wnft', 'swap-sell', 'swap-fungible']
+    const kinds: readonly StepKind[] = [
+      'approval',
+      'swap-buy',
+      'swap-buy-wnft',
+      'swap-sell',
+      'swap-fungible',
+      'add-liquidity',
+      'remove-liquidity',
+    ]
     for (const kind of kinds) expect(NEXT_READY_BY_KIND[kind]).toBeDefined()
     expect(Object.keys(NEXT_READY_BY_KIND).sort()).toEqual([...kinds].sort())
   })

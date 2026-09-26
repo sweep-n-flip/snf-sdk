@@ -14,17 +14,24 @@ export interface UnsignedTx {
   readonly chainId: SnfChainId
   readonly gas?: bigint
   /** Present only when `gas` is the deterministic NFT-batch fallback because this
-   * step's OWN swap simulation could not be attempted against live state — the plan
-   * contains a still-pending approval this step depends on (Finding 2).
-   * Additive; absent for every other step. */
-  readonly gasSource?: 'fallback-pending-approval'
+   * step's OWN swap simulation could not be attempted against live state.
+   * `'fallback-pending-approval'`: the plan contains a still-pending approval this
+   * step depends on. `'fallback-pending-step'`: this step depends on an EARLIER step
+   * of the same plan that has not mined yet (a later addition — a multi-step
+   * liquidity plan, e.g. a seed split across several add steps, can have a step whose
+   * own live simulation would need state an earlier, still-unconfirmed step of the
+   * SAME plan is what produces). Additive; absent for every other step. */
+  readonly gasSource?: 'fallback-pending-approval' | 'fallback-pending-step'
 }
 
 /** An allowance/operator-approval step, only emitted when it is actually missing
  * on-chain — the builder pre-checks allowances and lists only the missing ones (Edge
  * `empty`: no missing approvals ⇒ `steps` contains only the swap). */
 export interface Approval {
-  readonly kind: 'erc721-approval-for-all' | 'erc20-allowance'
+  /** `'lp-allowance'` (a later addition): the Pair LP token, approved so the Router
+   * can pull the liquidity being withdrawn — a plain `approve`, never a permit
+   * signature (no permit variant exists for the collection-aware remove path). */
+  readonly kind: 'erc721-approval-for-all' | 'erc20-allowance' | 'lp-allowance'
   readonly token: `0x${string}`
   readonly spender: `0x${string}`
   readonly tx: UnsignedTx
@@ -41,11 +48,29 @@ export interface Approval {
 export interface Bounds {
   readonly amountInMax?: bigint
   readonly amountOutMin?: bigint
+  /** A later addition, deposits only: the smallest base the Router may take —
+   * equals `amountInMax` exactly when the deposit must be exact (create/seed, where
+   * a zero/loose minimum is the same front-run window a same-block pre-seed exploits). */
+  readonly amountInMin?: bigint
+  /** A later addition, withdrawals only: the smallest wNFT amount the removal must
+   * return. */
+  readonly wnftOutMin?: bigint
   readonly slippageBps: number
   readonly deadline: bigint
 }
 
-export type StepKind = 'approval' | 'swap-buy' | 'swap-sell' | 'swap-buy-wnft' | 'swap-fungible'
+/** `'add-liquidity'`/`'remove-liquidity'` (later additions) cover deposits and
+ * withdrawals alike — a pool-creating deposit is still `'add-liquidity'`, disambiguated
+ * by `Step.quote.side === 'create-pool'`, so this union does not grow a third
+ * liquidity member. */
+export type StepKind =
+  | 'approval'
+  | 'swap-buy'
+  | 'swap-sell'
+  | 'swap-buy-wnft'
+  | 'swap-fungible'
+  | 'add-liquidity'
+  | 'remove-liquidity'
 
 /**
  * Everything `runPreflight` needs to re-verify ONE step against the

@@ -14,15 +14,33 @@ import type { Step } from '../types/plan.types'
  * copy also reads `step` when it is known: `ready-approve` is either a collection
  * approval (sell) or an ERC-20 spending allowance (ERC-20-base buy), and `ready-swap`
  * is either an NFT sale or a fungible swap. Without a step the state's most common
- * meaning is used. */
+ * meaning is used.
+ *
+ * Liquidity steps (later additions) reuse `ready-swap` (see `checkout/reducer.ts`'s
+ * `NEXT_READY_BY_KIND`) rather than growing a new state, so this is also where their
+ * copy has to live: an `'add-liquidity'` step reads `step.quote.side` to tell a plain
+ * deposit from the deposit that creates the pool, and a `'remove-liquidity'` step is
+ * always a withdrawal. An LP approval reads as its own kind of approve, distinct from
+ * a collection operator grant or an ERC-20 allowance raise — approving a Pair
+ * contract for the Router to pull is a materially different action for a user to
+ * understand than either of those.
+ */
 export function buildConfirmLabel(state: CheckoutState, step: Step | undefined): string {
   switch (state) {
     case 'review':
       return 'Review'
-    case 'ready-approve':
-      return step?.approvals[0]?.kind === 'erc20-allowance' ? 'Approve token spending' : 'Approve collection'
-    case 'ready-swap':
+    case 'ready-approve': {
+      const approvalKind = step?.approvals[0]?.kind
+      if (approvalKind === 'lp-allowance') return 'Approve LP token'
+      return approvalKind === 'erc20-allowance' ? 'Approve token spending' : 'Approve collection'
+    }
+    case 'ready-swap': {
+      if (step?.kind === 'add-liquidity') {
+        return step.quote.side === 'create-pool' ? 'Create pool' : 'Confirm deposit'
+      }
+      if (step?.kind === 'remove-liquidity') return 'Confirm withdrawal'
       return step?.kind === 'swap-fungible' ? 'Confirm swap' : 'Confirm sale'
+    }
     case 'ready-buy':
       return 'Confirm purchase'
     case 'ready-buy-wnft':
