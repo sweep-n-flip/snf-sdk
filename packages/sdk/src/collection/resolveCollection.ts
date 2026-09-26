@@ -7,6 +7,7 @@ import { FACTORY_ABI } from '../abis/UniswapV2Factory'
 import { PAIR_ABI } from '../abis/UniswapV2Pair'
 import { WERC721_ABI } from '../abis/WERC721'
 import { assertParam } from '../errors'
+import { probeRedemption } from '../liquidity/redemptionStatus'
 import { resolveWrapperSide } from '../routing/nftRoutePaths'
 import { getCollectionLabels } from './labels'
 import { rankPoolsByLiquidity } from './rankPools'
@@ -25,12 +26,15 @@ import type { SubgraphTokenCollection } from '../transport/subgraph.types'
  * quote token — the Factory has no "all pairs for this wrapper" view, so a second
  * base's ADDRESS has to come from somewhere, and every candidate is still confirmed
  * via a real `getPair` before being trusted — and (b) non-blocking enrichment
- * (`reserveUSD`, names). Merges the equivalent per-hook logic the production AMM
- * client keeps split across several hooks into one resolver.
+ * (`reserveUSD`, names). `redemptionLocked` delegates to `liquidity/redemptionStatus.
+ * ts`'s tri-state `probeRedemption` (the wrapper's real release call, sampled without
+ * any third-party host) — `true` only on a confirmed `'blocked'` result; an ambiguous
+ * or unreadable probe reads as `false`, never a silent lock. Merges the equivalent
+ * per-hook logic the production AMM client keeps split across several hooks into one
+ * resolver.
  */
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-const DEAD_ADDRESS = '0x000000000000000000000000000000000000dEaD' as const
 
 /** Loosely-typed multicall call shape — see `royalty.ts`'s identical pattern/comment:
  * viem's per-position tuple inference cannot type-check a batch mixing several ABIs
@@ -58,25 +62,6 @@ function dedupeAddresses(addresses: readonly `0x${string}`[]): readonly `0x${str
   }
   return out
 }
-
-/** REDEMPTION_PROBE guard wordings — ported verbatim from the production AMM
- * client's own redemption-status hook so both products
- * classify the same collections the same way. */
-const BLOCKED_WORDING =
-  /transfer[\s\-_]?role|operator (?:not allowed|denied|filter|blocked)|transfer (?:not allowed|denied|blocked|forbidden)|denyl?ist/i
-const REDEMPTION_PROBE_ABI = [
-  {
-    inputs: [
-      { name: 'from', type: 'address' },
-      { name: 'to', type: 'address' },
-      { name: 'tokenId', type: 'uint256' },
-    ],
-    name: 'safeTransferFrom',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-] as const
 
 /** Best-effort discovery of a second (ERC-20) base beyond the native quote token,
  * plus the subgraph's collection name/symbol hint — wrapped so a down/degraded
@@ -115,38 +100,6 @@ async function discoverEnrichment(
     return { extraBases: bases, subgraphName, subgraphSymbol }
   } catch {
     return { extraBases: [], subgraphName: undefined, subgraphSymbol: undefined }
-  }
-}
-
-/** `true` only on a CONFIRMED transfer-guard revert wording — an unreadable RPC, a
- * stale sample id, or any other ambiguous revert fails safe to `false`, never a
- * silent `true` that would disable a working remove/sell flow. */
-async function probeRedemptionLocked(
-  ctx: SnfClientContext,
-  collection: `0x${string}`,
-  wrapper: `0x${string}`,
-): Promise<boolean> {
-  if (isZero(wrapper)) return false
-  let sampleTokenId: string | undefined
-  try {
-    const inventory = await ctx.transport.inventory(wrapper)
-    sampleTokenId = inventory.data?.tokenIds[0]
-  } catch {
-    return false
-  }
-  if (sampleTokenId === undefined) return false
-  try {
-    await ctx.publicClient.simulateContract({
-      address: collection,
-      abi: REDEMPTION_PROBE_ABI,
-      functionName: 'safeTransferFrom',
-      args: [wrapper, DEAD_ADDRESS, BigInt(sampleTokenId)],
-      account: wrapper,
-    })
-    return false
-  } catch (e) {
-    const msg = String((e as { shortMessage?: string; message?: string })?.shortMessage ?? (e as Error)?.message ?? '')
-    return BLOCKED_WORDING.test(msg)
   }
 }
 
@@ -231,9 +184,13 @@ export async function resolveCollection(ctx: SnfClientContext, address: `0x${str
     onChainSymbol,
   })
 
+  const firstNativePoolPair = rankedPools.find((p) => p.isNative)?.pair ?? null
+
   const [royalty, redemptionLocked] = await Promise.all([
     resolveRoyalty(ctx, collection),
-    probeRedemptionLocked(ctx, collection, wrapper),
+    isZero(wrapper)
+      ? Promise.resolve(false)
+      : probeRedemption(ctx, { collection, wrapper, pair: firstNativePoolPair }).then((r) => r.status === 'blocked'),
   ])
 
   return { address: collection, wrapper, pools: rankedPools, labels, royalty, redemptionLocked, wrapperVerified }

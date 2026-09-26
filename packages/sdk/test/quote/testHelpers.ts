@@ -102,9 +102,19 @@ export function buildQuoteEnv(cfg: FixtureConfig): QuoteEnv {
       const fns = fnNames(params.contracts)
       const len = fns.length
 
-      // poolInventory's ERC721Enumerable supportsInterface probe (1 entry).
+      // poolInventory's ERC721Enumerable supportsInterface probe (1 entry) AND the
+      // redemption probe's own identical-shape enumerable check — both read `false`
+      // by default (`cfg.enumerableSupported`), which is what makes the redemption
+      // probe fall through to the subgraph candidate below.
       if (len === 1 && fns[0] === 'supportsInterface') {
         return [{ status: 'success', result: enumerableSupported }]
+      }
+      // The redemption probe's ownerOf confirmation on its sampled candidate — the
+      // wrapper always "owns" it here, matching the single-collection fixture's own
+      // `cfg.redemptionLocked` semantics (a real guard is expressed via `simulateContract`
+      // below, never via a stale-candidate rejection this fixture doesn't model).
+      if (len === 1 && fns[0] === 'ownerOf') {
+        return [{ status: 'success', result: cfg.wrapper }]
       }
       // The fungible wNFT leg's own single-entry getAmountsIn/getAmountsOut
       // (quoteBuy/quoteSell's `args.amount` branch) — computed live from `cfg.

@@ -19,7 +19,7 @@ export type SnfErrorCode =
   | 'TOKENIDS_UNAVAILABLE'
   /** Added later, with no REST equivalent — the Router's own on-chain quote diverges from the SDK's reconstructed breakdown by even 1 wei. Never absorbed silently — see the documented prohibitions table. */
   | 'QUOTE_RECONCILIATION_FAILED'
-  /** SDK-only, no REST equivalent — the wrapper currently blocks releasing NFTs to a seller (`redemptionLocked`, Sell path). */
+  /** SDK-only, no REST equivalent — the wrapper currently blocks NFTs from leaving it, so a whole-NFT buy or an nft-mode withdrawal would revert; selling INTO the pool is unaffected (`redemptionLocked`). */
   | 'REDEMPTION_LOCKED'
   /** SDK-only, no REST equivalent — a wrapper's `collection()` disagrees with the requested address, or (Arc) its `decimals()` isn't 18 (`wrapperVerified`). */
   | 'WRAPPER_UNVERIFIED'

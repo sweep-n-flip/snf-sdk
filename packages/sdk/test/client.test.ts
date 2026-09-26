@@ -287,9 +287,11 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
   })
 })
 
-describe('createSnfClient — the eleven liquidity/seeding stubs reject UNKNOWN, no RPC issued', () => {
+// `redemptionStatus` no longer belongs in this table — its stub body was replaced by a
+// real implementation, which legitimately issues RPC calls and never rejects with
+// UNKNOWN. Its own behavior is covered by `test/liquidity/redemptionStatus.test.ts`.
+describe('createSnfClient — the remaining ten liquidity/seeding stubs reject UNKNOWN, no RPC issued', () => {
   it.each([
-    ['redemptionStatus', (client: ReturnType<typeof createSnfClient>) => client.redemptionStatus('0x0000000000000000000000000000000000000001')],
     ['lpPosition', (client: ReturnType<typeof createSnfClient>) => client.lpPosition('0x0000000000000000000000000000000000000001', '0x0000000000000000000000000000000000000002')],
     ['quoteAddLiquidity', (client: ReturnType<typeof createSnfClient>) => client.quoteAddLiquidity({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'] })],
     ['quoteCreatePool', (client: ReturnType<typeof createSnfClient>) => client.quoteCreatePool({ collection: '0x0000000000000000000000000000000000000001', tokenIds: ['1'], baseAmount: 1n })],

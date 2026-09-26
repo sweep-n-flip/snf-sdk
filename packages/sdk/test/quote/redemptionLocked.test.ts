@@ -19,7 +19,11 @@ function lockedEnv() {
     side: 'buy',
     units: 10n ** 18n,
     poolLeg: 121_625_659_884_654n,
-    routerTotal: 130_747_584_376_002n,
+    // pool + marketplace(2.5%) + royalty(0) — reconciled so a test that lets the
+    // probe pass through (an ambiguous revert, not a confirmed guard) can price the
+    // rest of the quote instead of tripping the unrelated on-chain reconciliation
+    // check.
+    routerTotal: 124_666_301_381_770n,
     perId: [{ tokenId: '245830', receiver: ZERO_ADDRESS, amount: 0n }],
     redemptionLocked: true,
     candidateTokenIds: ['245830'],
@@ -41,6 +45,21 @@ describe('quoteBuy refuses a redemption-locked collection', () => {
 
   it('a fractional (amount) buy never leaves the wrapper and is still quoted', async () => {
     const quote = await quoteBuy(lockedEnv().ctx, { collection: COLLECTION, amount: 5n * 10n ** 17n })
+    expect(quote.side).toBe('buy')
+  })
+
+  it('the redemption probe simulates transferFrom — never safeTransferFrom', async () => {
+    const env = lockedEnv()
+    await expect(quoteBuy(env.ctx, { collection: COLLECTION, tokenIds: ['245830'] })).rejects.toMatchObject({
+      code: 'REDEMPTION_LOCKED',
+    })
+    expect(env.simulateContract).toHaveBeenCalledWith(expect.objectContaining({ functionName: 'transferFrom' }))
+  })
+
+  it('an ambiguous revert (not a confirmed guard wording) is priced, not refused', async () => {
+    const env = lockedEnv()
+    env.simulateContract.mockImplementation(() => Promise.reject(new Error('execution reverted')))
+    const quote = await quoteBuy(env.ctx, { collection: COLLECTION, tokenIds: ['245830'] })
     expect(quote.side).toBe('buy')
   })
 })

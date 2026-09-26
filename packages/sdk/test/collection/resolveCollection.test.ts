@@ -251,12 +251,13 @@ describe('resolveCollection', () => {
     expect(result.address).toBe(getAddress(COLLECTION))
   })
 
-  it('redemptionLocked: a confirmed transfer-guard revert wording ⇒ true', async () => {
+  it('redemptionLocked: a confirmed transfer-guard revert wording ⇒ true (tri-state: only a confirmed "blocked" sets it)', async () => {
     const ctx = fakeCtx(BASE_CHAIN_ID, {
       multicall: multicallByBatch({
         getWrapper: [{ status: 'success', result: WRAPPER }, { status: 'success', result: 'N' }, { status: 'success', result: 'S' }],
         collection: [{ status: 'success', result: COLLECTION }, { status: 'success', result: ZERO_ADDRESS }],
         supportsInterface: NO_ROYALTY(),
+        ownerOf: [{ status: 'success', result: WRAPPER }],
       }),
       inventory: () => Promise.resolve({ data: { id: WRAPPER, symbol: 'W', name: 'W', decimals: 18, wrapping: true, tokenIds: ['1'] }, asOfBlock: 1n, lagSeconds: 0, stale: false, revalidating: false }),
       simulateContract: () => Promise.reject({ shortMessage: 'operator not allowed' }),
@@ -265,12 +266,13 @@ describe('resolveCollection', () => {
     expect(result.redemptionLocked).toBe(true)
   })
 
-  it('redemptionLocked: a successful simulation ⇒ false', async () => {
+  it('redemptionLocked: a successful simulation (status "allowed") ⇒ false', async () => {
     const ctx = fakeCtx(BASE_CHAIN_ID, {
       multicall: multicallByBatch({
         getWrapper: [{ status: 'success', result: WRAPPER }, { status: 'success', result: 'N' }, { status: 'success', result: 'S' }],
         collection: [{ status: 'success', result: COLLECTION }, { status: 'success', result: ZERO_ADDRESS }],
         supportsInterface: NO_ROYALTY(),
+        ownerOf: [{ status: 'success', result: WRAPPER }],
       }),
       inventory: () => Promise.resolve({ data: { id: WRAPPER, symbol: 'W', name: 'W', decimals: 18, wrapping: true, tokenIds: ['1'] }, asOfBlock: 1n, lagSeconds: 0, stale: false, revalidating: false }),
       simulateContract: () => Promise.resolve({ result: undefined, request: {} }),
@@ -279,7 +281,7 @@ describe('resolveCollection', () => {
     expect(result.redemptionLocked).toBe(false)
   })
 
-  it('redemptionLocked: an inconclusive RPC error (no sample tokenId available) ⇒ false, never a silent true', async () => {
+  it('redemptionLocked: no sample tokenId available (status "unknown") ⇒ false, never a silent true', async () => {
     const ctx = fakeCtx(BASE_CHAIN_ID, {
       multicall: multicallByBatch({
         getWrapper: [{ status: 'success', result: WRAPPER }, { status: 'success', result: 'N' }, { status: 'success', result: 'S' }],
@@ -287,6 +289,21 @@ describe('resolveCollection', () => {
         supportsInterface: NO_ROYALTY(),
       }),
       inventory: () => Promise.reject(new Error('subgraph down')),
+    })
+    const result = await resolveCollection(ctx, COLLECTION)
+    expect(result.redemptionLocked).toBe(false)
+  })
+
+  it('redemptionLocked: an ambiguous revert (status "unknown") ⇒ false — an unrecognised revert is never read as a confirmed lock', async () => {
+    const ctx = fakeCtx(BASE_CHAIN_ID, {
+      multicall: multicallByBatch({
+        getWrapper: [{ status: 'success', result: WRAPPER }, { status: 'success', result: 'N' }, { status: 'success', result: 'S' }],
+        collection: [{ status: 'success', result: COLLECTION }, { status: 'success', result: ZERO_ADDRESS }],
+        supportsInterface: NO_ROYALTY(),
+        ownerOf: [{ status: 'success', result: WRAPPER }],
+      }),
+      inventory: () => Promise.resolve({ data: { id: WRAPPER, symbol: 'W', name: 'W', decimals: 18, wrapping: true, tokenIds: ['1'] }, asOfBlock: 1n, lagSeconds: 0, stale: false, revalidating: false }),
+      simulateContract: () => Promise.reject(new Error('execution reverted')),
     })
     const result = await resolveCollection(ctx, COLLECTION)
     expect(result.redemptionLocked).toBe(false)

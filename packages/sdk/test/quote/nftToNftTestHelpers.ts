@@ -110,10 +110,21 @@ export function buildTwoLegEnv(cfg: TwoLegConfig): TwoLegEnv {
     const { address, functionName, args } = entry
 
     if (functionName === 'supportsInterface') {
-      // Forces poolInventory's ERC721Enumerable fast path to miss (subgraph fallback)
-      // and resolveRoyalty's IERC2981 probe to miss — neither result feeds
-      // quoteNftToNft's own math (see this file's header).
+      // Forces poolInventory's ERC721Enumerable fast path to miss (subgraph fallback),
+      // resolveRoyalty's IERC2981 probe to miss, AND the redemption probe's own
+      // identical-shape enumerable check to miss (falling through to the subgraph
+      // candidate below) — none of these feed quoteNftToNft's own math (see this
+      // file's header).
       return { status: 'success', result: false }
+    }
+    if (functionName === 'ownerOf') {
+      // The redemption probe's confirmation that its sampled candidate is actually
+      // held by the wrapper doing the probing — always true here, per leg. A real
+      // transfer guard is expressed via `simulateContract` below, never via a
+      // stale-candidate rejection this fixture doesn't model.
+      if (eqAddr(address, cfg.sell.collection)) return { status: 'success', result: cfg.sell.wrapper }
+      if (eqAddr(address, cfg.buy.collection)) return { status: 'success', result: cfg.buy.wrapper }
+      return { status: 'failure' }
     }
     if (functionName === 'getWrapper') {
       const collectionArg = args[0] as string
