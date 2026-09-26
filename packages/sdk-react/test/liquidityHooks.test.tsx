@@ -1,22 +1,55 @@
 import { act, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { describeError, SnfError, type LpPosition, type Quote, type RedemptionStatus, type SnfClient } from '@sweepnflip/sdk'
+import {
+  describeError,
+  SnfError,
+  type ExecutionPlan,
+  type LpPosition,
+  type Quote,
+  type RedemptionStatus,
+  type SnfClient,
+  type Step,
+  type StepKind,
+} from '@sweepnflip/sdk'
 import { useSnfContext } from '../src/context'
+import { useSnfAddLiquidity } from '../src/hooks/useSnfAddLiquidity'
+import { useSnfCheckout } from '../src/hooks/useSnfCheckout'
+import { useSnfCreatePool } from '../src/hooks/useSnfCreatePool'
 import { useSnfLpPosition } from '../src/hooks/useSnfLpPosition'
 import { useSnfQuoteAddLiquidity } from '../src/hooks/useSnfQuoteAddLiquidity'
 import { useSnfQuoteCreatePool } from '../src/hooks/useSnfQuoteCreatePool'
 import { useSnfQuoteRemoveLiquidity } from '../src/hooks/useSnfQuoteRemoveLiquidity'
 import { useSnfRedemptionStatus } from '../src/hooks/useSnfRedemptionStatus'
+import { useSnfRemoveLiquidity } from '../src/hooks/useSnfRemoveLiquidity'
+import { useSnfSeed } from '../src/hooks/useSnfSeed'
 import { createTestQueryClient, renderWithSnf } from './setup'
 
 /**
  * The nine liquidity hooks (a new file, separate from `hooks.test.tsx`, per this
- * task's own scope): five read hooks here — cache keys, `enabled` guards,
- * bigint-safe hashing, invalidation and error passthrough. A stubbed `SnfClient`
- * (`vi.fn()` methods) throughout — this suite tests the REACT layer's own wiring,
- * not the core's correctness (the core's liquidity math/reconciliation is already
- * covered by `packages/sdk`'s own test suite).
+ * plan's own scope): five read hooks — cache keys, `enabled` guards, bigint-safe
+ * hashing, invalidation and error passthrough — and four build hooks —
+ * zero-call-on-mount, exactly-one-call-on-`build()`, error passthrough, `reset()`,
+ * and a plan handed to `useSnfCheckout` staying in `'review'` with no dispatch
+ * until `next()`. A stubbed `SnfClient` (`vi.fn()` methods) throughout — this suite
+ * tests the REACT layer's own wiring, not the core's correctness (the core's
+ * liquidity math/reconciliation is already covered by `packages/sdk`'s own test
+ * suite).
  */
+
+// `useSnfCheckout` (exercised by the last describe block below) calls into wagmi's
+// `useSendTransaction`/`useWaitForTransactionReceipt` — mocked exactly as
+// `useSnfCheckout.test.tsx` does, so this file can assert zero dispatch without a
+// live wallet.
+const mocks = vi.hoisted(() => ({
+  sendTransactionAsync: vi.fn(),
+  reset: vi.fn(),
+  receipt: { data: undefined as unknown, isSuccess: false, isError: false, error: undefined as unknown },
+}))
+
+vi.mock('wagmi', () => ({
+  useSendTransaction: () => ({ sendTransactionAsync: mocks.sendTransactionAsync, reset: mocks.reset }),
+  useWaitForTransactionReceipt: () => mocks.receipt,
+}))
 
 function amount(value: bigint) {
   return { value, formatted: value.toString(), symbol: 'ETH', decimals: 18 }
@@ -58,6 +91,26 @@ function fakeLpPosition(): LpPosition {
 
 function fakeRedemptionStatusResult(): RedemptionStatus {
   return { status: 'allowed', source: 'enumerable' }
+}
+
+function fakeStep(kind: StepKind): Step {
+  return {
+    kind,
+    label: kind,
+    tx: { to: '0x0000000000000000000000000000000000000001', data: '0x', value: 0n, chainId: 8453 },
+    approvals: [],
+    bounds: { slippageBps: 100, deadline: 0n },
+    quote: fakeLiquidityQuote(kind === 'remove-liquidity' ? 'remove-liquidity' : 'add-liquidity'),
+  }
+}
+
+function fakePlan(kinds: readonly StepKind[]): ExecutionPlan {
+  return {
+    chainId: 8453,
+    steps: kinds.map(fakeStep),
+    expiresAt: new Date(Date.now() + 60_000).toISOString(),
+    preflight: () => Promise.resolve({ ok: true, blockNumber: 1n, checked: [] }),
+  }
 }
 
 /** All 24 `SnfClient` methods, every liquidity/seeding one stubbed with a
@@ -352,5 +405,146 @@ describe('liquidity query hooks — cross-cutting cache behaviour', () => {
     await waitFor(() => expect(client.quoteAddLiquidity).toHaveBeenCalledTimes(2))
     await waitFor(() => expect(client.lpPosition).toHaveBeenCalledTimes(2))
     await waitFor(() => expect(client.redemptionStatus).toHaveBeenCalledTimes(2))
+  })
+})
+
+describe('build hooks — useSnfAddLiquidity / useSnfCreatePool / useSnfRemoveLiquidity / useSnfSeed', () => {
+  afterEach(() => {
+    mocks.sendTransactionAsync.mockReset()
+  })
+
+  it('mounting any of the four issues zero calls to their matching build method', () => {
+    const client = fakeClient(8453)
+
+    renderWithSnf(() => useSnfAddLiquidity(), { client })
+    renderWithSnf(() => useSnfCreatePool(), { client })
+    renderWithSnf(() => useSnfRemoveLiquidity(), { client })
+    renderWithSnf(() => useSnfSeed(), { client })
+
+    expect(client.buildAddLiquidity).not.toHaveBeenCalled()
+    expect(client.buildCreatePool).not.toHaveBeenCalled()
+    expect(client.buildRemoveLiquidity).not.toHaveBeenCalled()
+    expect(client.buildSeed).not.toHaveBeenCalled()
+  })
+
+  it('useSnfAddLiquidity.build(args) calls buildAddLiquidity exactly once and resolves to the plan', async () => {
+    const plan = fakePlan(['add-liquidity'])
+    const client = fakeClient(8453, { buildAddLiquidity: vi.fn().mockResolvedValue(plan) })
+    const { result } = renderWithSnf(() => useSnfAddLiquidity(), { client })
+
+    let returned: ExecutionPlan | undefined
+    await act(async () => {
+      returned = await result.current.build({ quote: fakeLiquidityQuote('add-liquidity'), recipient: OWNER })
+    })
+
+    expect(client.buildAddLiquidity).toHaveBeenCalledTimes(1)
+    expect(returned).toBe(plan)
+    // `mutateAsync`'s own promise can settle a microtask ahead of react-query's
+    // observer notifying this hook's next render — `waitFor` (not a bare
+    // synchronous assertion) is what every read-hook test in this file already
+    // uses for the identical "resolved value visible on result.current" shape.
+    await waitFor(() => expect(result.current.plan).toBe(plan))
+  })
+
+  it('useSnfCreatePool.build(args) calls buildCreatePool exactly once and resolves to the plan', async () => {
+    const plan = fakePlan(['add-liquidity'])
+    const client = fakeClient(8453, { buildCreatePool: vi.fn().mockResolvedValue(plan) })
+    const { result } = renderWithSnf(() => useSnfCreatePool(), { client })
+
+    await act(async () => {
+      await result.current.build({ quote: fakeLiquidityQuote('create-pool'), recipient: OWNER })
+    })
+
+    expect(client.buildCreatePool).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(result.current.plan).toBe(plan))
+  })
+
+  it('useSnfRemoveLiquidity.build(args) calls buildRemoveLiquidity exactly once and resolves to the plan', async () => {
+    const plan = fakePlan(['remove-liquidity'])
+    const client = fakeClient(8453, { buildRemoveLiquidity: vi.fn().mockResolvedValue(plan) })
+    const { result } = renderWithSnf(() => useSnfRemoveLiquidity(), { client })
+
+    await act(async () => {
+      await result.current.build({ quote: fakeLiquidityQuote('remove-liquidity'), recipient: OWNER })
+    })
+
+    expect(client.buildRemoveLiquidity).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(result.current.plan).toBe(plan))
+  })
+
+  it('useSnfSeed.build(args) calls buildSeed exactly once and resolves to the plan', async () => {
+    const plan = fakePlan(['add-liquidity'])
+    const client = fakeClient(8453, { buildSeed: vi.fn().mockResolvedValue(plan) })
+    const { result } = renderWithSnf(() => useSnfSeed(), { client })
+
+    await act(async () => {
+      await result.current.build({
+        collection: COLLECTION,
+        tokenIds: ['1', '2', '3', '4', '5', '6'],
+        pricePerNft: 1_000_000_000_000_000_000n,
+        payer: OWNER,
+        lpRecipient: OWNER,
+      })
+    })
+
+    expect(client.buildSeed).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(result.current.plan).toBe(plan))
+  })
+
+  it('a rejecting build sets error to an SnfError with the same code, and build() itself rejects with it', async () => {
+    const client = fakeClient(8453, {
+      buildAddLiquidity: vi.fn().mockRejectedValue(new SnfError('INSUFFICIENT_OUTPUT_AMOUNT', 'price moved')),
+    })
+    const { result } = renderWithSnf(() => useSnfAddLiquidity(), { client })
+
+    await act(async () => {
+      await expect(
+        result.current.build({ quote: fakeLiquidityQuote('add-liquidity'), recipient: OWNER }),
+      ).rejects.toMatchObject({ code: 'INSUFFICIENT_OUTPUT_AMOUNT' })
+    })
+
+    await waitFor(() => expect(result.current.error).not.toBeNull())
+    expect(result.current.error).toBeInstanceOf(SnfError)
+    expect(result.current.error?.code).toBe('INSUFFICIENT_OUTPUT_AMOUNT')
+  })
+
+  it("reset() clears a previous build's plan and error", async () => {
+    const plan = fakePlan(['add-liquidity'])
+    const client = fakeClient(8453, { buildAddLiquidity: vi.fn().mockResolvedValue(plan) })
+    const { result } = renderWithSnf(() => useSnfAddLiquidity(), { client })
+
+    await act(async () => {
+      await result.current.build({ quote: fakeLiquidityQuote('add-liquidity'), recipient: OWNER })
+    })
+    await waitFor(() => expect(result.current.plan).toBe(plan))
+
+    act(() => {
+      result.current.reset()
+    })
+
+    await waitFor(() => expect(result.current.plan).toBeUndefined())
+    expect(result.current.error).toBeNull()
+  })
+})
+
+describe('a build hook plan feeding useSnfCheckout', () => {
+  it("starts in 'review' and dispatches nothing until next() — the plan came from build(), not a render/mount", async () => {
+    const plan = fakePlan(['add-liquidity'])
+    const client = fakeClient(8453, { buildAddLiquidity: vi.fn().mockResolvedValue(plan) })
+
+    const { result } = renderWithSnf(
+      () => ({ addLiquidity: useSnfAddLiquidity(), checkout: useSnfCheckout(plan) }),
+      { client },
+    )
+
+    expect(result.current.checkout.state).toBe('review')
+
+    await act(async () => {
+      await result.current.addLiquidity.build({ quote: fakeLiquidityQuote('add-liquidity'), recipient: OWNER })
+    })
+
+    await waitFor(() => expect(result.current.addLiquidity.plan).toBe(plan))
+    expect(result.current.checkout.state).toBe('review')
+    expect(mocks.sendTransactionAsync).not.toHaveBeenCalled()
   })
 })

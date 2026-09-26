@@ -66,13 +66,22 @@ const CORE_EXPORTS = [
 
 const ADAPTER_EXPORTS = [
   'SnfProvider',
+  'useSnfAddLiquidity',
   'useSnfCheckout',
   'useSnfClient',
   'useSnfCollection',
+  'useSnfCreatePool',
+  'useSnfLpPosition',
   'useSnfPoolInventory',
+  'useSnfQuoteAddLiquidity',
   'useSnfQuoteBuy',
+  'useSnfQuoteCreatePool',
   'useSnfQuoteNftToNft',
+  'useSnfQuoteRemoveLiquidity',
   'useSnfQuoteSell',
+  'useSnfRedemptionStatus',
+  'useSnfRemoveLiquidity',
+  'useSnfSeed',
 ]
 
 describe('public surface snapshot (built dist/index.js)', () => {
@@ -113,7 +122,7 @@ describe('public surface snapshot (built dist/index.js)', () => {
   // vitest's own module graph/transform pipeline, which is slower than a plain `node -e`
   // import of the same file (~1.3s measured directly) but still well inside 15s.
   it(
-    '@sweepnflip/sdk-react exports exactly the eight SnfProvider/useSnf* names',
+    '@sweepnflip/sdk-react exports exactly the seventeen SnfProvider/useSnf* names',
     async () => {
       const mod = (await import(pathToFileURL(SDK_REACT_DIST).href)) as Record<string, unknown>
       expect(Object.keys(mod).sort()).toEqual([...ADAPTER_EXPORTS].sort())

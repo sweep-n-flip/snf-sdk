@@ -1,13 +1,15 @@
 /**
  * `@sweepnflip/sdk-react` — public entrypoint.
  *
- * Exactly `SnfProvider` plus the seven `useSnf*` hooks — `useSnfClient`,
+ * Exactly `SnfProvider` plus sixteen `useSnf*` hooks — `useSnfClient`,
  * `useSnfCollection`, `useSnfPoolInventory`, `useSnfQuoteBuy`, `useSnfQuoteSell`,
- * `useSnfQuoteNftToNft`, `useSnfCheckout`. `useSnfCheckout` is added by this plan's
- * Task 2 commit. Nothing from `@sweepnflip/sdk` is re-exported here — a partner
+ * `useSnfQuoteNftToNft`, `useSnfQuoteAddLiquidity`, `useSnfQuoteCreatePool`,
+ * `useSnfQuoteRemoveLiquidity`, `useSnfLpPosition`, `useSnfRedemptionStatus`,
+ * `useSnfAddLiquidity`, `useSnfCreatePool`, `useSnfRemoveLiquidity`, `useSnfSeed`,
+ * `useSnfCheckout`. Nothing from `@sweepnflip/sdk` is re-exported here — a partner
  * imports `@sweepnflip/sdk` for types/`createSnfClient` and `@sweepnflip/sdk-react`
  * for hooks; re-exporting the core's surface from this barrel would create two paths
- * to the same symbol and a dual-instance hazard (this plan's own action text).
+ * to the same symbol and a dual-instance hazard.
  */
 export { SnfProvider } from './context'
 export type { SnfProviderProps, SnfContextValue } from './context'
@@ -19,6 +21,15 @@ export {
   useSnfQuoteBuy,
   useSnfQuoteSell,
   useSnfQuoteNftToNft,
+  useSnfQuoteAddLiquidity,
+  useSnfQuoteCreatePool,
+  useSnfQuoteRemoveLiquidity,
+  useSnfLpPosition,
+  useSnfRedemptionStatus,
+  useSnfAddLiquidity,
+  useSnfCreatePool,
+  useSnfRemoveLiquidity,
+  useSnfSeed,
   useSnfCheckout,
 } from './hooks'
 export type {
@@ -35,5 +46,22 @@ export type {
   UseSnfQuoteNftToNftArgs,
   UseSnfQuoteNftToNftOptions,
   UseSnfQuoteNftToNftResult,
+  UseSnfQuoteAddLiquidityArgs,
+  UseSnfQuoteAddLiquidityOptions,
+  UseSnfQuoteAddLiquidityResult,
+  UseSnfQuoteCreatePoolArgs,
+  UseSnfQuoteCreatePoolOptions,
+  UseSnfQuoteCreatePoolResult,
+  UseSnfQuoteRemoveLiquidityArgs,
+  UseSnfQuoteRemoveLiquidityOptions,
+  UseSnfQuoteRemoveLiquidityResult,
+  UseSnfLpPositionOptions,
+  UseSnfLpPositionResult,
+  UseSnfRedemptionStatusOptions,
+  UseSnfRedemptionStatusResult,
+  UseSnfAddLiquidityResult,
+  UseSnfCreatePoolResult,
+  UseSnfRemoveLiquidityResult,
+  UseSnfSeedResult,
   UseSnfCheckoutResult,
 } from './hooks'

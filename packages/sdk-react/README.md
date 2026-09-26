@@ -33,6 +33,37 @@ See the root README's [`## React`](../../README.md#react) section and
 [`examples/next-app`](../../examples/next-app) for the full, running version:
 discovery → inventory → quote → checkout on one screen.
 
+## Liquidity
+
+Nine hooks cover the full liquidity surface — five read hooks (mirroring the swap
+quote hooks above) and four build hooks (mirroring `useSnfCheckout`'s own
+`quote → build → checkout` shape). None of the four build hooks ever dispatches a
+transaction itself; their plan always feeds `useSnfCheckout(plan)`.
+
+- `useSnfQuoteAddLiquidity(args)` — price a deposit into an EXISTING pool.
+- `useSnfQuoteCreatePool(args)` — price a brand-new pool's opening deposit.
+- `useSnfQuoteRemoveLiquidity(args)` — price a withdrawal (`nft` or `wnft` mode).
+- `useSnfLpPosition(pair, owner)` — an LP holder's live balance, share and
+  underlying base/wNFT/whole-NFT breakdown.
+- `useSnfRedemptionStatus(collection)` — a tri-state probe of whether a
+  collection's wrapper currently lets NFTs redeem out.
+- `useSnfAddLiquidity()` — `{ build, plan, isBuilding, error, reset }`; `build(args)`
+  calls `client.buildAddLiquidity`.
+- `useSnfCreatePool()` — same shape; `build(args)` calls `client.buildCreatePool`.
+- `useSnfRemoveLiquidity()` — same shape; `build(args)` calls `client.buildRemoveLiquidity`.
+- `useSnfSeed()` — same shape; `build(args)` calls `client.buildSeed` (entirely
+  optional — a partner who never calls it can still seed a pool by any other means).
+
+```tsx
+const { data: quote } = useSnfQuoteAddLiquidity({ collection, tokenIds })
+const { build, plan } = useSnfAddLiquidity()
+const checkout = useSnfCheckout(plan)
+
+async function onDeposit() {
+  if (quote) await build({ quote, recipient })
+}
+```
+
 ## Docs
 
 - Root README (chain table, security posture, footguns this SDK hides): [`../../README.md`](../../README.md)
