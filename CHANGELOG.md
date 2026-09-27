@@ -88,6 +88,12 @@ when a partner calls `build(args)`, feeding the resulting plan to the existing
   variant exists for the collection-aware remove path (`removeLiquidityETHCollection`
   / `removeLiquidityCollection`), and this package never encodes one.
 
+### Changed
+
+- Arc (5042): the built-in `subgraphUrl` now points to the subgraph's new host. The
+  old URL keeps answering for a short overlap and is then retired; `0.1.x` installs
+  that read Arc pool data from the subgraph should upgrade.
+
 ## [0.1.2] — 2026-09-25
 
 `@sweepnflip/sdk` only; `@sweepnflip/sdk-react` is unchanged and stays `0.1.0`.

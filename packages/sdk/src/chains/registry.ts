@@ -373,7 +373,7 @@ export const SNF_CHAINS = [
     hasNativeWrapper: false,
     multicall3: MULTICALL3_ADDRESS,
     subgraphUrl:
-      'https://api.goldsky.com/api/public/project_cmngb5qq6d79v01wba5bi7hdg/subgraphs/snf-arc/1.0.0/gn',
+      'https://api.goldsky.com/api/public/project_cmnyu0s049bde01vr754rehxg/subgraphs/snf-arc/1.0.0/gn',
     explorerUrl: 'https://explorer.arc.io',
     // VERIFY-LIVE: verified empirically at 9970 via the delegate's own
     // `getAmountOut()` — kept here as a live
