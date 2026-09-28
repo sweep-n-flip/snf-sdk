@@ -283,24 +283,22 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
 // stub-rejection table (once eleven rows, trimmed plan by plan down to zero) is
 // retired; `D01_KEYS` above asserts every one of the twenty-eight method names exists,
 // in order, on the object `createSnfClient` returns. The table below was a second one,
-// for the four portfolio-read stubs — `positions` and `wnftBalances` are real now too,
-// covered by `test/portfolio/positions.test.ts` and `test/portfolio/wnftBalances.test.ts`
-// (real RPC calls, never `UNKNOWN`); the remaining two stay here, trimmed the same way,
-// plan by plan, as each gets its own implementation.
+// for the four portfolio-read stubs — `positions`, `wnftBalances` and `collectionsHeld`
+// are real now too, covered by `test/portfolio/positions.test.ts`,
+// `test/portfolio/wnftBalances.test.ts` and `test/portfolio/collectionsHeld.test.ts`
+// (real RPC calls, never `UNKNOWN`); `poolHistory` is the last one, staying here until
+// it gets its own implementation.
 
-describe('createSnfClient — the remaining two portfolio-read stubs reject UNKNOWN, no RPC or fetch issued', () => {
-  it.each([
-    ['collectionsHeld', (client: ReturnType<typeof createSnfClient>) => client.collectionsHeld('0x0000000000000000000000000000000000000001')],
-    ['poolHistory', (client: ReturnType<typeof createSnfClient>) => client.poolHistory('0x0000000000000000000000000000000000000001', 'day')],
-  ] as const)('%s rejects SnfError(UNKNOWN) ending in "is not implemented yet", with zero RPC/fetch calls', async (name, call) => {
+describe('createSnfClient — the last portfolio-read stub rejects UNKNOWN, no RPC or fetch issued', () => {
+  it('poolHistory rejects SnfError(UNKNOWN) ending in "is not implemented yet", with zero RPC/fetch calls', async () => {
     const publicClient = fakePublicClient()
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)
     const client = createSnfClient(config({ publicClient }))
     let threw: unknown
     try {
-      await call(client)
-      expect.fail(`expected ${name} to reject`)
+      await client.poolHistory('0x0000000000000000000000000000000000000001', 'day')
+      expect.fail('expected poolHistory to reject')
     } catch (e) {
       threw = e
     }
