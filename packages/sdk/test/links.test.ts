@@ -68,6 +68,7 @@ describe('src/index.ts — the public barrel surface', () => {
       'SnfError',
       'abis',
       'addressLink',
+      'appLinks',
       'assertChainMatch',
       'assertExactNativeMultiple',
       'assertParam',

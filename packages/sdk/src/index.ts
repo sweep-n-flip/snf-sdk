@@ -10,9 +10,12 @@
  * free-standing symbols would create a second, undocumented entry point this package
  * would then have to keep compatible forever, alongside the one actually documented.
  * `checkout/` in particular is a REAL, fully-implemented module that still isn't
- * exported here — `createCheckout` isn't one of this rule's 24 client methods; it's
+ * exported here — `createCheckout` isn't one of this rule's 28 client methods; it's
  * consumed by `@sweepnflip/sdk-react`'s `useSnfCheckout`, a different package, not by
- * a partner importing this one directly.
+ * a partner importing this one directly. `appLinks` is the one exception to "every
+ * operation is a client method": it needs no client (no chain read, no subgraph
+ * query — it only builds a string), so it ships as a free-standing namespace
+ * alongside the explorer link builders below, not as a 29th client method.
  *
  * `SDK_VERSION` must stay in sync with `package.json#version` — a dedicated test
  * asserts that.
@@ -28,6 +31,7 @@ export type * from './errors.types'
 // decide whether an error code is worth retrying.
 export { SNF_ERROR_RETRYABLE } from './errors.types'
 export { addressLink, tokenLink, txLink } from './links'
+export { appLinks } from './appLinks'
 export { formatAmount, toAmount } from './format'
 export type * from './types'
 
