@@ -103,6 +103,9 @@ export interface PortfolioEnvConfig {
   /** collection (any case) -> owner (any case) -> `ERC721.balanceOf(owner)`. */
   readonly erc721?: Readonly<Record<string, Readonly<Record<string, bigint>>>>
   readonly failErc721?: boolean
+  /** Wrapper addresses (any case) whose owner-balance read fails — the `wnftBalances`
+   * NO_ROUTE skip path. */
+  readonly failWnftBalanceOf?: readonly `0x${string}`[]
 }
 
 export interface PortfolioEnv {
@@ -210,8 +213,10 @@ export function buildPortfolioEnv(cfg: PortfolioEnvConfig = {}): PortfolioEnv {
         case 'feeTo':
           return { status: 'success', result: feeTo }
         case 'getPair': {
-          const wrapperArg = String(args[0])
-          const cfgPair = wrapperByAddress.get(wrapperArg.toLowerCase())
+          // Keyed by BOTH args — a wrapper can back two pools (native + ERC-20 base).
+          const wrapperArg = String(args[0]).toLowerCase()
+          const baseArg = String(args[1] ?? '').toLowerCase()
+          const cfgPair = pairs.find((p) => p.wrapper.toLowerCase() === wrapperArg && (p.base?.address ?? chain.quoteToken).toLowerCase() === baseArg)
           if (cfgPair === undefined) return { status: 'success', result: ZERO_ADDRESS }
           const listed = cfgPair.factoryListed ?? true
           return { status: 'success', result: listed ? cfgPair.pair : chain.factory }
@@ -267,6 +272,7 @@ export function buildPortfolioEnv(cfg: PortfolioEnvConfig = {}): PortfolioEnv {
             const balances = wrapperCfg.balances ?? wrapperCfg.reserves ?? { base: 0n, wnft: 0n }
             return { status: 'success', result: balances.wnft }
           }
+          if ((cfg.failWnftBalanceOf ?? []).some((w) => isAddr(address, w))) return { status: 'failure' }
           const perOwner = lookupCI(cfg.wnft, address)
           return { status: 'success', result: lookupCI(perOwner, arg0) ?? 0n }
         }
