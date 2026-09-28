@@ -25,7 +25,11 @@ import type { DepositPoolState, PairPoolState } from './poolState.types'
  * Each round below depends on the PREVIOUS round's own answer (round 2 needs round
  * 1's wrapper address; round 3 needs round 2's pair address) — a genuine data
  * dependency, not an oversight. What stays fixed across every round is the block
- * number, never the number of round trips.
+ * number, never the number of round trips. `loadPairState` accepts an optional
+ * caller-supplied `blockNumber`: a caller that has already read the chain's head
+ * once (a whole-wallet scan pricing several pairs together) passes it straight
+ * through, so every pair in that scan is pinned to the exact same snapshot and the
+ * loader never issues its own redundant `getBlockNumber()` call.
  *
  * THE WRAPPER SIDE IS NEVER ASSUMED
  * -----------------------------------
@@ -234,6 +238,10 @@ export interface LoadPairStateArgs {
   /** When present, the loader also returns this address's live LP balance
    * (`ownerLp`). */
   readonly owner?: `0x${string}`
+  /** When present, every round is pinned to it and no block is read — the caller
+   * (e.g. a whole-wallet scan already sitting on one block) supplies the snapshot
+   * instead of this loader taking its own. */
+  readonly blockNumber?: bigint
 }
 
 export async function loadPairState(ctx: SnfClientContext, args: LoadPairStateArgs): Promise<PairPoolState> {
@@ -242,7 +250,7 @@ export async function loadPairState(ctx: SnfClientContext, args: LoadPairStateAr
   if (args.owner !== undefined) assertWellFormedAddress(args.owner, 'owner')
   const owner = args.owner !== undefined ? getAddress(args.owner) : undefined
 
-  const blockNumber = await ctx.publicClient.getBlockNumber()
+  const blockNumber = args.blockNumber ?? (await ctx.publicClient.getBlockNumber())
 
   // ── Round 1 — the pair's own state (+ owner LP balance, if requested) ────────
   const round1Contracts: Call[] = [

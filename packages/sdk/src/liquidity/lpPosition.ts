@@ -4,6 +4,7 @@ import { burnAmounts, fromPairOrder, toPairOrder, wholeNfts } from './liquidityM
 import { loadPairState } from './poolState'
 import type { SnfClientContext } from '../types/client.types'
 import type { LpPosition } from '../types/liquidity.types'
+import type { PairPoolState } from './poolState.types'
 
 /**
  * `lpPosition(pair, owner)` — the single-pair LP-holder primitive: live balance,
@@ -18,6 +19,13 @@ import type { LpPosition } from '../types/liquidity.types'
  * `quoteRemoveLiquidity` uses for an actual withdrawal — this function's own
  * `feeTo != 0` guard exists for the identical reason `LiquidityQuoteDetails.feeToZero`
  * does: the mirror is only exact when the Pair's protocol-fee mint is off.
+ *
+ * `lpPositionFromState` is the pure half of that computation, taking an
+ * already-loaded `PairPoolState` instead of doing its own read. It exists so a
+ * caller that already holds a block-pinned state for several pairs at once (a
+ * whole-wallet scan) can reuse the exact same mirror for every pair without a
+ * second `loadPairState` round trip per pair — `lpPosition` itself is nothing
+ * more than `loadPairState` followed by this function.
  */
 
 const LP_DECIMALS = 18
@@ -26,12 +34,7 @@ const WNFT_DECIMALS = 18
 const WNFT_SYMBOL = 'wNFT'
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-export async function lpPosition(
-  ctx: SnfClientContext,
-  pair: `0x${string}`,
-  owner: `0x${string}`,
-): Promise<LpPosition> {
-  const state = await loadPairState(ctx, { pair, owner })
+export function lpPositionFromState(state: PairPoolState, owner: `0x${string}`): LpPosition {
   if (state.feeTo.toLowerCase() !== ZERO_ADDRESS) {
     throw new SnfError(
       'QUOTE_RECONCILIATION_FAILED',
@@ -63,4 +66,13 @@ export async function lpPosition(
     },
     blockNumber: state.blockNumber,
   }
+}
+
+export async function lpPosition(
+  ctx: SnfClientContext,
+  pair: `0x${string}`,
+  owner: `0x${string}`,
+): Promise<LpPosition> {
+  const state = await loadPairState(ctx, { pair, owner })
+  return lpPositionFromState(state, owner)
 }
