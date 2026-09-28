@@ -42,6 +42,7 @@
     "test:fork": "vitest run --config vitest.fork.config.ts",
     "test:fork:base": "vitest run --config vitest.fork.config.ts test/fork/base.fork.test.ts",
     "test:fork:base-liquidity": "vitest run --config vitest.fork.config.ts test/fork/base.liquidity.fork.test.ts",
+    "test:fork:base-portfolio": "vitest run --config vitest.fork.config.ts test/fork/base.portfolio.fork.test.ts",
     "test:fork:arbitrum": "vitest run --config vitest.fork.config.ts test/fork/arbitrum.fork.test.ts",
     "test:fork:robinhood": "vitest run --config vitest.fork.config.ts test/fork/robinhood.fork.test.ts",
     "test:fork:arc": "vitest run --config vitest.fork.config.ts test/fork/arc.fork.test.ts",
