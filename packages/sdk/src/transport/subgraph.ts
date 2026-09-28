@@ -3,21 +3,30 @@ import { SnfError } from '../errors'
 import type { SnfClientConfig, SubgraphTransport } from '../types/client.types'
 import { CircuitBreaker } from './breaker'
 import { TtlCache } from './cache'
-import { META_QUERY, PAIR_BY_ID_QUERY, POOL_INVENTORY_QUERY, POOLS_QUERY } from './queries'
+import {
+  META_QUERY,
+  PAIR_BY_ID_QUERY,
+  PAIR_HISTORY_DAY_QUERY,
+  PAIR_HISTORY_MONTH_QUERY,
+  POOL_INVENTORY_QUERY,
+  POOLS_QUERY,
+} from './queries'
 import type {
   CachedResult,
   GraphQLEnvelope,
   SubgraphCurrency,
   SubgraphMeta,
   SubgraphPair,
+  SubgraphPairHistory,
   SubgraphTransportOptions,
 } from './subgraph.types'
 
-/** this rule's own acceptance numbers — 60 s / 30 s TTL, 300 s / 900 s lag, 3 failures / 60 s
- * breaker. Overridable per client via `SnfClientConfig.subgraph`. */
+/** this rule's own acceptance numbers — 60 s / 30 s / 300 s TTL, 300 s / 900 s lag, 3
+ * failures / 60 s breaker. Overridable per client via `SnfClientConfig.subgraph`. */
 const DEFAULT_OPTIONS: SubgraphTransportOptions = {
   ttlMs: 60_000,
   inventoryTtlMs: 30_000,
+  historyTtlMs: 300_000,
   staleLagSeconds: 300,
   degradedLagSeconds: 900,
   breakerThreshold: 3,
@@ -61,6 +70,7 @@ export function createSubgraphTransport(config: SnfClientConfig): SubgraphTransp
   const options: SubgraphTransportOptions = {
     ttlMs: config.subgraph?.ttlMs ?? DEFAULT_OPTIONS.ttlMs,
     inventoryTtlMs: config.subgraph?.inventoryTtlMs ?? DEFAULT_OPTIONS.inventoryTtlMs,
+    historyTtlMs: config.subgraph?.historyTtlMs ?? DEFAULT_OPTIONS.historyTtlMs,
     staleLagSeconds: config.subgraph?.staleLagSeconds ?? DEFAULT_OPTIONS.staleLagSeconds,
     degradedLagSeconds: config.subgraph?.degradedLagSeconds ?? DEFAULT_OPTIONS.degradedLagSeconds,
     breakerThreshold: config.subgraph?.breakerThreshold ?? DEFAULT_OPTIONS.breakerThreshold,
@@ -174,6 +184,21 @@ export function createSubgraphTransport(config: SnfClientConfig): SubgraphTransp
         swrMs: swrWindow(options.inventoryTtlMs),
       })
       return toCachedResult(value.currency, value._meta, revalidating)
+    },
+
+    async pairHistory(pair, interval, first) {
+      const key = `history:${String(config.chainId)}:${pair.toLowerCase()}:${interval}:${String(first)}`
+      const query = interval === 'day' ? PAIR_HISTORY_DAY_QUERY : PAIR_HISTORY_MONTH_QUERY
+      const loader = () =>
+        execute<{ pair: SubgraphPairHistory['pair']; buckets: SubgraphPairHistory['buckets']; _meta: SubgraphMeta }>(
+          query,
+          { id: pair, pair, first },
+        )
+      const { value, revalidating } = await cache.get(key, loader, {
+        ttlMs: options.historyTtlMs,
+        swrMs: swrWindow(options.historyTtlMs),
+      })
+      return toCachedResult({ pair: value.pair, buckets: value.buckets }, value._meta, revalidating)
     },
 
     async meta() {

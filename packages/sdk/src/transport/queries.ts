@@ -1,5 +1,5 @@
 /**
- * The four GraphQL query strings this package sends — nothing else lives here.
+ * The six GraphQL query strings this package sends — nothing else lives here.
  *
  * `POOLS_QUERY` and `PAIR_BY_ID_QUERY` are copied field-for-field from
  * the production AMM client's own `GetPools`/`GetPairById` documents — every
@@ -14,7 +14,15 @@
  * separate requests would let a freshness line describe a different moment than the
  * data it labels.
  *
- * `META_QUERY` is new — a standalone health probe with no entity payload.
+ * `META_QUERY` is a standalone health probe with no entity payload.
+ *
+ * `PAIR_HISTORY_DAY_QUERY`/`PAIR_HISTORY_MONTH_QUERY` read the indexer's own
+ * `PairDay`/`PairMonth` entities in one POST alongside the pair's own identity
+ * (`isNFTPool`/`discrete0`/`discrete1`/both tokens) and `_meta` — one round trip, one
+ * freshness line for the whole answer. The `buckets:`/`t:` aliases make both
+ * documents return the identical shape to the transport, so `pairHistory` can share
+ * one code path regardless of interval. No `*USD` field is selected in either —
+ * this package never reads or exposes the subgraph's own USD figures.
  */
 
 export const POOLS_QUERY = /* GraphQL */ `
@@ -147,6 +155,28 @@ export const POOL_INVENTORY_QUERY = /* GraphQL */ `
 
 export const META_QUERY = /* GraphQL */ `
   query SnfMeta {
+    _meta {
+      block { number timestamp }
+      hasIndexingErrors
+    }
+  }
+`
+
+export const PAIR_HISTORY_DAY_QUERY = /* GraphQL */ `
+  query PairHistoryDay($id: ID!, $pair: String!, $first: Int!) {
+    pair(id: $id) { id isNFTPool discrete0 discrete1 token0 { id symbol decimals } token1 { id symbol decimals } }
+    buckets: pairDays(where: { pair: $pair }, orderBy: day, orderDirection: desc, first: $first) { t: day volume0 volume1 reserve0 reserve1 totalSupply txCount }
+    _meta {
+      block { number timestamp }
+      hasIndexingErrors
+    }
+  }
+`
+
+export const PAIR_HISTORY_MONTH_QUERY = /* GraphQL */ `
+  query PairHistoryMonth($id: ID!, $pair: String!, $first: Int!) {
+    pair(id: $id) { id isNFTPool discrete0 discrete1 token0 { id symbol decimals } token1 { id symbol decimals } }
+    buckets: pairMonths(where: { pair: $pair }, orderBy: month, orderDirection: desc, first: $first) { t: month volume0 volume1 reserve0 reserve1 totalSupply txCount }
     _meta {
       block { number timestamp }
       hasIndexingErrors

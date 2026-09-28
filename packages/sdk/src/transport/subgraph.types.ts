@@ -7,8 +7,8 @@
  */
 
 /**
- * The six numbers behind `SnfClientConfig.subgraph`. Defaults mirror the documented
- * acceptance numbers (60 s / 30 s TTL, 300 s / 900 s lag, 3 failures / 60 s
+ * The seven numbers behind `SnfClientConfig.subgraph`. Defaults mirror the documented
+ * acceptance numbers (60 s / 30 s / 300 s TTL, 300 s / 900 s lag, 3 failures / 60 s
  * breaker) — adjustable with a documented reason; none were changed here.
  */
 export interface SubgraphTransportOptions {
@@ -16,6 +16,10 @@ export interface SubgraphTransportOptions {
   readonly ttlMs: number
   /** Inventory-query TTL, ms. Default 30_000. */
   readonly inventoryTtlMs: number
+  /** Pool-history-query TTL, ms. Default 300_000 — history changes at most once per
+   * swap, and its own query is the heaviest one this transport sends, so it gets the
+   * longest TTL and its own override key rather than reusing `ttlMs`. */
+  readonly historyTtlMs: number
   /** Lag (s) beyond which a result is marked `stale: true`. Default 300. */
   readonly staleLagSeconds: number
   /** Lag (s) beyond which a request throws `UPSTREAM_DEGRADED`. Default 900. */
@@ -117,6 +121,46 @@ export interface SubgraphCurrency {
   readonly collection?: { readonly id: string; readonly name: string; readonly symbol: string } | null
 }
 
+/** One `pair(id:...)` row as the `pairHistory` documents select it — the narrow slice
+ * of `SubgraphPair` a history read actually needs: identity + orientation, never the
+ * reserve/volume/USD columns `pools`/`pairById` carry (those come from the bucket
+ * rows instead, see `SubgraphPairBucket`). */
+export interface SubgraphHistoryToken {
+  readonly id: string
+  readonly symbol: string
+  readonly decimals: string | number
+}
+export interface SubgraphHistoryPair {
+  readonly id: string
+  readonly isNFTPool: boolean
+  readonly discrete0: boolean
+  readonly discrete1: boolean
+  readonly token0: SubgraphHistoryToken
+  readonly token1: SubgraphHistoryToken
+}
+
+/** One `PairDay`/`PairMonth` row. `t` is aliased from `day`/`month` so both intervals
+ * share this one shape; every numeric field is the indexer's own BigDecimal/BigInt
+ * string, unparsed at this layer — `portfolio/poolHistory.ts` is the only place that
+ * turns these into exact bigints, oriented by the wrapper side. */
+export interface SubgraphPairBucket {
+  readonly t: number | string
+  readonly volume0: string
+  readonly volume1: string
+  readonly reserve0: string
+  readonly reserve1: string
+  readonly totalSupply: string
+  readonly txCount: string
+}
+
+/** The whole `pairHistory` answer: the pair's own identity (`null` when the subgraph
+ * has no such pair at all) plus its bucket rows, newest-first exactly as the query
+ * orders them — `portfolio/poolHistory.ts` reverses this to ascending. */
+export interface SubgraphPairHistory {
+  readonly pair: SubgraphHistoryPair | null
+  readonly buckets: readonly SubgraphPairBucket[]
+}
+
 /**
  * The instance-scoped subgraph transport `createSubgraphTransport` returns — a TTL
  * cache, `_meta.block` freshness gate and circuit breaker, all closed over inside one
@@ -131,6 +175,14 @@ export interface SubgraphTransport {
   }): Promise<CachedResult<readonly SubgraphPair[]>>
   pairById(pair: `0x${string}`): Promise<CachedResult<SubgraphPair | null>>
   inventory(wrapper: `0x${string}`): Promise<CachedResult<SubgraphCurrency | null>>
+  /** One POST returning the pair's own identity, its `PairDay`/`PairMonth` bucket
+   * rows and `_meta`, cached under its own `historyTtlMs` (the heaviest read this
+   * transport serves — see `SubgraphTransportOptions.historyTtlMs`). */
+  pairHistory(
+    pair: `0x${string}`,
+    interval: 'day' | 'month',
+    first: number,
+  ): Promise<CachedResult<SubgraphPairHistory>>
   /** No cache — a health probe must always be live. Still routed through the breaker. */
   meta(): Promise<CachedResult<SubgraphMeta>>
   /** Clears this instance's cache — used by `txInvalidationVersion` bumps. */

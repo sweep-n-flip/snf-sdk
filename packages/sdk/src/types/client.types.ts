@@ -92,6 +92,9 @@ export interface SnfClientConfig {
   readonly subgraph?: {
     readonly ttlMs?: number
     readonly inventoryTtlMs?: number
+    /** Pool-history-query TTL override, ms. Default 300_000 — see
+     * `SubgraphTransportOptions.historyTtlMs`. */
+    readonly historyTtlMs?: number
     readonly staleLagSeconds?: number
     readonly degradedLagSeconds?: number
     readonly breakerThreshold?: number
