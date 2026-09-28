@@ -63,4 +63,16 @@ export const snfQueryKeys = {
 
   redemptionStatus: (chainId: number, v: number, collection: string) =>
     ['snf', 'redemptionStatus', chainId, v, collection.toLowerCase()] as const,
+
+  positions: (chainId: number, v: number, owner: string) =>
+    ['snf', 'positions', chainId, v, owner.toLowerCase()] as const,
+
+  wnftBalances: (chainId: number, v: number, owner: string) =>
+    ['snf', 'wnftBalances', chainId, v, owner.toLowerCase()] as const,
+
+  collectionsHeld: (chainId: number, v: number, owner: string) =>
+    ['snf', 'collectionsHeld', chainId, v, owner.toLowerCase()] as const,
+
+  poolHistory: (chainId: number, v: number, pair: string, interval: string, limit: number | null) =>
+    ['snf', 'poolHistory', chainId, v, pair.toLowerCase(), interval, limit] as const,
 } as const
