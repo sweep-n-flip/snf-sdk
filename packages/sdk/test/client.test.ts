@@ -282,33 +282,8 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
 // they are honestly "not live", not "not yet implemented"). That earlier
 // stub-rejection table (once eleven rows, trimmed plan by plan down to zero) is
 // retired; `D01_KEYS` above asserts every one of the twenty-eight method names exists,
-// in order, on the object `createSnfClient` returns. The table below was a second one,
-// for the four portfolio-read stubs — `positions`, `wnftBalances` and `collectionsHeld`
-// are real now too, covered by `test/portfolio/positions.test.ts`,
-// `test/portfolio/wnftBalances.test.ts` and `test/portfolio/collectionsHeld.test.ts`
-// (real RPC calls, never `UNKNOWN`); `poolHistory` is the last one, staying here until
-// it gets its own implementation.
-
-describe('createSnfClient — the last portfolio-read stub rejects UNKNOWN, no RPC or fetch issued', () => {
-  it('poolHistory rejects SnfError(UNKNOWN) ending in "is not implemented yet", with zero RPC/fetch calls', async () => {
-    const publicClient = fakePublicClient()
-    const fetchMock = vi.fn()
-    vi.stubGlobal('fetch', fetchMock)
-    const client = createSnfClient(config({ publicClient }))
-    let threw: unknown
-    try {
-      await client.poolHistory('0x0000000000000000000000000000000000000001', 'day')
-      expect.fail('expected poolHistory to reject')
-    } catch (e) {
-      threw = e
-    }
-    expect(isSnfError(threw)).toBe(true)
-    if (isSnfError(threw)) {
-      expect(threw.code).toBe('UNKNOWN')
-      expect(threw.message.endsWith('is not implemented yet')).toBe(true)
-    }
-    expect(publicClient.readContract).not.toHaveBeenCalled()
-    expect(publicClient.multicall).not.toHaveBeenCalled()
-    expect(fetchMock).not.toHaveBeenCalled()
-  })
-})
+// in order, on the object `createSnfClient` returns. Every one of the four
+// portfolio-read methods is real now too, each covered by its own file under
+// `test/portfolio/`: `test/portfolio/positions.test.ts`,
+// `test/portfolio/wnftBalances.test.ts`, `test/portfolio/collectionsHeld.test.ts` and
+// `test/portfolio/poolHistory.test.ts`. No stub-rejection table remains in this file.
