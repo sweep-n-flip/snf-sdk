@@ -33,10 +33,13 @@ on every chain:
   for a signing entry point, and that no test fixture ever constructs a real account
   from a private key.
 - `scripts/grep-gate.mjs` (`pnpm grep:gate`) scans `packages/*/src` and `packages/*/dist`
-  for `process.env`, `NEXT_PUBLIC_`, a hardcoded `sweepnflip.io`/`alchemy.com`/
-  `opensea.io`/`coingecko.com` host, and any import of the closed-source production
-  client this SDK's own dependency-free design deliberately does not depend on — none
-  of which a partner-facing package has a legitimate reason to contain.
+  for `process.env`, `NEXT_PUBLIC_`, a hardcoded `sweepnflip.io/api` backend path,
+  a hardcoded `alchemy.com`/`opensea.io`/`coingecko.com` host, and any import of the
+  closed-source production client this SDK's own dependency-free design deliberately
+  does not depend on — none of which a partner-facing package has a legitimate reason
+  to contain. The public app origin (`https://app.sweepnflip.io`, no `/api` path) is
+  allowed: the SDK names it only to build a link a partner renders, and never requests
+  it.
 - `scripts/release-gate.mjs` (`pnpm release:gate`) adds a secrets scan (64-hex
   literals, PEM private-key headers, `sk_live`/`snf_live_` prefixes, long-path indexer
   URLs, tracked `.env` files) over the whole repository and over both packages' built

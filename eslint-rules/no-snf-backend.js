@@ -1,15 +1,18 @@
 /**
  * local/no-snf-backend
  *
- * This SDK never calls `app.sweepnflip.io/api/*`, never embeds third-party
- * keys (Alchemy/OpenSea/CoinGecko), and never reads `process.env` at runtime —
- * the partner brings the provider. Target: packages/*\/src. This is the
- * lint-time half; scripts/grep-gate.mjs (Task 3) is the CI-time half that also
- * covers `dist`.
+ * This SDK never calls the SnF backend (`sweepnflip.io/api/*`), never embeds
+ * third-party keys (Alchemy/OpenSea/CoinGecko), and never reads `process.env`
+ * at runtime — the partner brings the provider. It MAY name the public app
+ * origin (`https://app.sweepnflip.io`, no `/api` path) to BUILD a link a
+ * partner renders for a user to click — that is string construction, never a
+ * network call, so the origin alone is not banned; only the backend path is.
+ * Target: packages/*\/src. This is the lint-time half; scripts/grep-gate.mjs
+ * (Task 3) is the CI-time half that also covers `dist`.
  */
 
 const BANNED_STRING_PATTERNS = [
-  { re: /sweepnflip\.io/, id: 'endpoint' },
+  { re: /sweepnflip\.io\/api/, id: 'endpoint' },
   { re: /NEXT_PUBLIC_/, id: 'envPrefix' },
   { re: /OPENSEA_API_KEY/, id: 'thirdPartyKey' },
   { re: /ALCHEMY/, id: 'thirdPartyKey' },
@@ -39,7 +42,7 @@ export default {
     },
     messages: {
       endpoint:
-        'SDK MUST NOT call an SnF backend endpoint: found "sweepnflip.io" in a literal.',
+        'SDK MUST NOT call an SnF backend endpoint: found "sweepnflip.io/api" in a literal.',
       envPrefix:
         'SDK MUST NOT reference a NEXT_PUBLIC_ env var — the SDK is not a Next.js app; the partner brings the config.',
       thirdPartyKey:

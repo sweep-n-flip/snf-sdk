@@ -45,10 +45,21 @@ ruleTester.run('no-snf-backend', noSnfBackend, {
   valid: [
     { code: "import { getAddress } from 'viem'" },
     { code: "import { foo } from './bar'" },
+    { code: "const ORIGIN = 'https://app.sweepnflip.io'" },
+    { code: 'const u = `https://app.sweepnflip.io/pools/${p}`' },
+    { code: '"https://app.sweepnflip.io/liquidity?tab=add"' },
   ],
   invalid: [
     {
       code: "fetch('https://app.sweepnflip.io/api/x')",
+      errors: [{ messageId: 'endpoint' }],
+    },
+    {
+      code: 'const u = `https://app.sweepnflip.io/api/v1/${p}`',
+      errors: [{ messageId: 'endpoint' }],
+    },
+    {
+      code: '"sweepnflip.io/api"',
       errors: [{ messageId: 'endpoint' }],
     },
     {

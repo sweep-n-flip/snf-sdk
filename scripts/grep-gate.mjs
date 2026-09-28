@@ -6,6 +6,11 @@
 // private-client imports. Scans `dist` as well as `src` so a transitive re-export
 // cannot smuggle a forbidden string past a source-only scan.
 //
+// The `sweepnflip.io/api` rule bans only the backend path, not the bare app origin —
+// this package MAY hardcode `https://app.sweepnflip.io` to BUILD a link a partner
+// renders (string construction), which is never a network call. Only a literal
+// `/api` path under that origin is the thing this gate exists to catch.
+//
 // Comment-stripping: the THIRD-PARTY-HOST/env rules below are checked with `//` and
 // `/* ... */` comments removed first, so a doc comment that *names* a forbidden
 // pattern (this repo's own rule docs do exactly that) cannot self-invalidate the
@@ -50,7 +55,7 @@ import { join, relative } from 'node:path'
 const ROOT = process.cwd()
 
 const RULES = [
-  { id: 'sweepnflip.io', re: /sweepnflip\.io/ },
+  { id: 'sweepnflip.io/api', re: /sweepnflip\.io\/api/ },
   { id: 'NEXT_PUBLIC_', re: /NEXT_PUBLIC_/ },
   { id: 'process.env', re: /process\.env/ },
   { id: 'private-client import', re: /from\s+['"]snf-client|require\(\s*['"]snf-client/ },
@@ -270,7 +275,7 @@ if (allHits.length > 0) {
   process.exit(1)
 } else {
   console.log(
-    'grep-gate: clean (no sweepnflip.io, NEXT_PUBLIC_, process.env, private-client import, banned third-party ' +
+    'grep-gate: clean (no sweepnflip.io/api, NEXT_PUBLIC_, process.env, private-client import, banned third-party ' +
       'host in packages/*/src or packages/*/dist; no internal-planning-apparatus citation or private-repo path ' +
       'anywhere in the tracked tree)',
   )
