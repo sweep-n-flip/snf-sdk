@@ -3,6 +3,7 @@ import type { Abi } from 'viem'
 
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
+import { attributionSuffixFor } from '../attribution/sdkSuffix'
 import { toNativeValue } from '../chains/units'
 import { assertParam, SnfError } from '../errors'
 import { buildWnftRoutePath } from '../routing/nftRoutePaths'
@@ -137,6 +138,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
   const sellData = encodeDynamic(routerAbi, sellFunctionName, sellCallArgs)
   const { gas: sellGas, gasSource: sellGasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
+    dataSuffix: attributionSuffixFor(ctx.config),
     address: ctx.chain.router02,
     abi: routerAbi,
     functionName: sellFunctionName,
@@ -188,6 +190,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
   // estimate, unaffected by Finding 2.
   const { gas: buyGas } = await resolveGasForStep({
     publicClient: ctx.publicClient,
+    dataSuffix: attributionSuffixFor(ctx.config),
     address: ctx.chain.router02,
     abi: routerAbi,
     functionName: buyFunctionName,
@@ -246,6 +249,7 @@ export async function buildNftToNft(ctx: SnfClientContext, args: BuildArgs): Pro
     const wnftValue = isNativeBase ? toNativeValue(ctx.chain.chainId, remainderBaseValue) : 0n
     const { gas: wnftGas } = await resolveGasForStep({
       publicClient: ctx.publicClient,
+      dataSuffix: attributionSuffixFor(ctx.config),
       address: ctx.chain.router02,
       abi: routerAbi,
       functionName: wnftFunctionName,

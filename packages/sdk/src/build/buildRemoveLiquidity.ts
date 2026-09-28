@@ -1,5 +1,6 @@
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
+import { attributionSuffixFor } from '../attribution/sdkSuffix'
 import { assertParam, isSnfError, SnfError } from '../errors'
 import { ONE_WNFT } from '../liquidity/liquidityMath'
 import { quoteRemoveLiquidity } from '../liquidity/quoteRemoveLiquidity'
@@ -184,6 +185,7 @@ export async function buildRemoveLiquidity(ctx: SnfClientContext, args: BuildArg
 
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
+    dataSuffix: attributionSuffixFor(ctx.config),
     address: ctx.chain.router02,
     abi: routerAbi,
     functionName,

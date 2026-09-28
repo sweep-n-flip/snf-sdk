@@ -74,6 +74,7 @@ describe('src/index.ts — the public barrel surface', () => {
       'assertParam',
       'createSnfClient',
       'describeError',
+      'encodeAttribution',
       'floorNativeValue',
       'formatAmount',
       'fromNativeValue',
@@ -82,11 +83,14 @@ describe('src/index.ts — the public barrel surface', () => {
       'getQuoteScale',
       'isSnfError',
       'isSupportedChain',
+      'parseAttribution',
       'toAmount',
       'toNativeValue',
+      'toSdkCode',
       'tokenLink',
       'toSnfError',
       'txLink',
+      'validatePartnerCode',
     ].sort()
 
     expect(names).toEqual(expected)

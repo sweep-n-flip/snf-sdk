@@ -50,6 +50,7 @@ const CORE_EXPORTS = [
   'assertParam',
   'createSnfClient',
   'describeError',
+  'encodeAttribution',
   'floorNativeValue',
   'formatAmount',
   'fromNativeValue',
@@ -58,11 +59,14 @@ const CORE_EXPORTS = [
   'getQuoteScale',
   'isSnfError',
   'isSupportedChain',
+  'parseAttribution',
   'toAmount',
   'toNativeValue',
+  'toSdkCode',
   'toSnfError',
   'tokenLink',
   'txLink',
+  'validatePartnerCode',
 ]
 
 const ADAPTER_EXPORTS = [

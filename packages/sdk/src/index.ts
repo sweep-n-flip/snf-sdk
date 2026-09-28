@@ -32,6 +32,7 @@ export type * from './errors.types'
 export { SNF_ERROR_RETRYABLE } from './errors.types'
 export { addressLink, tokenLink, txLink } from './links'
 export { appLinks } from './appLinks'
+export { encodeAttribution, parseAttribution, toSdkCode, validatePartnerCode } from './attribution'
 export { formatAmount, toAmount } from './format'
 export type * from './types'
 

@@ -108,6 +108,19 @@ when a partner calls `build(args)`, feeding the resulting plan to the existing
 follows the data source — 30-second polling for the two on-chain balance reads, none
 at all for the partner-indexer and the 5-minute-cached history read.
 
+**`@sweepnflip/sdk`** — ERC-8021 partner attribution (additive, minor):
+
+- `createSnfClient({ attribution: { code } })` — every step the client builds for an
+  SnF contract (Router02/Factory) now ends with an ERC-8021 schema-0 suffix: `sdk`
+  without a code, `sdk-<code>` with one. Approval steps are never tagged, gas is
+  estimated on the suffixed calldata, and a bad code throws `INVALID_PARAMS` at
+  construction. Contracts ignore the trailing bytes; no registration is needed.
+- `encodeAttribution(codes)` / `parseAttribution(data)` — encode a suffix for a
+  transaction the SDK did not build, and read the codes back from any calldata
+  (strict: `null` for anything that is not a well-formed schema-0 suffix).
+- `validatePartnerCode(code)` / `toSdkCode(code?)` — the partner-code grammar the
+  client enforces, exposed for pre-validation.
+
 ### Changed
 
 - **The no-backend lint rule and the grep gate now block `sweepnflip.io/api`

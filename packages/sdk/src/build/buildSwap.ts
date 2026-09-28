@@ -3,6 +3,7 @@ import type { Abi } from 'viem'
 
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
+import { attributionSuffixFor } from '../attribution/sdkSuffix'
 import { toNativeValue } from '../chains/units'
 import { assertParam, SnfError } from '../errors'
 import { quoteSwap } from '../quote/quoteSwap'
@@ -141,6 +142,7 @@ export async function buildSwap(ctx: SnfClientContext, args: BuildArgs): Promise
   // example, first traced on this function).
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
+    dataSuffix: attributionSuffixFor(ctx.config),
     address: ctx.chain.router02,
     abi: routerAbi,
     functionName,

@@ -1,4 +1,4 @@
-import type { Abi, Address } from 'viem'
+import type { Abi, Address, Hex } from 'viem'
 import { BaseError, ContractFunctionRevertedError } from 'viem'
 
 import type { SnfPublicClient } from '../types/client.types'
@@ -75,6 +75,12 @@ export interface EstimateGasWithBufferArgs {
    * caller omits it (defaults to `0n`) and behaves exactly as before.
    */
   readonly extraFallbackGas?: bigint
+  /**
+   * The ERC-8021 attribution suffix `assemblePlan` will append to this step's calldata
+   * — estimated ON the suffixed calldata so the gas limit covers the bytes actually
+   * sent. Absent: plain calldata, exactly as before.
+   */
+  readonly dataSuffix?: Hex | undefined
 }
 
 /**
@@ -98,6 +104,7 @@ export async function estimateGasWithBuffer(args: EstimateGasWithBufferArgs): Pr
       args: args.args,
       account: args.account,
       value: args.value,
+      ...(args.dataSuffix !== undefined ? { dataSuffix: args.dataSuffix } : {}),
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-argument
     const estimated = await args.publicClient.estimateContractGas(params as any)

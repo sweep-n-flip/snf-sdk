@@ -5,6 +5,7 @@ import type { SnfChainConfig, SnfChainId } from '../chains/chains.types'
 import type { LadderResult } from '../math/nftPricing.types'
 import type { ReceiptLike, SwapReceipt } from '../receipt/receipt.types'
 import type { SubgraphTransport } from '../transport/subgraph.types'
+import type { AttributionConfig } from './attribution.types'
 import type { CollectionInfo } from './collection.types'
 import type { PoolInventory } from './inventory.types'
 import type {
@@ -104,6 +105,10 @@ export interface SnfClientConfig {
     readonly slippageBps?: number
     readonly deadlineSeconds?: number
   }
+  /** ERC-8021 attribution. Always on: without it every SnF-contract step is tagged
+   * `sdk`; with `{ code: 'acme' }` it is tagged `sdk-acme`. Approvals are never
+   * tagged. See `AttributionConfig`. */
+  readonly attribution?: AttributionConfig
 }
 
 /**

@@ -125,6 +125,32 @@ axes; never hardcode a `1e18`/`parseEther` literal against a pool-side amount.
   chain today).** `quoteSwap` is delegate-aware and reads the right one per pool —
   never hardcode either.
 
+## Attribution
+
+Every transaction the SDK builds for an SnF contract ends with an ERC-8021 (schema 0)
+attribution suffix: a few bytes appended to the calldata that the contracts ignore and
+indexers read. Approvals are never tagged. It is always on. Without config the code is
+`sdk`; set your partner code once and your transactions carry `sdk-<code>`:
+
+```ts
+const snf = createSnfClient({ chainId: 8453, publicClient, attribution: { code: 'acme' } }) // tags "sdk-acme"
+```
+
+No registration is needed to tag. A code is 2–28 lowercase letters, digits or `-`
+(`sdk-` is added for you and never doubled); `snf`, `snf-*` and a bare `sdk` are
+reserved. A bad code throws `INVALID_PARAMS` from `createSnfClient`, never at send time.
+The suffix is part of `step.tx.data` itself, and gas is estimated on the suffixed
+calldata, so it reaches the chain however you send the step.
+
+```ts
+import { encodeAttribution, parseAttribution } from '@sweepnflip/sdk'
+
+parseAttribution(tx.input) // ['sdk-acme'], or null when untagged/malformed
+
+// Tag a transaction the SDK did not build, with plain viem:
+await walletClient.writeContract({ ...request, dataSuffix: encodeAttribution(['acme']) })
+```
+
 ## Security posture
 
 This SDK never signs, never relays, and never custodies. Every value that affects a

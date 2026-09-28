@@ -2,6 +2,7 @@ import type { Abi } from 'viem'
 
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
+import { attributionSuffixFor } from '../attribution/sdkSuffix'
 import type { RouterVariant, SnfChainId } from '../chains/chains.types'
 import { toNativeValue } from '../chains/units'
 import { SnfError } from '../errors'
@@ -281,6 +282,7 @@ export async function buildDepositStep(ctx: SnfClientContext, args: BuildDeposit
   const overheadGas = creationOverheadGas({ createsPair: pair === null, createsWrapper: wrapper === null })
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
+    dataSuffix: attributionSuffixFor(ctx.config),
     address: ctx.chain.router02,
     abi: encoded.abi,
     functionName: encoded.functionName,

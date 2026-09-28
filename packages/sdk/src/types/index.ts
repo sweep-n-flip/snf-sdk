@@ -5,6 +5,7 @@
  */
 export type * from './amount.types'
 export type * from './appLinks.types'
+export type * from './attribution.types'
 export type * from './checkout.types'
 export type * from './client.types'
 export type * from './collection.types'
