@@ -62,6 +62,10 @@ export interface WalletNftsProvider {
 
 export interface PricesProvider {
   getNativeUsd(chainId: number): Promise<number | undefined>
+  /** Optional — consulted only for ERC-20-base pools; a native base always uses
+   * `getNativeUsd` instead. An absent method, an `undefined` answer, a throw, or a
+   * non-finite/non-positive number all mean the identical thing: no price. */
+  getTokenUsd?(chainId: number, token: `0x${string}`): Promise<number | undefined>
 }
 
 export interface PoolInventoryProvider {

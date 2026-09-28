@@ -225,6 +225,10 @@ function fakeTradeCardClient(): SnfClient {
     buildSeed: vi.fn(),
     seeding: vi.fn(),
     attestation: vi.fn(),
+    positions: vi.fn(),
+    wnftBalances: vi.fn(),
+    collectionsHeld: vi.fn(),
+    poolHistory: vi.fn(),
   }
 }
 
@@ -337,6 +341,10 @@ function fakePoolStatsClient(): SnfClient {
     buildSeed: () => Promise.reject(new Error('not used by this suite')),
     seeding: () => Promise.reject(new Error('not used by this suite')),
     attestation: () => Promise.reject(new Error('not used by this suite')),
+    positions: () => Promise.reject(new Error('not used by this suite')),
+    wnftBalances: () => Promise.reject(new Error('not used by this suite')),
+    collectionsHeld: () => Promise.reject(new Error('not used by this suite')),
+    poolHistory: () => Promise.reject(new Error('not used by this suite')),
   }
 }
 

@@ -145,6 +145,10 @@ function fakeClient(chainId: SnfClient['chainId'], overrides: Partial<SnfClient>
     buildSeed: vi.fn(),
     seeding: vi.fn(),
     attestation: vi.fn(),
+    positions: vi.fn(),
+    wnftBalances: vi.fn(),
+    collectionsHeld: vi.fn(),
+    poolHistory: vi.fn(),
     ...overrides,
   }
 }

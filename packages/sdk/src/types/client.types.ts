@@ -18,6 +18,14 @@ import type {
   RedemptionStatus,
 } from './liquidity.types'
 import type { BuildArgs, ExecutionPlan } from './plan.types'
+import type {
+  CollectionsHeld,
+  PoolHistory,
+  PoolHistoryInterval,
+  PoolHistoryOptions,
+  PortfolioPositions,
+  WnftBalances,
+} from './portfolio.types'
 import type { DataProviders } from './providers.types'
 import type { Quote, QuoteBuyArgs, QuoteNftToNftArgs, QuoteSellArgs, QuoteSwapArgs } from './quote.types'
 import type { SeedingAttestation, SeedingInfo } from './seeding.types'
@@ -111,7 +119,7 @@ export interface SnfClientContext {
 
 /**
  * The object `createSnfClient` returns — the ENTIRE documented public surface.
- * Twenty-four methods plus `chainId`/`chain`. Free functions may exist internally as
+ * Twenty-eight methods plus `chainId`/`chain`. Free functions may exist internally as
  * this package's implementation, but a partner is only ever meant to call through this
  * object — `snf.quoteBuy(...)`, never a bare imported `quoteBuy(...)`.
  */
@@ -165,4 +173,19 @@ export interface SnfClient {
   seeding(collection: `0x${string}`): Promise<SeedingInfo>
   /** A typed read of a collection's seeding attestation. */
   attestation(collection: `0x${string}`): Promise<SeedingAttestation>
+  /** Every LP position this owner holds in this chain's SnF NFT pools, all read at
+   * one block. */
+  positions(owner: `0x${string}`): Promise<PortfolioPositions>
+  /** Every wrapped-NFT balance this owner holds for a collection with an SnF pool on
+   * this chain. */
+  wnftBalances(owner: `0x${string}`): Promise<WnftBalances>
+  /** The NFT collections this owner holds, through the `walletNfts` provider —
+   * `unavailable` when none is configured, never a silent empty list. */
+  collectionsHeld(owner: `0x${string}`): Promise<CollectionsHeld>
+  /** A pool's volume/reserve history, bucketed by day or (730-hour) month. */
+  poolHistory(
+    pair: `0x${string}`,
+    interval: PoolHistoryInterval,
+    opts?: PoolHistoryOptions,
+  ): Promise<PoolHistory>
 }

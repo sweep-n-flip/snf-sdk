@@ -82,6 +82,10 @@ function fakeClient(overrides: Partial<SnfClient> = {}): SnfClient {
     buildSeed: vi.fn(),
     seeding: vi.fn(),
     attestation: vi.fn(),
+    positions: vi.fn(),
+    wnftBalances: vi.fn(),
+    collectionsHeld: vi.fn(),
+    poolHistory: vi.fn(),
     ...overrides,
   }
 }

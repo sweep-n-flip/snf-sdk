@@ -211,6 +211,10 @@ function makeLoggingClient(tree: 'A' | 'B'): SnfClient {
     buildSeed: vi.fn(),
     seeding: vi.fn(),
     attestation: vi.fn(),
+    positions: vi.fn(),
+    wnftBalances: vi.fn(),
+    collectionsHeld: vi.fn(),
+    poolHistory: vi.fn(),
   }
 }
 

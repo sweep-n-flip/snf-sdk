@@ -51,9 +51,9 @@ function metaEnvelope(): Response {
   })
 }
 
-/** The exact documented order: `chainId`, `chain`, then the twenty-four methods as
+/** The exact documented order: `chainId`, `chain`, then the twenty-eight methods as
  * `types/client.types.ts`'s `SnfClient` interface declares them — the original
- * thirteen followed by the eleven liquidity/seeding methods this plan adds. */
+ * thirteen, the eleven liquidity/seeding methods, then the four portfolio reads. */
 const D01_KEYS = [
   'chainId',
   'chain',
@@ -81,6 +81,10 @@ const D01_KEYS = [
   'buildSeed',
   'seeding',
   'attestation',
+  'positions',
+  'wnftBalances',
+  'collectionsHeld',
+  'poolHistory',
 ]
 
 beforeEach(() => {
@@ -93,7 +97,7 @@ afterEach(() => {
 })
 
 describe('createSnfClient — the object surface', () => {
-  it("own enumerable keys are exactly the 24 method names plus chainId and chain, in this rule's order", () => {
+  it("own enumerable keys are exactly the 28 method names plus chainId and chain, in this rule's order", () => {
     const client = createSnfClient(config())
     expect(Object.keys(client)).toEqual(D01_KEYS)
   })
@@ -275,7 +279,38 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
 // the last three stub bodies in this table — all real now (`buildSeed` covered by
 // `test/build/buildSeed.test.ts`; `seeding`/`attestation` covered by
 // `test/seeding/notLive.test.ts`, which reject with `PRODUCT_NOT_LIVE`, not `UNKNOWN` —
-// they are honestly "not live", not "not yet implemented"). This file's own
+// they are honestly "not live", not "not yet implemented"). That earlier
 // stub-rejection table (once eleven rows, trimmed plan by plan down to zero) is
-// retired; `D01_KEYS` above still asserts every one of the twenty-four method names
-// exists, in order, on the object `createSnfClient` returns.
+// retired; `D01_KEYS` above asserts every one of the twenty-eight method names exists,
+// in order, on the object `createSnfClient` returns. The table below is a NEW one, for
+// the four portfolio-read stubs this plan adds — trimmed the same way, plan by plan, as
+// each gets its real implementation.
+
+describe('createSnfClient — the four portfolio-read stubs reject UNKNOWN, no RPC or fetch issued', () => {
+  it.each([
+    ['positions', (client: ReturnType<typeof createSnfClient>) => client.positions('0x0000000000000000000000000000000000000001')],
+    ['wnftBalances', (client: ReturnType<typeof createSnfClient>) => client.wnftBalances('0x0000000000000000000000000000000000000001')],
+    ['collectionsHeld', (client: ReturnType<typeof createSnfClient>) => client.collectionsHeld('0x0000000000000000000000000000000000000001')],
+    ['poolHistory', (client: ReturnType<typeof createSnfClient>) => client.poolHistory('0x0000000000000000000000000000000000000001', 'day')],
+  ] as const)('%s rejects SnfError(UNKNOWN) ending in "is not implemented yet", with zero RPC/fetch calls', async (name, call) => {
+    const publicClient = fakePublicClient()
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+    const client = createSnfClient(config({ publicClient }))
+    let threw: unknown
+    try {
+      await call(client)
+      expect.fail(`expected ${name} to reject`)
+    } catch (e) {
+      threw = e
+    }
+    expect(isSnfError(threw)).toBe(true)
+    if (isSnfError(threw)) {
+      expect(threw.code).toBe('UNKNOWN')
+      expect(threw.message.endsWith('is not implemented yet')).toBe(true)
+    }
+    expect(publicClient.readContract).not.toHaveBeenCalled()
+    expect(publicClient.multicall).not.toHaveBeenCalled()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+})

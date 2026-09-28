@@ -9,6 +9,10 @@ import { lpPosition } from './liquidity/lpPosition'
 import { quoteAddLiquidity } from './liquidity/quoteAddLiquidity'
 import { quoteCreatePool } from './liquidity/quoteCreatePool'
 import { quoteRemoveLiquidity } from './liquidity/quoteRemoveLiquidity'
+import { positions } from './portfolio/positions'
+import { wnftBalances } from './portfolio/wnftBalances'
+import { collectionsHeld } from './portfolio/collectionsHeld'
+import { poolHistory } from './portfolio/poolHistory'
 import { parseReceipt as parseReceiptPure } from './receipt/parseReceipt'
 import { buildAddLiquidity } from './build/buildAddLiquidity'
 import { buildBuy } from './build/buildBuy'
@@ -129,7 +133,7 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
     nextTxInvalidationVersion,
   }
 
-  // Documented order: chainId, chain, then the twenty-four methods exactly as
+  // Documented order: chainId, chain, then the twenty-eight methods exactly as
   // `SnfClient` declares them. `Object.keys(client)` is asserted against this same
   // order in `test/client.test.ts`.
   const client = Object.freeze<SnfClient>({
@@ -215,6 +219,20 @@ export function createSnfClient(config: SnfClientConfig): SnfClient {
 
     /** A typed read of a collection's seeding attestation. */
     attestation: (collection) => attestation(ctx, collection),
+
+    /** Every LP position this owner holds in this chain's SnF NFT pools, all read at
+     * one block. */
+    positions: (owner) => positions(ctx, owner),
+
+    /** Every wrapped-NFT balance this owner holds for a collection with an SnF pool
+     * on this chain. */
+    wnftBalances: (owner) => wnftBalances(ctx, owner),
+
+    /** The NFT collections this owner holds, through the `walletNfts` provider. */
+    collectionsHeld: (owner) => collectionsHeld(ctx, owner),
+
+    /** A pool's volume/reserve history, bucketed by day or (730-hour) month. */
+    poolHistory: (pair, interval, opts) => poolHistory(ctx, pair, interval, opts),
   })
 
   return client
