@@ -64,6 +64,41 @@ async function onDeposit() {
 }
 ```
 
+## Portfolio
+
+Four read hooks, one per `SnfClient` portfolio method — each describes only the one
+chain of its own `SnfProvider`. To show several chains, mount one `SnfProvider` per
+chain and loop over the results; there is no cross-chain hook here (that is planned
+for a later release).
+
+- `useSnfPositions(owner)` — every LP position this owner holds, all read at one
+  block. `staleTime` 20 s, `refetchInterval` 30 s — the same cadence the reference
+  app's own LP scan uses.
+- `useSnfWnftBalances(owner)` — every wrapped-NFT balance this owner holds. Same
+  20 s / 30 s cadence as positions — both track live on-chain balances.
+- `useSnfCollectionsHeld(owner)` — the NFT collections this owner holds, through the
+  partner's own `walletNfts` provider. `staleTime` 60 s, no polling interval — this
+  is answered by the partner's own indexer, and polling it would burn their quota.
+  Returns `status: 'unavailable'` unless you pass a `walletNfts` provider — that is a
+  valid answer, not an error.
+- `useSnfPoolHistory(pair, interval, args?)` — a pool's volume/reserve series,
+  bucketed by day or month. `staleTime` 300 s, no polling interval — matches the
+  5-minute cache the core itself keeps for this read.
+
+USD appears only when you pass a `prices` provider — every `valueUsd` field is
+`undefined` otherwise, never `0`.
+
+```tsx
+const { data } = useSnfPositions(address)
+
+{data?.positions.map((position) => (
+  <div key={position.pair}>
+    {position.labels.name} — {position.valueInBase.formatted}
+    {position.valueUsd !== undefined && <span> (${position.valueUsd.toFixed(2)})</span>}
+  </div>
+))}
+```
+
 ## Docs
 
 - Root README (chain table, security posture, footguns this SDK hides): [`../../README.md`](../../README.md)

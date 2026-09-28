@@ -1,15 +1,16 @@
 /**
  * `@sweepnflip/sdk-react` — public entrypoint.
  *
- * Exactly `SnfProvider` plus sixteen `useSnf*` hooks — `useSnfClient`,
+ * Exactly `SnfProvider` plus twenty `useSnf*` hooks — `useSnfClient`,
  * `useSnfCollection`, `useSnfPoolInventory`, `useSnfQuoteBuy`, `useSnfQuoteSell`,
  * `useSnfQuoteNftToNft`, `useSnfQuoteAddLiquidity`, `useSnfQuoteCreatePool`,
  * `useSnfQuoteRemoveLiquidity`, `useSnfLpPosition`, `useSnfRedemptionStatus`,
  * `useSnfAddLiquidity`, `useSnfCreatePool`, `useSnfRemoveLiquidity`, `useSnfSeed`,
- * `useSnfCheckout`. Nothing from `@sweepnflip/sdk` is re-exported here — a partner
- * imports `@sweepnflip/sdk` for types/`createSnfClient` and `@sweepnflip/sdk-react`
- * for hooks; re-exporting the core's surface from this barrel would create two paths
- * to the same symbol and a dual-instance hazard.
+ * `useSnfCheckout`, `useSnfPositions`, `useSnfWnftBalances`,
+ * `useSnfCollectionsHeld`, `useSnfPoolHistory`. Nothing from `@sweepnflip/sdk` is
+ * re-exported here — a partner imports `@sweepnflip/sdk` for types/`createSnfClient`
+ * and `@sweepnflip/sdk-react` for hooks; re-exporting the core's surface from this
+ * barrel would create two paths to the same symbol and a dual-instance hazard.
  */
 export { SnfProvider } from './context'
 export type { SnfProviderProps, SnfContextValue } from './context'
@@ -31,6 +32,10 @@ export {
   useSnfRemoveLiquidity,
   useSnfSeed,
   useSnfCheckout,
+  useSnfPositions,
+  useSnfWnftBalances,
+  useSnfCollectionsHeld,
+  useSnfPoolHistory,
 } from './hooks'
 export type {
   UseSnfCollectionOptions,
@@ -64,4 +69,12 @@ export type {
   UseSnfRemoveLiquidityResult,
   UseSnfSeedResult,
   UseSnfCheckoutResult,
+  UseSnfPositionsOptions,
+  UseSnfPositionsResult,
+  UseSnfWnftBalancesOptions,
+  UseSnfWnftBalancesResult,
+  UseSnfCollectionsHeldOptions,
+  UseSnfCollectionsHeldResult,
+  UseSnfPoolHistoryOptions,
+  UseSnfPoolHistoryResult,
 } from './hooks'

@@ -71,9 +71,12 @@ const ADAPTER_EXPORTS = [
   'useSnfCheckout',
   'useSnfClient',
   'useSnfCollection',
+  'useSnfCollectionsHeld',
   'useSnfCreatePool',
   'useSnfLpPosition',
+  'useSnfPoolHistory',
   'useSnfPoolInventory',
+  'useSnfPositions',
   'useSnfQuoteAddLiquidity',
   'useSnfQuoteBuy',
   'useSnfQuoteCreatePool',
@@ -83,6 +86,7 @@ const ADAPTER_EXPORTS = [
   'useSnfRedemptionStatus',
   'useSnfRemoveLiquidity',
   'useSnfSeed',
+  'useSnfWnftBalances',
 ]
 
 describe('public surface snapshot (built dist/index.js)', () => {
