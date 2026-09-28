@@ -147,15 +147,19 @@ frame-of-signature pre-flight, a user-driven checkout state machine, and the Rea
 adapter.
 
 **Built, unreleased — ships in the next minor version, not `0.1.2`:** liquidity
-(add/remove/create pool, a launch-seeding helper, LP position reads) — see
-`CHANGELOG.md`'s `[Unreleased]` section for the full surface. A collection's
-seeding/attestation status is a typed read that rejects on every chain until that
-product itself is live.
+(add/remove/create pool, a launch-seeding helper, LP position reads); read-only
+portfolio reads (`positions`, `wnftBalances`, `collectionsHeld`, `poolHistory`), each
+scoped to the client's own chain; and `appLinks`, canonical links into the public
+app — see `CHANGELOG.md`'s `[Unreleased]` section for the full surface. A
+collection's seeding/attestation status is a typed read that rejects on every chain
+until that product itself is live.
 
-**Explicitly deferred:** a cross-chain portfolio view (LP positions across every
-chain in one call). Marketplace aggregation, third-party marketplace integrations,
-sell-into-bids, and any atomic multi-step NFT×NFT execution
-contract are out of scope for this SDK entirely for now.
+**Explicitly deferred:** a single call spanning several chains at once (every
+portfolio read above covers exactly one chain today — a partner covering several
+chains creates one client per chain and loops over them; a genuine cross-chain call
+is planned for a later release). Marketplace aggregation, third-party marketplace
+integrations, sell-into-bids, and any atomic multi-step NFT×NFT execution contract
+are out of scope for this SDK entirely for now.
 
 ## Development
 

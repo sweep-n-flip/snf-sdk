@@ -29,17 +29,24 @@ buried in an internal document nobody reads at integration time.
 | `liquidity/addLiquidityBase.ts` | An ERC-20-base deposit's desired/approval amount, sized against the pool's live ratio | `client.quoteAddLiquidity` (`liquidity.baseDesired`) rounds the desired amount UP — the Router's own floor rounding reverts `INSUFFICIENT_B_AMOUNT` whenever the division isn't exact; the ERC-20 approval always covers this ceil figure, never a smaller one | covered |
 | `liquidity/removeNFTSelection.ts` | Choosing which/how-many tokenIds an `nft`-mode withdrawal redeems | `client.quoteRemoveLiquidity` (`mode: 'nft'`, `liquidity.nftWhole = floor(wnftOut/1e18)`) picks or validates the EXACT count the Router requires (a mismatch throws rather than silently topping up or clamping); `plan.preflight()` re-derives the count at the signing block, since a trade between quote and signature can shift it by one NFT | covered |
 | `liquidity/useCollectionRedemptionStatus.ts` | Probing whether a collection currently lets NFTs leave its wrapper, before pricing a whole-NFT trade | `client.redemptionStatus` — a tri-state probe (`'allowed' \| 'blocked' \| 'unknown'`) that simulates `transferFrom`, the exact function the wrapper's own release path calls (not the safe variant), with a sample id sourced from on-chain enumeration or the subgraph, never a third-party indexer | covered |
-| `liquidity/positionBase.ts` | An LP holder's live position — balance, share, underlying breakdown | `client.lpPosition(pair, owner)` — one pair at a time, reconciled over the pair's own balances (never the cached reserves), which a future cross-chain portfolio view composes | covered |
+| `liquidity/positionBase.ts` | An LP holder's live position — balance, share, underlying breakdown | `client.lpPosition(pair, owner)` — one pair at a time, reconciled over the pair's own balances (never the cached reserves); `client.positions(owner)` (below) is the whole-wallet, one-chain composition of this same read | covered |
+| `hooks/data/useUserPositions.ts` | Scans a wallet's own LP balance across every known pool on one chain, resolving each held pair's identity | `client.positions(owner)` — one pinned block, one balance-scan multicall over every SnF NFT pool on the client's chain, then the same on-chain loaders `lpPosition` itself uses for each held pair; a failure on one pair lands in `skipped` rather than failing the whole call | covered |
+| `hooks/data/usePortfolioData.ts` (position value) | A held position's value: pool base reserve × 2 × the wallet's own share | `PortfolioPosition.valueInBase` (`2 × underlying.base`, exact — the burn mirror already pays pro-rata from the pair's own balances) marked `valuation: 'mid'`; `PortfolioPosition.valueUsd` is `undefined` unless the partner configures a `prices` provider — never sourced from the subgraph's own USD fields, which read `0` on chains with no price oracle | covered |
+| `hooks/data/usePortfolioData.ts` (`PortfolioWNFTRow`) | The wallet's fungible wNFT balances, valued against each wrapper's own native pool | `client.wnftBalances(owner)` — Factory-identity-verified (a wrapper's on-chain `Factory.getCollection` answer must match before its balance is ever reported), mid-valued against the wrapper's own native pool only; `valueInBase` is `undefined` when no such pool exists to price against, never a guess | covered |
+| `hooks/data/useUserCollections.ts` | The NFT collections a wallet holds, sourced from a third-party wallet-NFT indexer | `client.collectionsHeld(owner)` — `status: 'unavailable'` with zero I/O when no `walletNfts` provider is configured (never a silent empty list); once one is, the on-chain `ERC721.balanceOf` count is authoritative and the provider's own token-id list is enrichment only | covered |
+| `hooks/data/usePoolDayData.ts` | A pool's day-bucketed volume history from the subgraph, assuming `token0` is always the pool's base side | `client.poolHistory(pair, interval, opts?)` — day or 730-hour-month buckets, explicitly re-oriented by the wrapper side on every read (`discrete0`/`discrete1`, never an assumed `token0`) since an SnF NFT pool's wrapper can sit on either side; sparse — no swap in a bucket means no point, not a zero-filled one | covered |
+| `features/swap/hooks/useSwapUrlSync.ts` | Builds/parses the app's own `?chain=`/`?pool=`/`?tokenIn=`/`?tokenOut=` deep-link params | `appLinks.pool` / `.liquidity` / `.swap` — the same canonical params (`chain`, `pool`, `collection`, `tokenIn`, `tokenOut`), always including `chain={chainId}` so a generated link can never land on the wrong chain | covered |
 
 ## What this checklist does NOT cover (by design, not a gap)
 
 Everything the documented Boundaries section scopes out of this SDK entirely is
-absent from this table on purpose, not because it was missed: a cross-chain
-portfolio view (LP positions across every chain in one call — `client.lpPosition`
-above covers a single pair; composing that across chains is a later addition), the
-marketplace aggregator (third-party marketplace protocol integrations), cross-chain
-relay, sell-into-bids, a launch-seeding contract's own on-chain reads (`seeding`/
-`attestation` are typed but reject `PRODUCT_NOT_LIVE` on every chain until that
-product itself deploys), and any atomic multi-step NFT×NFT execution contract. None
-of these exist in the reference checkout either, so they have no corresponding row
-above.
+absent from this table on purpose, not because it was missed: a single call spanning
+several chains at once (every portfolio read above — `positions`, `wnftBalances`,
+`collectionsHeld`, `poolHistory` — covers exactly one chain; a partner covering
+several chains creates one client per chain and loops over them, and a genuine
+cross-chain call is a later addition), the marketplace aggregator (third-party
+marketplace protocol integrations), cross-chain relay, sell-into-bids, a
+launch-seeding contract's own on-chain reads (`seeding`/`attestation` are typed but
+reject `PRODUCT_NOT_LIVE` on every chain until that product itself deploys), and any
+atomic multi-step NFT×NFT execution contract. None of these exist in the reference
+checkout either, so they have no corresponding row above.

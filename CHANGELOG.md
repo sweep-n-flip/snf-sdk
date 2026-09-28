@@ -17,8 +17,10 @@ least 6 months for any deprecated surface.
 ## [Unreleased]
 
 Liquidity: add/remove/create-pool, a launch-seeding helper, LP position reads, and a
-fixed redemption probe. Ships in the next minor release, not `0.1.2` — no
-`package.json`/`SDK_VERSION` bump in this entry.
+fixed redemption probe; and read-only portfolio reads (LP positions, wNFT balances,
+held collections, pool history) plus canonical links into the public app. Ships in
+the next minor release, not `0.1.2` — no `package.json`/`SDK_VERSION` bump in this
+entry.
 
 ### Added
 
@@ -63,15 +65,56 @@ new Router revert strings (`INSUFFICIENT_A_AMOUNT`/`_B_AMOUNT`,
 `EXCESSIVE_A_AMOUNT`/`_B_AMOUNT`) to `INSUFFICIENT_OUTPUT_AMOUNT`, and a bad ERC-20
 `transferFrom` to `INVALID_PARAMS`.
 
-**`@sweepnflip/sdk-react`** — nine new hooks: five read hooks
+**`@sweepnflip/sdk`** — portfolio: four more read-only client methods, every one
+scoped to the client's own chain, no exceptions:
+
+- `positions(owner)` — every SnF LP position this owner holds, described at one
+  pinned block; `valueInBase` is marked at the pool's own mid price (never a
+  liquidation quote), `valueUsd` only when a `prices` provider is configured, and a
+  failure on one pair is isolated to `skipped` rather than failing the whole call.
+- `wnftBalances(owner)` — every fungible wNFT balance for a collection with an SnF
+  pool on this chain, Factory-identity-verified, mid-valued against the wrapper's own
+  native pool only.
+- `collectionsHeld(owner)` — the pooled collections this owner holds through the
+  optional `walletNfts` provider; `status: 'unavailable'` with zero I/O when none is
+  configured — never a silent empty list — and an on-chain `ERC721.balanceOf` count
+  once one is.
+- `poolHistory(pair, interval, opts?)` — a pool's sparse volume/reserve history,
+  bucketed by day or 730-hour month, oriented by the wrapper side, cached for 5
+  minutes (`config.subgraph.historyTtlMs`).
+- `appLinks.pool` / `.liquidity` / `.swap` — canonical links into the public app,
+  every one carrying `chain={chainId}` so a visitor's wallet or app state can never
+  silently disagree with the link they clicked; `opts.origin` overrides the default
+  origin and must be a bare `https:` origin, or throws.
+- `PricesProvider.getTokenUsd?(chainId, token)` — optional, consulted only for an
+  ERC-20-base pool; a native base still uses `getNativeUsd`. No price ever reads as
+  `valueUsd: 0` — an absent, throwing, or non-finite/non-positive answer all collapse
+  to the same outcome: `undefined`.
+
+Every portfolio read covers ONE chain — the chain of the client it was called on. A
+partner covering several chains creates one client per chain and loops over them; a
+single call spanning several chains is planned for a later release. There is likewise
+no totals helper: values can sit in different base tokens, so a partner who wants one
+number sums `valueUsd` across whichever results have it defined.
+
+**`@sweepnflip/sdk-react`** — thirteen new hooks: five read hooks
 (`useSnfQuoteAddLiquidity`, `useSnfQuoteCreatePool`, `useSnfQuoteRemoveLiquidity`,
 `useSnfLpPosition`, `useSnfRedemptionStatus`) mirroring `useSnfQuoteBuy`'s own
-cache/key/enabled/error contract, and four build hooks (`useSnfAddLiquidity`,
+cache/key/enabled/error contract, four build hooks (`useSnfAddLiquidity`,
 `useSnfCreatePool`, `useSnfRemoveLiquidity`, `useSnfSeed`) that only touch the chain
 when a partner calls `build(args)`, feeding the resulting plan to the existing
-`useSnfCheckout(plan)`.
+`useSnfCheckout(plan)`, and four portfolio hooks (`useSnfPositions`,
+`useSnfWnftBalances`, `useSnfCollectionsHeld`, `useSnfPoolHistory`) whose cadence
+follows the data source — 30-second polling for the two on-chain balance reads, none
+at all for the partner-indexer and the 5-minute-cached history read.
 
 ### Changed
+
+- **The no-backend lint rule and the grep gate now block `sweepnflip.io/api`
+  (backend paths) rather than every `sweepnflip.io` literal.** `appLinks` needs to
+  hardcode the public app's own origin once to build a shareable link; the narrower
+  pattern still catches any accidental call to the private backend while allowing a
+  link to the app itself.
 
 - **The redemption probe now simulates `transferFrom`, not `safeTransferFrom`.** The
   wrapper's own release path (`WERC721._burn`) calls `transferFrom`; the previous
