@@ -1,3 +1,4 @@
+import { validatePartnerCode } from './attribution/codes'
 import { getChain } from './chains/registry'
 import { resolveCollection } from './collection/resolveCollection'
 import { describeError as describeErrorPure } from './describeError'
@@ -82,6 +83,19 @@ function validateConfig(config: SnfClientConfig): void {
 
   assertPositiveFiniteOverrides(config.subgraph, 'subgraph')
   assertPositiveFiniteOverrides(config.defaults, 'defaults')
+  validateAttributionConfig(config.attribution)
+}
+
+/** `config.attribution` is optional (attribution stays on, as plain `sdk`, without
+ * it); when present it must be an object, and a present `code` must pass
+ * `validatePartnerCode` — so a bad partner code fails here, at construction, never
+ * when a transaction is about to be sent. */
+function validateAttributionConfig(attribution: SnfClientConfig['attribution']): void {
+  if (attribution === undefined) return
+  assertParam(typeof attribution === 'object' && attribution !== null, 'config.attribution must be an object', {
+    field: 'attribution',
+  })
+  if (attribution.code !== undefined) validatePartnerCode(attribution.code)
 }
 
 /**

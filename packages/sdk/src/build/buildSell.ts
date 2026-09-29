@@ -3,6 +3,7 @@ import type { Abi } from 'viem'
 
 import { ROUTER02_COLLECTION_ABI } from '../abis/UniswapV2Router02Collection'
 import { ROUTER_NATIVE_ERC20_ABI } from '../abis/UniswapV2Router01CollectionNativeERC20'
+import { attributionSuffixFor } from '../attribution/sdkSuffix'
 import { assertParam, SnfError } from '../errors'
 import { quoteSell } from '../quote/quoteSell'
 import { buildApprovalStep, missingApprovals } from './approvals'
@@ -105,6 +106,7 @@ export async function buildSell(ctx: SnfClientContext, args: BuildArgs): Promise
   // receives this very approval step (Finding 2).
   const { gas, gasSource } = await resolveGasForStep({
     publicClient: ctx.publicClient,
+    dataSuffix: attributionSuffixFor(ctx.config),
     address: ctx.chain.router02,
     abi: routerAbi,
     functionName,

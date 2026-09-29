@@ -16,7 +16,29 @@ least 6 months for any deprecated surface.
 
 ## [Unreleased]
 
-Nothing since `0.1.2`.
+Nothing since `0.2.0`.
+
+## [0.2.0] — 2026-09-29
+
+`@sweepnflip/sdk` adds ERC-8021 partner attribution; additive, no breaking change.
+`@sweepnflip/sdk-react` is republished as `0.2.0` with no code change, only so its
+peer range on `@sweepnflip/sdk` (`^0.2.0`) admits the new minor.
+
+### Added
+
+**`@sweepnflip/sdk`** — ERC-8021 partner attribution:
+
+- `createSnfClient({ attribution: { code } })` — every step the client builds for an
+  SnF contract (Router02/Factory) now ends with an ERC-8021 schema-0 suffix: `sdk`
+  without a code, `sdk-<code>` with one (for example `sdk-acme`). Approval steps are
+  never tagged, gas is estimated on the suffixed calldata, and a bad code throws
+  `INVALID_PARAMS` at construction. Contracts ignore the trailing bytes; no
+  registration is needed.
+- `encodeAttribution(codes)` / `parseAttribution(data)` — encode a suffix for a
+  transaction the SDK did not build, and read the codes back from any calldata
+  (strict: `null` for anything that is not a well-formed schema-0 suffix).
+- `validatePartnerCode(code)` / `toSdkCode(code?)` — the partner-code grammar the
+  client enforces, exposed for pre-validation.
 
 ## [0.1.2] — 2026-09-25
 

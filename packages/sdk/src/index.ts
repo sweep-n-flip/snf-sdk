@@ -17,7 +17,7 @@
  * `SDK_VERSION` must stay in sync with `package.json#version` — a dedicated test
  * asserts that.
  */
-export const SDK_VERSION = '0.1.2'
+export const SDK_VERSION = '0.2.0'
 
 export { createSnfClient } from './client'
 export * from './chains'
@@ -28,6 +28,7 @@ export type * from './errors.types'
 // decide whether an error code is worth retrying.
 export { SNF_ERROR_RETRYABLE } from './errors.types'
 export { addressLink, tokenLink, txLink } from './links'
+export { encodeAttribution, parseAttribution, toSdkCode, validatePartnerCode } from './attribution'
 export { formatAmount, toAmount } from './format'
 export type * from './types'
 

@@ -1,6 +1,6 @@
 {
   "name": "@sweepnflip/sdk-react",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "React hooks adapter for @sweepnflip/sdk — quote, build and checkout Sweep n' Flip NFT AMM swaps via wagmi + react-query.",
   "type": "module",

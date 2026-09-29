@@ -1,3 +1,4 @@
+import { attributionSuffixFor, withAttribution } from '../attribution/sdkSuffix'
 import { buildConfirmLabel } from '../checkout/labels'
 import { NEXT_READY_BY_KIND } from '../checkout/reducer'
 import { runPreflight } from './preflight'
@@ -43,16 +44,24 @@ export function orderSteps(rawSteps: readonly Step[]): readonly Step[] {
  * function does not itself guard against an empty input because doing so here would
  * hide a genuine builder bug (an operation that resolved to literally nothing to
  * sign) behind a silent no-op plan.
+ *
+ * Attribution: this is the single place the ERC-8021 suffix (`sdk` or
+ * `sdk-<code>`, from `ctx.config.attribution`) is appended to `tx.data` — every
+ * non-approval step whose `to` is an SnF contract gets it; approvals never do. Because
+ * the suffix lives in `Step.tx` itself, it reaches the chain whether a partner sends
+ * `step.tx` raw or through a checkout adapter. Builders estimate gas on the same
+ * suffixed calldata (`attributionSuffixFor` is passed to `resolveGasForStep`).
  */
 export function assemblePlan(
   ctx: SnfClientContext,
   steps: readonly Step[],
   expiresAt: string,
 ): ExecutionPlan {
+  const suffix = attributionSuffixFor(ctx.config)
   const ordered = orderSteps(steps).map((step) =>
     Object.freeze({
       ...step,
-      tx: Object.freeze({ ...step.tx, chainId: ctx.chain.chainId }),
+      tx: Object.freeze({ ...withAttribution(step, ctx.chain, suffix), chainId: ctx.chain.chainId }),
       label: buildConfirmLabel(NEXT_READY_BY_KIND[step.kind], step),
     }),
   )
