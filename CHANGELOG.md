@@ -19,8 +19,8 @@ least 6 months for any deprecated surface.
 Liquidity: add/remove/create-pool, a launch-seeding helper, LP position reads, and a
 fixed redemption probe; and read-only portfolio reads (LP positions, wNFT balances,
 held collections, pool history) plus canonical links into the public app. Ships in
-the next minor release, not `0.1.2` — no `package.json`/`SDK_VERSION` bump in this
-entry.
+a later minor release, not `0.1.2` or `0.2.0` — no `package.json`/`SDK_VERSION` bump
+in this entry.
 
 ### Added
 
@@ -108,19 +108,6 @@ when a partner calls `build(args)`, feeding the resulting plan to the existing
 follows the data source — 30-second polling for the two on-chain balance reads, none
 at all for the partner-indexer and the 5-minute-cached history read.
 
-**`@sweepnflip/sdk`** — ERC-8021 partner attribution (additive, minor):
-
-- `createSnfClient({ attribution: { code } })` — every step the client builds for an
-  SnF contract (Router02/Factory) now ends with an ERC-8021 schema-0 suffix: `sdk`
-  without a code, `sdk-<code>` with one. Approval steps are never tagged, gas is
-  estimated on the suffixed calldata, and a bad code throws `INVALID_PARAMS` at
-  construction. Contracts ignore the trailing bytes; no registration is needed.
-- `encodeAttribution(codes)` / `parseAttribution(data)` — encode a suffix for a
-  transaction the SDK did not build, and read the codes back from any calldata
-  (strict: `null` for anything that is not a well-formed schema-0 suffix).
-- `validatePartnerCode(code)` / `toSdkCode(code?)` — the partner-code grammar the
-  client enforces, exposed for pre-validation.
-
 ### Changed
 
 - **The no-backend lint rule and the grep gate now block `sweepnflip.io/api`
@@ -149,6 +136,28 @@ at all for the partner-indexer and the 5-minute-cached history read.
 - Arc (5042): the built-in `subgraphUrl` now points to the subgraph's new host. The
   old URL keeps answering for a short overlap and is then retired; `0.1.x` installs
   that read Arc pool data from the subgraph should upgrade.
+
+## [0.2.0] — 2026-09-29
+
+`@sweepnflip/sdk` adds ERC-8021 partner attribution; additive, no breaking change.
+`@sweepnflip/sdk-react` is republished as `0.2.0` with no code change, only so its
+peer range on `@sweepnflip/sdk` (`^0.2.0`) admits the new minor.
+
+### Added
+
+**`@sweepnflip/sdk`** — ERC-8021 partner attribution:
+
+- `createSnfClient({ attribution: { code } })` — every step the client builds for an
+  SnF contract (Router02/Factory) now ends with an ERC-8021 schema-0 suffix: `sdk`
+  without a code, `sdk-<code>` with one (for example `sdk-acme`). Approval steps are
+  never tagged, gas is estimated on the suffixed calldata, and a bad code throws
+  `INVALID_PARAMS` at construction. Contracts ignore the trailing bytes; no
+  registration is needed.
+- `encodeAttribution(codes)` / `parseAttribution(data)` — encode a suffix for a
+  transaction the SDK did not build, and read the codes back from any calldata
+  (strict: `null` for anything that is not a well-formed schema-0 suffix).
+- `validatePartnerCode(code)` / `toSdkCode(code?)` — the partner-code grammar the
+  client enforces, exposed for pre-validation.
 
 ## [0.1.2] — 2026-09-25
 
