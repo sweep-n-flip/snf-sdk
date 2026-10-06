@@ -103,7 +103,7 @@ export function toAmount(value: bigint, decimals: number, symbol: string): Amoun
 }
 
 /**
- * The pool-side axis (`getQuoteDecimals(chainId)` — 18 on 13 chains, 6 on Arc) + the
+ * The pool-side axis (`getQuoteDecimals(chainId)` — 18 on 12 chains, 6 on Arc) + the
  * chain's own symbol. On Arc this and `toNativeAmount` describe the SAME balance at
  * two scales (`chains/units.ts`'s header); picking the wrong one is a `1e12` error,
  * which is why `formatAmount` should not be called directly from `quote/` or

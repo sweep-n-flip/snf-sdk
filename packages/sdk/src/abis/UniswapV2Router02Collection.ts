@@ -12,7 +12,7 @@
  *
  * Router02 canonical cluster address (Ethereum/Arbitrum/Polygon/Apechain/Berachain/
  * Monad/Ronin/Avalanche/Robinhood/Arc): `0xDc0088a282d225f8cb08D092950Dde6eBAa36E78`.
- * Base, HyperEVM, Abstract and BNB Chain each deploy their own Router02 address — see
+ * Base, HyperEVM and BNB Chain each deploy their own Router02 address — see
  * `chains/registry.ts`. Every one of them runs this same ABI (Arc's variant ADDS
  * `NATIVE_SCALE()` on top of it — see `UniswapV2Router01CollectionNativeERC20.ts`).
  *

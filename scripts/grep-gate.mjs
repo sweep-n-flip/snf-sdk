@@ -17,7 +17,7 @@
 // gate.
 //
 // `goldsky` is deliberately NOT a banned pattern: a Goldsky subgraph URL is legal
-// in `src/chains/registry.ts` (Requires the 14 literal URLs) and therefore in
+// in `src/chains/registry.ts` (Requires the 13 literal URLs) and therefore in
 // `dist` too. The other three third-party hosts stay banned everywhere (not just
 // `dist`) — a partner-facing package has no legitimate reason to hardcode any of
 // them in source either.
@@ -123,7 +123,7 @@ const APPARATUS_RULE_EXCEPTIONS = [
     reason:
       "Every literal Goldsky subgraph URL is shaped 'project_<opaque-id>' by Goldsky's " +
       "own hosting convention (their project identifier), not this repo's internal " +
-      'auto-memory filename convention. These 14 URLs are required, functional data — ' +
+      'auto-memory filename convention. These 13 URLs are required, functional data — ' +
       'the SDK cannot query the correct subgraph without them, on any chain.',
   },
   {

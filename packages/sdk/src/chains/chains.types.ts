@@ -1,7 +1,7 @@
 /**
  * Type definitions for the SDK's chain registry.
  *
- * See `registry.ts` for the 14-chain, latest-only data this shape describes, and
+ * See `registry.ts` for the 13-chain, latest-only data this shape describes, and
  * `units.ts` for the two-unit-axes conversions that consume `quoteDecimals`.
  */
 
@@ -15,8 +15,8 @@
 export type RouterVariant = 'standard' | 'native-erc20'
 
 /**
- * The 14 chainIds the SDK supports, latest-only — same membership the reference
- * production client ships. A future 15th chain (or a Legacy re-entry) is a
+ * The 13 chainIds the SDK supports, latest-only — same membership the reference
+ * production client ships. A future additional chain (or a Legacy re-entry) is a
  * deliberate, versioned amendment, never a runtime toggle: no function in `chains/`
  * accepts a `mode` parameter, and `getChain` on anything outside this union is
  * `INVALID_PARAMS`.
@@ -31,7 +31,6 @@ export type SnfChainId =
   | 33139 // Apechain
   | 80094 // Berachain
   | 143 // Monad
-  | 2741 // Abstract
   | 2020 // Ronin
   | 43114 // Avalanche
   | 56 // BNB Chain
@@ -54,7 +53,7 @@ export interface SnfChainConfig {
   router02: `0x${string}`
   routerVariant: RouterVariant
   /**
-   * The Router's `WETH()` address — the pool's quote token. On 13 chains this is a
+   * The Router's `WETH()` address — the pool's quote token. On 12 chains this is a
    * WETH9-style wrapper; on Arc it is the USDC ERC-20 predeploy, not a wrapper.
    */
   quoteToken: `0x${string}`

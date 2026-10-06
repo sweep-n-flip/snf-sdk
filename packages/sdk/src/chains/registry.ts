@@ -7,7 +7,7 @@ import type { SnfChainConfig, SnfChainId } from './chains.types'
  * TWO UNIT AXES (read this before touching an amount)
  * ----------------------------------------------------
  * Every SnF pool pairs the NFT wrapper with the chain's "WETH" slot (the Router's
- * `WETH()` address, this file's `quoteToken`). On 13 chains that slot is a WETH9-style
+ * `WETH()` address, this file's `quoteToken`). On 12 chains that slot is a WETH9-style
  * wrapper with 18 decimals, so one wei of `msg.value` equals one raw pool-side unit and
  * amounts can be treated as a single number.
  *
@@ -24,7 +24,7 @@ import type { SnfChainConfig, SnfChainId } from './chains.types'
  * LATEST ONLY — NO LEGACY
  * ------------------------
  * Legacy was discontinued workspace-wide on 2026-08-10 (see the workspace root
- * CLAUDE.md, "Legacy — DESCONTINUADO"). This registry carries exactly the 14 current
+ * CLAUDE.md, "Legacy — DESCONTINUADO"). This registry carries exactly the 13 current
  * production deploys and nothing else: no `mode` parameter exists on `getChain` or
  * anywhere else in `chains/`, and a future request for a Legacy deploy is an
  * `INVALID_PARAMS` failure, never a toggle to flip.
@@ -38,7 +38,7 @@ import type { SnfChainConfig, SnfChainId } from './chains.types'
  * diffs every address field-by-field — a typo here fails CI, it does not ship.
  */
 
-/** Universal Multicall3 deployment address, identical on all 14 chains. */
+/** Universal Multicall3 deployment address, identical on all 13 chains. */
 export const MULTICALL3_ADDRESS: `0x${string}` = '0xcA11bde05977b3631167028862bE2a173976CA11'
 
 export const SNF_CHAINS = [
@@ -258,30 +258,6 @@ export const SNF_CHAINS = [
     defaultRpcUrl: 'https://rpc.monad.xyz',
   },
 
-  // ── Abstract (2741) — single deploy 2026-06-15, zkSync Era stack (own
-  // Factory/Router — different CREATE2 formula than the EVM cluster). Delegate:
-  // Uniswap V2 fork (Abstract mainnet — zkSync Era).
-  {
-    chainId: 2741,
-    name: 'Abstract',
-    shortName: 'Abstract',
-    nativeSymbol: 'ETH',
-    nativeDecimals: 18,
-    factory: '0x4a1775B76D9d4260C60f3376eCDA618e316c662D',
-    router02: '0x50aC33C74a0262174DACa88260338D5F7BAf7606',
-    routerVariant: 'standard',
-    quoteToken: '0x3439153EB7AF838Ad19d56E1571FBD09333C2809',
-    quoteDecimals: 18,
-    hasNativeWrapper: true,
-    multicall3: MULTICALL3_ADDRESS,
-    subgraphUrl:
-      'https://api.goldsky.com/api/public/project_cmejhyc7rqen501wed6sxgbn3/subgraphs/snf-abstract/1.0.0/gn',
-    explorerUrl: 'https://abscan.org',
-    delegateNetFee: 9970, // Uniswap V2 fork (Abstract mainnet — zkSync Era)
-    poolNetFee: 9800,
-    defaultRpcUrl: 'https://api.mainnet.abs.xyz',
-  },
-
   // ── Ronin (2020) — single deploy 2026-06-15, canonical CREATE2 cluster (Sky
   // Mavis / Axie sidechain). Delegate: Katana V2 (Ronin mainnet).
   {
@@ -387,7 +363,7 @@ export const SNF_CHAINS = [
   },
 ] as const satisfies readonly SnfChainConfig[]
 
-/** The 14 supported chain ids, in registry order. */
+/** The 13 supported chain ids, in registry order. */
 export const SNF_CHAIN_IDS: readonly SnfChainId[] = SNF_CHAINS.map((c) => c.chainId)
 
 /** Returns the config for a supported chain, or throws `SnfError` (code
@@ -403,7 +379,7 @@ export function getChain(id: number): SnfChainConfig {
   return found
 }
 
-/** True if `id` is one of the 14 supported chains. */
+/** True if `id` is one of the 13 supported chains. */
 export function isSupportedChain(id: number): id is SnfChainId {
   return SNF_CHAINS.some((c) => c.chainId === id)
 }

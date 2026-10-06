@@ -5,14 +5,14 @@ import { isSnfError } from '../src/errors'
 import { addressLink, tokenLink, txLink } from '../src/links'
 
 /**
- * Explorer link builders — all 14 chains, from registry data alone.
+ * Explorer link builders — all 13 chains, from registry data alone.
  */
 
 const HASH = '0x1111111111111111111111111111111111111111111111111111111111111111' as `0x${string}`
 const ADDRESS = '0x2222222222222222222222222222222222222222' as `0x${string}`
 const UNSUPPORTED_CHAIN_ID = 999_999
 
-describe('txLink / addressLink / tokenLink — 14-chain coverage', () => {
+describe('txLink / addressLink / tokenLink — 13-chain coverage', () => {
   it.each(SNF_CHAIN_IDS)('chain %s: every helper returns an https:// URL containing the chain\'s own explorer host', (chainId) => {
     const host = new URL(getChain(chainId).explorerUrl).host
 
@@ -27,7 +27,7 @@ describe('txLink / addressLink / tokenLink — 14-chain coverage', () => {
   })
 
   it('SNF_CHAIN_IDS has exactly 14 members', () => {
-    expect(SNF_CHAIN_IDS).toHaveLength(14)
+    expect(SNF_CHAIN_IDS).toHaveLength(13)
   })
 
   it('tokenLink includes the tokenId', () => {

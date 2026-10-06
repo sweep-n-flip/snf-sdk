@@ -5,7 +5,7 @@ import type { ImagesProvider, ImagesProviderContext } from '../types/providers.t
 
 /**
  * The keyless default `ImagesProvider` — the only data source
- * this package ships that works, with no API key, on every one of the 14 chains. A
+ * this package ships that works, with no API key, on every one of the 13 chains. A
  * collection already carries its own artwork on-chain: `tokenURI(id)` is a public
  * read, and Multicall3 batches an entire request's worth of ids into ONE RPC call
  * (`enrichListingsWithOnChainTokenURI`'s pattern, also used in the production AMM

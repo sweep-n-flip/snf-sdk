@@ -1,5 +1,5 @@
 import { createPublicClient, http, type PublicClient } from 'viem'
-import { abstract, base } from 'viem/chains'
+import { base, zksync } from 'viem/chains'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getChain, SNF_CHAINS } from '../src/chains/registry'
@@ -261,8 +261,8 @@ describe('createSnfClient — accepts a real, chain-formatted PublicClient (snf-
     expect(() => createSnfClient(config({ publicClient }))).not.toThrow()
   })
 
-  it('accepts a real PublicClient built for Abstract — zkSync Era formatters, a structurally different formatter family than Base\'s OP-Stack ones, so this proves the fix is not accidentally OP-Stack-specific', () => {
-    const publicClient = createPublicClient({ chain: abstract, transport: http('https://example.invalid') })
+  it('accepts a real PublicClient built for zkSync Era — zkSync formatters, a structurally different formatter family than Base\'s OP-Stack ones, so this proves the fix is not accidentally OP-Stack-specific', () => {
+    const publicClient = createPublicClient({ chain: zksync, transport: http('https://example.invalid') })
     expect(() => createSnfClient(config({ publicClient }))).not.toThrow()
   })
 })

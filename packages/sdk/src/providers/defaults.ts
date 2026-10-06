@@ -11,7 +11,7 @@ import type {
  * Provider resolution — merges a partner's own `config.providers`
  * over the SDK's defaults, one key at a time. `images` is the only field with a real,
  * keyless default (`onChainImagesProvider`, `onChainImages.ts`) — it is the only
- * surface reachable with no API key on every one of the 14 chains (Free
+ * surface reachable with no API key on every one of the 13 chains (Free
  * forever, no license/key/paywall mechanism anywhere in this package). `walletNfts`
  * and `prices` need a keyed indexer whose cost is the PARTNER's, never the SnF
  * backend's (PRD `G-4`); `poolInventory` has its own on-chain/subgraph path

@@ -29,7 +29,7 @@ function expectInvalidParams(fn: () => unknown, field: string): void {
   }
 }
 
-describe('appLinks — 14-chain coverage', () => {
+describe('appLinks — 13-chain coverage', () => {
   it.each(SNF_CHAIN_IDS)('chain %s: every link starts with the app origin, names its chain once, never /api', (chainId) => {
     const urls = [
       appLinks.pool(chainId, PAIR),

@@ -137,6 +137,13 @@ at all for the partner-indexer and the 5-minute-cached history read.
   old URL keeps answering for a short overlap and is then retired; `0.1.x` installs
   that read Arc pool data from the subgraph should upgrade.
 
+### Removed
+
+- Removed Abstract (2741): network sunset. `SNF_CHAINS`, `SNF_CHAIN_IDS` and the
+  `SnfChainId` union no longer include it, so `getChain(2741)` now throws
+  `INVALID_PARAMS` and `isSupportedChain(2741)` returns `false`. The registry now
+  covers 13 chains.
+
 ## [0.2.0] — 2026-09-29
 
 `@sweepnflip/sdk` adds ERC-8021 partner attribution; additive, no breaking change.

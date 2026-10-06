@@ -134,9 +134,9 @@ maybeDescribe('registry vs production app (config diff)', () => {
     expect(SNF_CHAIN_IDS).toEqual(expectedIdOrder)
   })
 
-  it('SNF_CHAINS has exactly 14 entries — a deleted chain fails this hard number', () => {
-    expect(SNF_CHAINS).toHaveLength(14)
-    expect(expectedIdOrder).toHaveLength(14)
+  it('SNF_CHAINS has exactly 13 entries — a deleted chain fails this hard number', () => {
+    expect(SNF_CHAINS).toHaveLength(13)
+    expect(expectedIdOrder).toHaveLength(13)
   })
 
   it('every chain\'s factory, router02, quoteToken and multicall3 match contracts.ts\'s latest branch', () => {
@@ -170,17 +170,17 @@ maybeDescribe('registry vs production app (config diff)', () => {
     expect(mismatches).toEqual([])
   })
 
-  it('every registry subgraphUrl appears verbatim in subgraphs.ts, and both sides count 14', () => {
+  it('every registry subgraphUrl appears verbatim in subgraphs.ts, and both sides count 13', () => {
     const clientUrls = parseSubgraphUrls(subgraphsSource)
-    expect(clientUrls).toHaveLength(14)
-    expect(SNF_CHAINS).toHaveLength(14)
+    expect(clientUrls).toHaveLength(13)
+    expect(SNF_CHAINS).toHaveLength(13)
 
     const missing = SNF_CHAINS.filter((c) => !clientUrls.includes(c.subgraphUrl)).map((c) => c.name)
     expect(missing).toEqual([])
   })
 
   it('chainIds are unique, and no two chains share the same (factory, router02, subgraphUrl) triple', () => {
-    expect(new Set(SNF_CHAIN_IDS).size).toBe(14)
+    expect(new Set(SNF_CHAIN_IDS).size).toBe(13)
 
     const triples = SNF_CHAINS.map((c) => `${c.factory}|${c.router02}|${c.subgraphUrl}`)
     expect(new Set(triples).size).toBe(SNF_CHAINS.length)

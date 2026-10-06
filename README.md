@@ -79,7 +79,7 @@ see its README.
 
 ## Supported chains
 
-All 14 chains SnF is live on, generated from `SNF_CHAINS` (`@sweepnflip/sdk`) — 18
+All 13 chains SnF is live on, generated from `SNF_CHAINS` (`@sweepnflip/sdk`) — 18
 decimals on every chain except Arc, whose pool side runs on the native USDC
 predeploy's 6 decimals (`getQuoteDecimals(chainId)` — never assume 18, see the Arc
 footnote below).
@@ -91,7 +91,6 @@ footnote below).
 | Monad | 143 | MON | 18 |
 | BNB Chain | 56 | BNB | 18 |
 | Ronin | 2020 | RON | 18 |
-| Abstract | 2741 | ETH | 18 |
 | HyperEVM | 999 | HYPE | 18 |
 | Apechain | 33139 | APE | 18 |
 | Berachain | 80094 | BERA | 18 |

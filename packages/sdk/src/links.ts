@@ -3,7 +3,7 @@ import { getChain } from './chains/registry'
 /**
  * Explorer link builders — every URL is built ONLY from
  * `getChain(chainId).explorerUrl` (`chains/registry.ts`). No host is ever hardcoded
- * here: adding a 15th chain to the registry adds its links for free, and a hardcoded
+ * here: adding a new chain to the registry adds its links for free, and a hardcoded
  * explorer host in this file would be exactly the kind of silent per-chain bug this
  * package's own rules exist to prevent. `getChain` itself throws
  * `SnfError('INVALID_PARAMS')` for an unsupported chain, so every function below does
@@ -11,8 +11,8 @@ import { getChain } from './chains/registry'
  *
  * Path shape: the production AMM client's own reference implementation
  * (its `getExplorerUrl`) uses ONE uniform
- * `${baseUrl}/${type}/${value}` builder across all 14 chains today, including the
- * Blockscout instance (Robinhood Chain), the zkSync-stack explorer (Abstract) and the
+ * `${baseUrl}/${type}/${value}` builder across all 13 chains today, including the
+ * Blockscout instance (Robinhood Chain) and the
  * Sky Mavis explorer (Ronin) — no per-chain path override exists anywhere in the
  * production app. This module mirrors that exactly, rather than inventing per-chain
  * path branches the live app itself doesn't have. `tokenLink` uses the Etherscan-style

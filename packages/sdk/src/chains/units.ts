@@ -5,7 +5,7 @@ import { getChain } from './registry'
  * allowed to convert between the pool side and the EVM side of an amount.
  *
  * The pool side (`getReserves`, `getAmountsIn/OutCollection`, `amountOutMin`,
- * `amountInMax`) is always expressed in `quoteDecimals` — 18 on 13 chains, 6 on Arc.
+ * `amountInMax`) is always expressed in `quoteDecimals` — 18 on 12 chains, 6 on Arc.
  * The EVM side (`tx.value`, `eth_getBalance`, gas) is always 18. Confusing the two on
  * Arc is a 1,000,000x pricing error, not a rounding error — this is exactly the
  * regression class the reference production client has independently had to fix

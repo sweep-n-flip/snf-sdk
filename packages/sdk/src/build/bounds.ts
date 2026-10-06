@@ -17,7 +17,7 @@ import type { Bounds } from '../types/plan.types'
  * rounding step can never make the transaction revert for being 1 wei short of the
  * true cost), a sell's minimum rounds DOWN (same reasoning, opposite side). Both are
  * expressed on the **pool** axis — the same decimals `chains/units.ts` calls the
- * pool's own quote-token decimals (18 on 13 chains, 6 on Arc) — because that is the
+ * pool's own quote-token decimals (18 on 12 chains, 6 on Arc) — because that is the
  * axis the Router's own `require` compares against (`amountInMax`/`amountOutMin` are
  * pool-side arguments to `*Collection`/`getAmountsIn/Out`). The EVM-axis `tx.value` a
  * builder actually sends is derived separately, via `chains/units.ts`'s
