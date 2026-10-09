@@ -26,8 +26,8 @@ in this entry.
 
 - **Ethereum (chainId 1) contracts replaced.** The Ethereum NFT AMM was redeployed on 2026-10-09 with a
   Uniswap V2 delegate: Factory `0xD42bA927f045B7Fd62ba4540F7395ec5fDCf3291`, Router02
-  `0xc79eaAe02898378fE072acF8D4412A64Bb630024`, subgraph `snf-mainnet/2.0.0` (Goldsky project
-  `project_cmoiys0pk3brg01un76ukdj5r`). The previous SushiSwap-delegate Factory `0x8503…37bE` / Router02
+  `0xc79eaAe02898378fE072acF8D4412A64Bb630024`, subgraph `snf-mainnet/2.0.0` (new Goldsky URL in
+  the registry). The previous SushiSwap-delegate Factory `0x8503…37bE` / Router02
   `0xDc00…6E78` are discarded — do not use them on Ethereum. Other chains are unchanged.
 
 ### Added
