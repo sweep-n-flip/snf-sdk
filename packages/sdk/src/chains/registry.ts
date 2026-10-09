@@ -73,25 +73,26 @@ export const SNF_CHAINS = [
     defaultRpcUrl: 'https://rpc.mainnet.chain.robinhood.com',
   },
 
-  // ── Ethereum (1) — redeployed 2026-04-15, canonical CREATE2 cluster. Delegate:
-  // SushiSwap (Ethereum mainnet).
+  // ── Ethereum (1) — redeployed 2026-10-09 on its own Factory/Router02 (deployer
+  // 0xbf80…8C2E, not the canonical cluster address). Delegate: Uniswap V2 (Ethereum
+  // mainnet). The 2026-04-15 SushiSwap-delegate Factory 0x8503…37bE is discarded.
   {
     chainId: 1,
     name: 'Ethereum',
     shortName: 'Ethereum',
     nativeSymbol: 'ETH',
     nativeDecimals: 18,
-    factory: '0x85039B2e95558aDdCCf4379728b8433C447E37bE',
-    router02: '0xDc0088a282d225f8cb08D092950Dde6eBAa36E78',
+    factory: '0xD42bA927f045B7Fd62ba4540F7395ec5fDCf3291',
+    router02: '0xc79eaAe02898378fE072acF8D4412A64Bb630024',
     routerVariant: 'standard',
     quoteToken: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     quoteDecimals: 18,
     hasNativeWrapper: true,
     multicall3: MULTICALL3_ADDRESS,
     subgraphUrl:
-      'https://api.goldsky.com/api/public/project_cmngb5qq6d79v01wba5bi7hdg/subgraphs/snf-mainnet/1.1.0/gn',
+      'https://api.goldsky.com/api/public/project_cmoiys0pk3brg01un76ukdj5r/subgraphs/snf-mainnet/2.0.0/gn',
     explorerUrl: 'https://etherscan.io',
-    delegateNetFee: 9970, // SushiSwap (Ethereum mainnet)
+    delegateNetFee: 9970, // Uniswap V2 (Ethereum mainnet)
     poolNetFee: 9800,
     defaultRpcUrl: 'https://eth.merkle.io',
   },
